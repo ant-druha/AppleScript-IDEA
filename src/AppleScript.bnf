@@ -1,0 +1,939 @@
+{
+
+  parserClass="com.idea.plugin.applescript.lang.parcer.AppleScriptParser"
+  psiImplUtilClass="com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil"
+
+//  parserUtilClass="com.idea.plugin.applescript.lang.parser.AppleScriptGeneratedParserUtilBase" //for external grammar
+
+//    extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+    extends="com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl"
+    implements="com.idea.plugin.applescript.psi.AppleScriptPsiElement"
+
+    psiClassPrefix="AppleScript"
+    psiImplClassSuffix="Impl"
+    psiPackage="com.idea.plugin.applescript.psi"
+    psiImplPackage="com.idea.plugin.applescript.psi.impl"
+
+    elementTypeHolderClass="com.idea.plugin.applescript.psi.AppleScriptTypes"
+    elementTypeClass="com.idea.plugin.applescript.lang.parser.AppleScriptElementType"
+    tokenTypeClass="com.idea.plugin.applescript.lang.lexer.AppleScriptTokenType"
+    tokens = [
+
+  // NewLines and spaces //
+  //  NLS ='regexp:{ONE_NL}({ONE_NL}|{WHITE_SPACE})*'
+    NLS ='regexp:(\r|\n|\r\n)( (\r|\n|\r\n)|([\ \t\f]) )*'
+    mONE_NL = 'regexp:(\r|\n|\r\n)'                                   // NewLines
+
+    LPAREN='('
+    RPAREN=')'
+
+  // containment
+  //list,string
+    STARTS_BEGINS_WITH='regexp:(starts? with)|(begins? with)'
+    ENDS_WITH='regexp:ends? with'
+    //list,record,string
+    DOES_NOT_CONTAIN="regexp:(does not contain)|(doesn't contain)"
+    IS_IN="regexp:(is in)|(is contained by)"
+    IS_NOT_IN="regexp:(is not in)|(is not contained by)|(isn't contained by)"
+
+    // comparison operators
+    GT="regexp:(>|((is)? greater than)|(comes after)|(is not less than or equal (to)?)|(isn't less than or equal (to)?))"
+    LE="regexp:(≤|<=|((is)? less than or equal (to)?)|(is not greater than)|(isn't greater than)|(does not come after)|(doesn't come after))"
+    GE="regexp:(≥|>=|((is)? greater than or equal (to)?)|(is not less than)|(isn't less than)|(does not come before)|(doesn't come before))"
+    LT="regexp:(<|((is)? less than)|(comes before)|(is not greater than or equal (to)?)|(isn't greater than or equal (to)?))"
+    NE="regexp:((isn't equal (to)?)|(is not equal (to)?)|(doesn't equal)|(does not equal)|(is not)|(isn't))"
+    EQ="regexp:(=|((is)? equal to)|is|equal|equals)"
+    REF_OP="regexp:(a reference to|a ref to|a ref|reference to|ref)"
+
+    CC='¬'
+    PLUS='+'
+    MINUS='-'
+    STAR='*'
+    DIV='regexp:(/|÷)'
+    INT_DIV='div'
+    MOD='mod'
+    POW='^'
+    LOR='or'
+    LAND='and'
+    BAND='&'
+    LNOT='not'
+    AS='as'
+    APS="'s"
+
+    //built in types
+    BUILT_IN_TYPE='regexp:(string|integer|real|boolean|class|constant|list|record|data|date|number|reference|styled text|text)'
+
+    //some keywords here which do not appear in rules distinctively
+    THE_KW='the'
+    DOES='does'
+    APART_FROM='apart from'
+    ASIDE_FROM='aside from'
+    OUT_OF='out of'
+    INSTEAD_OF='instead of'
+//    EQUAL='equal'
+//    EQUALS='equals'
+    THAT='that'
+    REFERENCE='reference'
+    IS='is'
+    ITS='its'
+
+    //constants
+    PI_CONSTANT='pi'              //3.1412926
+    MINUTES_CONSTANT='minutes'    // =60seconds
+    HOURS_CONSTANT='hours'        //60*60
+    DAYS_CONSTANT='days'          //60*60*24
+    WEEKS_CONSTANT='weeks'
+
+    //AppleScript standard names and commands (could be used in commands)
+  //  FILE='file'
+
+    STRING_LITERAL='regexp:"([^"\\]|\\.)*"'
+    //DIGIT='regexp:[0-9]'
+    DIGITS='regexp:[0-9]+'
+
+    DEC_EXPONENT='regexp:[Ee][+-]?[_0-9]*'
+    var_identifier='regexp:([a-zA-Z][a-zA-Z0-9_]*)|(\|(([^\|])|(\\\|))*[^\\]\|)'
+  //todo nested comments (in a lexer with the states...)
+    COMMENT='regexp:((#.*)|(--.*)|((\(\*[^\*](([^\*]*(\*+[^\*\)])?)*(\*+\))?))|\(\*))'
+    RAW_CODE='regexp:(<<[^>>]*>>)'
+    MULTI_LINE_COMMENT_START='(*'
+    MULTI_LINE_COMMENT_END='*)'
+    WHITE_SPACE='regexp:[\ \t\f]'//to remove whitespace PSI handling from parser..todo to think how to handle
+    //  WHITE_SPACE ='regexp:[\ \t\f]|¬(\r|\n|\r\n)'           // Whitespaces
+    //  CRLF='regexp:(\n|\r|\r\n)'
+    COMMA=','
+    LCURLY='{'
+    RCURLY='}'
+    COLON=':'
+
+
+  ]
+    extends(".*Expression")="expression"
+}
+
+appleScriptFile ::= compilation_unit_
+
+//!expression can be a statement!(but statement does not have a value like expression)
+private compilation_unit_ ::=
+                      (
+                        (statement sep*)
+                      | (expression sep*)//of startup disk -> expects new line after startup without *
+                      | (COMMENT sep*) //how to include space as a separator?
+                      | (RAW_CODE sep*)
+//                      | (reservedWords sep*) //to workaround problem with using reserved words inside custom commands
+                      | sep//|spaceSep
+                      )*
+                      //{recoverWhile="mainScriptRecover"}
+//mainScriptRecover ::= !(with|tell|repeat|sep)
+                      //{recoverWhile = not_next_expression}
+
+private sep ::= NLS|COMMENT //one or more new lines and spaces
+private nls ::= NLS* // zero or more new lines and spaces
+
+//todo exclude it, me properties (they are actually more like constants and
+// //todo can not be used for naming handlers
+identifier ::= var_identifier|appleScriptProperty
+
+//appleScriptNativeHandler ::= run|quit|idle|open
+
+referenceIdentifier ::= identifier|applicationStandardCommandNames
+{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
+implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
+
+//todo include appleScriptPropertiesConstant here ??
+componentName ::= identifier//|appleScriptProperty
+{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptNamedElementImpl"
+ implements="com.idea.plugin.applescript.psi.AppleScriptNamedElement"}
+
+private statement ::= control_statement|propertyDeclarationStatement|variableDeclarationStatement
+                      |handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
+//                      |handlerRunDefinition|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
+                      |handlerInterleavedParametersDefinition
+                      |scriptObjectDefinitionStatement
+                      |returnStatement|continue_statement
+                      |creationStatement
+//                      |setCommandSyntaxReturning //todo to think where to include better without recursion
+//                      |setCommandSyntaxSet
+
+returnStatement ::= return [expression]
+
+private control_statement ::= ifStatement | tryStatement | tell_statement | repeatStatement | exitStatement
+|consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|useStatement
+
+exitStatement ::= exit [repeat]
+private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
+| repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
+
+blockBody ::= (statement|COMMENT|expression|RAW_CODE)? (nls (statement|COMMENT|expression|RAW_CODE))*
+
+repeatForeverStatement ::= repeat nls
+                            blockBody? nls
+                           end /*!(considering|ignoring|tell|error|try|(using terms from))*/[repeat]
+
+repeatNumTimesStatement ::= repeat numTimes [times] nls
+                            blockBody? nls
+                            end [repeat]
+
+private numTimes ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
+
+repeatWhileStatement ::= repeat while expression nls
+                            blockBody? nls
+                         end [repeat] {pin=2}
+
+repeatUntilStatement ::= repeat until expression nls
+                         blockBody? nls
+                         end [repeat] {pin=2}
+
+repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopValue [by stepValue] nls
+                             blockBody? nls
+                             end [repeat] {pin=4}
+
+//todo may be just use expression here
+private stepValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
+private stopValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
+private startValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
+private loopVariable ::= componentName
+
+repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression nls
+                         blockBody? nls
+                         end !(considering|ignoring|tell|error|try|(using terms from))[repeat] {pin=4}
+//todo test all possible list expressions (may be it is better to specify any expansion here)
+private listOrReferenceExpression ::= listLiteralExpression|objectRefWrapper
+
+errorCommandExpression ::= error [errorMessage] [number errorNumber]
+                                [from offendingObject]
+                                [to expectedType]
+                                [partial result resultList] //{pin=1}
+private resultList ::= listLiteralExpression|referenceIdentifier //the same as listOrReferenceExpression
+//offendingObject is a reference to the object, if any, that caused the error. If you provide a partial reference,
+// AppleScript completes it using the value of the default object (for example, the target of a Tell statement).
+private offendingObject ::= classTypeName|objectRefWrapper
+
+tryStatement ::= try nls
+                     blockBody? nls
+                     on error [errorMessageVar] [number errorNumberVar] [from offendingObjectVar]
+                     [to expectedTypeVar] [partial result resultListVar]
+                     [global componentName (COMMA componentName)* nls]
+                     [local componentName (COMMA componentName)* nls] nls
+                     blockBody? nls
+                  end !(considering|ignoring|tell|repeat|(using terms from))[error|try] {pin=1}
+private errorMessageVar ::= componentName
+private errorNumberVar ::= componentName
+private offendingObjectVar ::= referenceIdentifier
+private resultListVar ::= referenceIdentifier
+private expectedTypeVar ::= referenceIdentifier
+
+//todo: Using it, me, and my in Tell Statements ! p.242
+private tell_statement ::= tell_simple_statement|tell_compound_statement
+// it - ref to object, me - ref to current script
+
+private applicationClass ::= application|app
+
+// tell front window of application "Finder" to close | object_specifier_statement == front window of application "Finder"
+// For more information on how to specify an application object, see the application class.
+tell_simple_statement ::= tell (/*handlerCallGuardPredicate|*/objectRefWrapper)
+to (statement|(expression handlerInterleavedParametersCall)) {pin=3}
+//object_specifier_statement is a reference to an application object, system object, or script object.
+tell_compound_statement ::= tell objectRefWrapper nls //todo not to count Ø -| and CRLF char as a sep
+                                        blockBody? nls
+                            end !(considering|ignoring|error|try|repeat|(using terms from))[tell] {pin=4}
+
+private expectedType ::= classTypeName|referenceIdentifier
+private errorNumber ::= integerLiteralExpression|referenceIdentifier
+private errorMessage ::= stringLiteralExpression|referenceIdentifier
+
+consideringStatement ::= considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls
+                           [but ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls]
+                           blockBody? nls
+                         end considering {pin=2}
+
+ignoringStatement ::= ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls
+                        [but considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls]
+                           blockBody? nls
+                      end ignoring {pin=2}
+considerOrIgnoreAttribute ::= (applicationClass responses)|case|diacriticals|expansion|hyphens|punctuation|'white space'
+
+withTimeoutStatement ::= with timeout [of] integerLiteralExpression (seconds|second !(classTypeName)) nls //index ref
+                           blockBody? nls
+                         end !(considering|ignoring|error|try|repeat|tell|transaction|(using terms from))[timeout] {pin=2}
+
+withTransactionStatement ::= with transaction [sessionSpecificator] nls
+                               blockBody? nls
+                             end !(considering|ignoring|error|try|repeat|tell|timeout|(using terms from)) [transaction] {pin=2}
+private sessionSpecificator ::= referenceIdentifier
+
+//todo check AppleScript 2.3 additions (use statements etc)
+//todo may define just single 'use' statement?
+private useStatement ::= useAppleScriptStatement|useScriptingAdditionsStatement|useApplicationOrScriptStatement
+|useFrameworkStatement|usingTermsFromStatement
+//todo 'considering numeric strings'
+
+useAppleScriptStatement ::= use 'AppleScript' [version stringLiteralExpression] {pin=2}
+
+useScriptingAdditionsStatement ::= use 'scripting additions'
+                                   [((with importing)|(without importing)|importing) expression ] {pin=2}
+
+useApplicationOrScriptStatement ::= use [referenceIdentifier COLON] (script|applicationClass) dataSpecifier
+                                       [version stringLiteralExpression ]
+                                       [((with importing)|(without importing)|importing) expression ] {pin=3}
+private dataSpecifier ::= referenceExpression|stringLiteralExpression
+
+useFrameworkStatement ::= use  framework  dataSpecifier {pin=2}
+
+usingTermsFromStatement ::= using terms from (application_reference|(script dataSpecifier)|(scripting additions)) nls
+                               blockBody? nls
+                            end !(considering|ignoring|error|try|repeat|tell|timeout)[using terms from] {pin=3}
+
+//
+private targetCompositeComponent ::= targetComponentName|targetListLiteral|targetRecordLiteral //make mixin class abstract ?
+//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
+//implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+
+//todo need to rename to clear name (remove Name suffix)
+targetComponentName ::= componentName
+//targetComponent ::= componentName
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+
+private ifStatement ::= ifCompoundStatement|ifSimpleStatement
+
+ifSimpleStatement ::= if expression //what todo with recursion here?
+                                    then (!(ifCompoundStatement) (statement|expression) /*sep**/) //todo only simple statements are allowed here
+//                                    {pin=4}
+
+ifCompoundStatement ::= if expression nls [then] nls
+                                       blockBody? nls
+                                   (else if expression nls [then] nls
+                                       blockBody? nls )*
+                                   (else nls
+                                        blockBody? nls)?
+                                   end /*!(considering|ignoring|tell|error|try|repeat)*/ [if] {pin=10}
+
+// value class types
+private literalExpression ::=
+              stringLiteralExpression
+              |styledTextLiteralExpression
+              //|built_in_type
+              |numberLiteralExpression
+              |constantLiteralExpression
+              |listLiteralExpression
+              |recordLiteralExpression
+              |dateLiteralExpression
+              |aReferenceToLiteralExpression
+
+/** Numeric, string, regexp, boolean, date, string(space,tab,return) constant*/
+//todo: is also componentName ??? for ex. parent - property can hold a value inside, but true/false can not -
+//todo is more like language keyword
+constantLiteralExpression ::= boolean_constant|date_time_constants|save_opt_constant|text_constant|itMeProperty//|appleScriptPropertiesConstant
+
+
+// SIMPLE literals
+
+// Number class<<
+private numberLiteralExpression ::= realLiteralExpression|integerLiteralExpression|numericConstant
+
+// >>Integer class<<
+integerLiteralExpression ::= DIGITS
+
+// A value of class Class is a class identifier. A class identifier is a reserved word that specifies the class
+// to which an object or value belongs. The Class property of an object contains a class identifier value.
+// >>Class class<<
+builtInClassName ::= BUILT_IN_TYPE// what about other(application) classes?
+
+//>>Real class<<
+realLiteralExpression ::= ('.'(DIGITS)(DEC_EXPONENT))|(dec_significand nls DEC_EXPONENT?)
+private dec_significand ::= ('.'DIGITS)|(DIGITS'.'DIGITS*)
+
+// >>Date class<<
+dateLiteralExpression ::= (date stringLiteralExpression)|currentDateCommand // hack! scripting addition command Current Date !
+private currentDateCommand ::= 'current date'
+
+//>> List reference
+//private list_specifier ::= (class|length|rest|reverse) of list_literal_expression // ref by properties
+//                            item [index]
+//A value of class Constant is a reserved word defined by AppleScript or an application in its dictionary.
+// Applications define sets of values that can be used for parameters of a particular command. For example,
+// the value of the saving parameter of a Close command must be one of the three constants yes, no, and ask
+//For a complete listing of the constants AppleScript provides, see Table A-3(page 358) and Table A-2 (page 355).
+// !! NOT CASE SENSITIVE !!
+//You cannot define your own constants; constants can be defined only by applications and AppleScript.
+// >>Constant class<<
+//private constant_literal_expression ::= boolean_constant|date_time_constants//number_constant to number_literal
+//                            |missing_value_constant|result_constant|anything_constant|save_opt_constant
+//                            |string_constant|version_constant
+
+textItemDelimitersProperty ::= 'text item delimiters'
+
+//>>Record class<<
+recordLiteralExpression ::= recordLiteral (BAND nls primaryExpression)*
+private recordLiteral ::= LCURLY[propertyLabelComponent COLON expression] (COMMA propertyLabelComponent COLON expression)* RCURLY
+targetRecordLiteral ::= LCURLY[propertyLabelTargetComponent COLON targetCompositeComponent] (COMMA propertyLabelTargetComponent COLON targetCompositeComponent)* RCURLY
+//{ methods=[getComponentNameList] }
+//todo inspection for only uniq property label names
+
+//>>String class<<
+stringLiteralExpression ::= STRING_LITERAL (BAND ((CC sep)|CC)? primaryExpression)* //sep results in more that one new line
+//private string_literal ::= STRING_LITERAL
+
+//>>List class<<
+listLiteralExpression ::=
+((listLiteral|numberLiteralExpression|boolean_constant|dateLiteralExpression|parenthesizedExpression|referenceIdentifier)
+(BAND nls primaryExpression)+)//any other(than string or record) class converted to a list
+|listLiteral
+private listLiteral ::= LCURLY [expression|referenceIdentifier] (COMMA(expression|referenceIdentifier))* RCURLY //{pin=4}
+
+//targetListLiteralExpression ::= 
+//((targetListLiteral|parenthesizedExpression|targetComponentName)
+//(BAND nls primaryExpression)+)//any other(than string or record) class converted to a list
+targetListLiteral ::= LCURLY [targetCompositeComponent] (COMMA targetCompositeComponent)* RCURLY //{pin=4}
+{methods = [getComponentNameList] }
+//The class identifier Styled Text is a synonym for a string that includes style and font information.
+//>>Styled Text class<<
+private styledTextLiteralExpression ::= STRING_LITERAL
+
+//You can use the class identifier Text as a synonym for the identifier String
+//>>Text class<<
+//private text_literal ::= string_literal
+
+// >>Boolean class<<
+private boolean_constant ::= true|false
+
+// !!! COMMANDS !!!
+// commands  is a word or a series of words used in AppleScript statements to request an action.
+// we need to parse xml files -> index command names and signatures they have -> after user inters some command
+
+//An AppleScript command is one that is built into the AppleScript language. There currently are five such
+// commands: get , set, count, copy, and run.
+// Except for copy , each of these commands can also be implemented by applications.
+// probably them it would make sense to add natively...
+//private apple_script_command_statement ::=
+//todo using the keyword anywhere in references (other cases besides?)
+
+application_reference ::= THE_KW? applicationClass STRING_LITERAL [of THE_KW?machine STRING_LITERAL (of THE_KW? zone STRING_LITERAL)?]
+                                |THE_KW?current_application_constant
+
+file_reference ::= THE_KW?(file|alias) expression // example p.193
+
+
+//todo to think -> there could be any expression instead of string/list/record literals
+//private literal_object_reference ::= list_reference_statement|record_reference_statement|string_reference_statement
+//string_reference_statement ::= THE_KW? (rangeReference|indexReference|propertyReference
+//                                |middleElemReference|arbitraryReference|everyElemReference)
+//                                (of|in) THE_KW? stringLiteralExpression//|parenthesized_expression
+//list_reference_statement ::= THE_KW? (indexReference|rangeReference|propertyReference|middleElemReference
+//                    |arbitraryReference|everyElemReference)
+//                    (of|in) THE_KW? listLiteralExpression//|parenthesized_expression
+//record_reference_statement ::= THE_KW? propertyReference (of|in)THE_KW?recordLiteralExpression//|parenthesized_expression
+
+left applicationObjectReference ::= (of|in) THE_KW? application_reference
+
+//todo any handler can only be attached to the identifier!
+private refForm ::= (my referenceIdentifier handlerInterleavedParametersCall)
+                    |(my?
+                    (arbitraryReference
+                    |everyElemReference
+                    |rangeReference
+                    |nameReference
+                    |middleElemReference
+                    |relativeReference
+                    |indexReference
+                    |propertyReference handlerCallExpression?
+                     ))
+
+
+
+propertyReference ::=  propertyLabelReference
+
+
+private propertyLabelReference ::= builtInClassName|referenceIdentifier|literalExpression//|appleScriptProperty
+private propertyLabelComponent ::= builtInClassName|componentName//|appleScriptProperty|componentName
+private propertyLabelTargetComponent ::= builtInClassName|targetComponentName//|appleScriptProperty|componentName
+
+//todo can be any valueExpression here !?!?
+//private propertyValueExpression ::= /*applicationStandardCommandNames|*/referenceIdentifier
+//|literalExpression //todo may be better not to include here? (need only for list/record/string references?)
+
+left objectRef ::=
+((of|in) THE_KW? ((prefixExpression APS THE_KW? prefixExpression handlerInterleavedParametersCall?)|prefixExpression handlerInterleavedParametersCall?)
+[filterReference] THE_KW? applicationObjectReference?)
+//{pin(".*")=1} //if pin then in form 'of ' error is not reported
+
+
+arbitraryReference ::= some classTypeName {pin=1}
+
+//Plural forms are listed in application dictionaries.
+everyElemReference ::= every (classTypeName|pluralClassName) {pin=1}
+//words of myString
+
+//The Filter reference form specifies all objects in a container that match one or  more conditions specified
+// in a Boolean expression.
+//todo left association
+left filterReference ::=  (whose|where) expression
+
+//The ID reference form specifies an object by the value of its ID property
+//private id_reference ::= class_name id id_value //todo the syntax is not clear
+
+//The Index reference form specifies an object or a location by describing its position with respect
+// to the beginning or end of a container. For related information, see “Relative” (page 185).
+//todo otherwise handler call in a chain can be detected as reference_expression
+//searchFiles for ff of minimumValue(2, 3) for "LeChateau"
+private indexValueExpression ::= (referenceIdentifier|reservedWordsNotParameterLabel|integerLiteralExpression)
+//to exclude detecting as index handlerWithDirectLabeledParametersCall and other handler calls
+ !(handlerParameterLabel|with|without|given|LPAREN|COLON)
+
+indexReference ::= ((classTypeNameStrict [index] (indexValueExpression|parenthesizedExpression))
+                   |(classTypeName [index] indexValueExpression)
+                   |(integerLiteralExpression('st'|'rd'|'th') classTypeName) //how to concatenate?
+                   |((first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) classTypeName)
+                   |((last|front|back) classTypeName))
+
+middleElemReference ::= middle classTypeName {pin=1}
+nameReference ::= classTypeName [named] nameString
+private nameString ::= stringLiteralExpression//|parenthesized_expression //(smth as string) or get the string from some val
+
+rangeReference ::= (every classTypeName from boundaryReference1 to boundaryReference2)
+                   |(pluralClassName from boundaryReference1 to boundaryReference2)
+                   |(classTypeName startIndex (thru|through) stopIndex)
+                   |(pluralClassName startIndex (thru|through) stopIndex)
+private stopIndex::= integerLiteralExpression
+private startIndex ::= integerLiteralExpression
+private boundaryReference1 ::= beginning|expression//parenthesized_expression  here??
+private boundaryReference2 ::= end|expression
+
+relativeReference ::= ([classTypeName](before|([in]front of) )referenceExpression)
+                       |([classTypeName](after|([in]back of)|behind)referenceExpression)
+
+// >>Reference class<<
+//private aRefTo ::= 'a reference to'|'a ref to'|'a ref'|'reference to'|'ref'
+aReferenceToLiteralExpression ::= REF_OP referenceExpression
+// <<//A value of class Reference is a reference to an object. A reference can refer to an application object
+// such as a window or file, or to an AppleScript object such as an item in a list or a property in a record.
+// You can create a value of class Reference by using the A Reference To operator. In addition, applications can
+// return references in response to commands.
+// !!! A value of class Reference created with the A Reference To operator is a structure within AppleScript
+// that refers to (or points to) a specific object. !!! a pointer!
+// Values of class Reference are similar to pointers in other programming languages, but unlike pointers,
+// references can refer only to objects.
+
+//===Coercion (Object Conversion)===
+// Coercion (also known as object conversion) is the process of converting objects from one class to another.
+// AppleScript converts an object to a different class in either of these circumstances:
+//- in response to the as operator
+//- automatically, when an object is of a different class than was expected for a particular command or operation
+
+//private
+
+propertyDeclarationStatement ::= propertyCommonDeclarationStatement//|propertyParentDeclarationStatement
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+
+variableDeclarationStatement ::= variableGlobalDeclarationStatement|variableLocalDeclarationStatement
+//todo method isGlobal()/isLocal() etc
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+
+//todo what's parent property name? + it does not contain componentName how to search?
+//private propertyParentDeclarationStatement ::= (property|prop) parent COLON parentSpecifier
+private propertyCommonDeclarationStatement ::= (property|prop) propertyLabelComponent COLON propertyInitializer
+
+private variableGlobalDeclarationStatement ::= global propertyLabelComponent
+private variableLocalDeclarationStatement ::= local propertyLabelComponent
+
+private propertyInitializer ::= expression
+//An expression is any series of lexical elements that has a value. Expressions are used in scripts to represent
+// or derive values. The simplest kinds of expressions, called literal expressions, are representations of values
+// in scripts. More complex expressions typically combine literals, variables, operators, and object specifiers.
+expression ::= logicalOrExpressionWrapper
+
+parenthesizedExpression ::= LPAREN expressionInParentheses RPAREN
+//{pin=1} //if pin then empty parens '()' are identified as a paren expression
+// (in a direct param handler call)
+//todo need to exclude handler parameters list pattern from here
+//todo i.e. should not match method call arguments
+private expressionInParentheses ::= (statement|expression)
+//{recoverWhile=parenthesesRecovery}
+//private parenthesesRecovery ::= !RPAREN
+
+//string_expression ::= string_literal_expression ((BAND nls string_literal_expression|number_literal)*)//could be any value class->will be coerced to string
+                             //|(expression nls as string))*
+
+//concatenation_expression ::= literal_expression|reference_expression (BAND nls literal_expression|reference_expression)+
+
+
+
+// ===CONSTANTS===
+// some of the constants (which are not expressions and are not evaluated at runtime should be
+// written as lexer tokens
+// constant expressions (like 'current application' constant whoch is an object specifier)
+// probably should be written as predefined A.Script. expressions
+// should we divide parsed constant expressions by types (boolean_constant|number_constant|
+// text_constant|consider_ignore_attributes|... etc) and then insert them in expressions where appropriate?
+// page 100
+//pi|space|tab|linefeed|quote| //!return!
+// all constant expressions we could specify in the among all other expressions => it will be valid
+
+numericConstant ::= PI_CONSTANT|seconds_constants
+private seconds_constants ::= MINUTES_CONSTANT|HOURS_CONSTANT|DAYS_CONSTANT|WEEKS_CONSTANT
+private date_time_constants ::= weekday_constant|month_constant//seconds_constants to number_constants
+private weekday_constant ::= 'Monday'|'Tuesday'|'Wednesday'|'Thursday'|'Friday'|'Saturday'
+                            |'Sunday'|'Mon'|'Tue'|'Wed'|'Thu'|'Fri'|'Sat'|'Sun'
+private month_constant ::= 'January'|'February'|'March'|'April'|'May'|'June'|'July'|'August'|'September'|'October'
+                    |'November'|'December' |'Jan'|'Feb'|'Mar'|'Apr'|'Jun'|'Jul'|'Aug'|'Sep'|'Oct'|'Nov'|'Dec'
+
+private current_application_constant ::= current applicationClass
+private anythingProperty ::= anything  // any container|simple type value (can be used in set statements|bool.stmt|param.list
+private missing_value_constant ::= 'missing value'
+private resultProperty ::= result
+private parentProperty ::= parent
+private save_opt_constant ::= yes|no|ask
+//include some standard tokens used in applescript but also used in standard additional
+// todo so for example eliminate 'on error' handler in try_statement
+//todo !!!to think how is better handle situations with keywords used in not defined here commands!!!
+//todo perhaps need to separate other keywords from as_label
+//without with handler call names like 'on perform mail action with messages theMessages for rule theRule' are not detected
+private reservedWordsNotParameterLabel::=ref|THE_KW|with//file //can be used for identifiers for labeled handlers for ex.
+//todo move some (like run,open,quit,idle)
+private applicationStandardCommandNames ::= close|launch//|run|quit|open//|set//copy //todo on run ... command handler run is not detected as identifier ->need to add run handler
+
+//with predicate, otherwise `on error` detected as reserved reservedWords
+private parameterLabelSafeInclude ::= !(handlerParameterLabel (error|literalExpression|refForm))handlerParameterLabel
+private reservedWords ::= reservedWordsNotParameterLabel|parameterLabelSafeInclude/*|applicationStandardCommandNames*/
+
+//appleScriptStandardNamesAndCommands ::=
+//!((reservedWords error|literal_expression|reference_form))
+//(reservedWords)
+// commands which are not parsed (so it should be parsed as usual reference(or as constant?) expressions
+//todo ?? how to handle it? probably include for the script to contain any standard (except reserved keywords
+// todo as expressions) keywords from native appliscript commands
+private text_constant ::=  return|space|tab|linefeed|quote
+private versionProperty ::= version
+
+//todo this should be detected as a property class ! (not a targetComponent) make a separate property class?
+//todo actually this is also a target since it can hold a value -> make a property class and extend with target??
+//todo and redefine necessary methods (is property, getName etc.)
+appleScriptProperty ::= resultProperty|versionProperty|missing_value_constant/*??*/|anythingProperty
+|textItemDelimitersProperty|parentProperty//|itMeProperty//|text_constant /*?? */
+
+private itMeProperty ::= it|me//|my//should not include my here strictly speaking
+
+handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|at|below|beneath|beside|between   // spaces ??
+                     |by|for|from|'instead of'|into|on|onto|'out of'|over|since|thru|through|under
+|to //no such label in documentation but it works!
+
+//The Move command has a direct parameter (referenceToObject) that specifies the object to move and a
+// labeled parameter (whose label is to) that specifies where to move the object.
+
+
+private handlerNameNonStrictDeclaration ::= componentName|reservedWordsNotParameterLabel/*|with*/ //reference_expression could be for example: 'perform mail action with messages' impossible to
+ // match such names...
+
+handlerNamePartReference ::= referenceIdentifier //|propertyLabelComponent
+//An identifier for the direct parameter variable. If it is included, directParamName must be listed immediately
+// after the command name. The word of or in before directParamName is required in user-defined handlers,
+// but is optional in terminology-defined handlers (for example, those defined by applications).
+private  directParameterVar ::= THE_KW?componentName
+private userParameterVar ::= THE_KW?componentName
+private userLabelReference ::= THE_KW?referenceIdentifier
+private userLabelComponent ::= THE_KW?componentName
+//private parentSpecifier ::= referenceIdentifier|expression
+
+//===HANDLERS===
+// handler is a collection of statements which can be invoked by name
+//private handler_declaration_block ::= lbl_param_handler_declaration | pos_param_handler_declaration |
+//                                      interleaved_param_handler_declaration
+
+handlerLabeledParametersDefinition ::= (on|to) handlerNameNonStrictDeclaration !LPAREN [(of|in)? directParameterVar]
+                                         (handlerParameterLabel userParameterVar)*
+                                         [given userLabelComponent COLON userParameterVar (COMMA userLabelComponent COLON userParameterVar)*] //nls //should be sep here
+                                         [global componentName (COMMA componentName)*] //nls
+                                         [local componentName (COMMA componentName)*] nls
+                                           blockBody? nls
+                                        end [handlerNameStrict] //!expression// sep or EOF here todo think: sep is needed for validation but could be issues with not included handlerNameStrict
+                                        //{pin=2}
+private handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
+//handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
+//handlerNameStrictDeclaration ::=((componentName|reservedWordsNotParameterLabel) )*
+//{recoverWhile="handlernameRecover"}
+//handlernameRecover::= !(handlerParameterLabel|of|in)
+//handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
+
+//private userParameterVar2 ::= referenceIdentifier
+//private userLabel2 ::=  referenceIdentifier
+
+//todo to think about directParameterVal and that expression will also include reserved keywords now!:(
+//todo may be include these keywords on the top level script only not for the all the expressions...??
+//todo findNumbers of myList above 19 given rounding:false --findNumbers of myList is a name of the func here!!:(
+//todo should we made it left associative with identifier only??
+
+//handlerLabeledParametersCall ::= handlerWithDirectLabeledParametersCall|handlerNoDirectLabeledParametersCall
+left handlerLabeledParametersCall ::=
+   (
+   (of|in)? directParameterVal
+   (
+     (    (handlerParameterLabel parameterVal)+
+       (  (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
+        | (without labelForFalseParam (COMMA labelForFalseParam)* [(LAND|LOR|COMMA) labelForFalseParam])
+        | (given userLabelReference COLON userParameterVal (COMMA userLabelReference COLON userParameterVal)*)+
+        )?
+     )
+     |
+     (    (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
+        | (without labelForFalseParam (COMMA labelForFalseParam)* [(LAND|LOR|COMMA) labelForFalseParam])
+        | (given userLabelReference COLON userParameterVal (COMMA userLabelReference COLON userParameterVal)*)+
+     )
+   )
+   )|
+   (
+   (handlerParameterLabel parameterVal)+ //&(with|without|given)
+       (  (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
+        | (without labelForFalseParam (COMMA labelForFalseParam)* [(LAND|LOR|COMMA) labelForFalseParam])
+        | (given userLabelReference COLON userParameterVal (COMMA userLabelReference COLON userParameterVal)*)+
+       )?
+   )
+
+private labelForTrueParam ::= referenceIdentifier
+private labelForFalseParam ::= referenceIdentifier
+ parameterVal ::=
+ handlerCallGuardPredicate|
+ expression
+private handlerCallGuardPredicate ::=
+//sayHello to name ->
+(&((referenceIdentifier/*|applicationStandardCommandNames*/) handlerParameterLabel)(referenceIdentifier/*|applicationStandardCommandNames*/))
+//set (AppleScripts text_item_delimiters) to {", "} ->
+//|(&(parenthesized_expression handlerParameterLabel)parenthesized_expression)
+ userParameterVal ::= expression
+ //todo to think why otherwise 'copy sayHello to name' is not detected as handler call (but only 'sayHello to name')
+ //todo may be this is the correct bahavior??
+ directParameterVal ::=
+  handlerCallGuardPredicate|
+  expression
+  //{recoverWhile="setRecover"}
+  //expression //todo if prarmater=handlerLabeledParametersCall? (ident.+label)
+
+handlerPositionalParametersDefinition ::= (on|to) handlerNameNonStrictDeclaration LPAREN formalParameterList? RPAREN
+                                                [global componentName (COMMA componentName)*]
+                                                [local componentName (COMMA componentName)*] nls
+                                               blockBody? nls
+                                            end !(considering|ignoring|error|try|repeat|tell|timeout|(using terms from))[handlerNameStrict] {pin=3}
+
+left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
+
+formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
+{ methods = [getComponentNameList] }
+
+//todo change implementation (nor a targetNamedComponent)
+private formalParameterListPart ::= targetCompositeComponent {recoverWhile="argument_list_part_recover"}
+private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
+private argument_list_recover ::= !(RPAREN)
+private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"}
+private argument_list_part_recover ::= !(RPAREN|COMMA)
+
+//handlerRunDefinition ::= on run nls
+//                            blockBody? nls
+//                          end run {pin=2}
+//
+//handlerOpenDefinition ::= on open directParameterVar? nls
+//                            blockBody? nls
+//                           end open {pin=2}
+//
+//handlerIdleDefinition ::= on idle nls
+//                            blockBody? nls
+//                           end idle {pin=2}
+//
+//handlerQuitDefinition ::= on quit nls
+//                            blockBody? nls
+//                           end quit {pin=2}
+
+//todo to think about handlerNamePartDeclaration as reference and componentName in start/ent of this expression
+handlerInterleavedParametersDefinition ::= (on|to) handlerNamePartDefinition COLON userParameterVar (handlerNamePartDefinition COLON userParameterVar)* nls
+                                               blockBody? nls
+                                             end [handlerNamePartDefinition COLON (handlerNamePartDefinition COLON)*]
+handlerNamePartDefinition ::= componentName //|propertyLabelComponent
+
+//handlerInterleavedParametersDefinitionName ::= componentName COLON userParameterVar (componentName COLON userParameterVar)*
+
+//(tell scriptObject to|scriptObject"'s" |my)handlerNamePart
+//todo if left associate then 'foo:5 bar:105' detects as a valid call, but it should not!
+//if check on a parser level - need to add checks for:tell_simple_statement,and property_reference
+//todo 'my foo:5 bar:105' handler incorrectly attached only to 'foo'.need to be 'my foo'
+left handlerInterleavedParametersCall ::= COLON userParameterVal (handlerNamePartReference COLON userParameterVal)*
+
+scriptObjectDefinitionStatement ::= script [scriptObjectName] nls
+                                       blockBody? nls
+                                    end [script] {pin=1}
+
+
+
+private scriptObjectName ::= componentName
+
+// ??? continue handlerName [ parameterList ] ???
+// ??? parameterList ??? on sayHello to someone | continue sayHello to someone
+// структура - parameterList - лист параметров
+// Any arguments following the script will be passed as a list of strings
+// to the direct parameter of the ``run'' handler.  For example:
+// http://hints.macworld.com/article.php?story=20050523140439734
+continue_statement ::= continue expression //[handler_generic_parameter_list]
+//wth??? - expression will contain all the structures (including param.list for the handler)
+//private handler_generic_parameter_list ::= ((of|in)? directParameterVar)
+//                                        | (LPAREN parameterVarList RPAREN)
+//                                        | (COLON userParameterVar (handlerNamePart COLON userParameterVar)*)
+
+
+
+//===COMMANDS===
+private apple_script_command_expression ::= countCommandExpression|getCommandExpression
+                        |runCommandExpression|errorCommandExpression//|setCommandSyntaxReturning
+
+// standard built-in AppleScript commands
+//There are only five AppleScript commands: Get, Set, Count, Copy, and Run.
+//>>copy<<
+private copyCommandStatement ::= (copy|put) 
+(((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetCompositeComponent|expression) {pin=1}
+
+//>>count<<
+// AppleScript syntax
+countCommandExpression ::= (count [[each|every] (classTypeName|pluralClassName) (in|of)] composite_value)
+                        |(number of [(classTypeName|pluralClassName) (in|of)] composite_value)
+//Application syntax:
+//count [ each | every ] className | pluralClassName [ ( in | of ) referenceToObject ]
+//number of className | pluralClassName [ ( in | of ) referenceToObject ]
+//referenceToObject - A reference to the object or objects whose elements are to be counted. If you do not
+// specify this parameter, the application counts the elements in the default target of the Tell statement.
+//  Class: List, record, reference, or string
+
+//The class name of the elements to be counted. The elements of lists, records, and strings are listed in
+// the value class definitions in “Values and Constants” (page 51). The elements of application objects
+// are listed in their object class definitions in the application dictionary. Class: Class identifier
+private classTypeName ::= classTypeNameStrict|referenceIdentifier// add here all known classes names (file,string, etc)
+private classTypeNameStrict ::= builtInClassName|applicationClassName
+private applicationClassName ::= file // folder-no - it does not understand Script Editor
+private pluralClassName ::= classTypeName"s"|classTypeName //text plural=text !
+//An expression that evaluates to a composite value whose elements are to be counted.
+// Class: List, record, reference, or string
+private composite_value ::= listLiteralExpression|recordLiteralExpression
+                           |referenceExpression|stringLiteralExpression|referenceIdentifier
+// >>>Result<< The result of the AppleScript command is an integer that specifies the number of elements of a specified
+// class in a composite value.
+
+//>>get<<
+//The Get command can function as an AppleScript command or an application command. The AppleScript command
+// returns the value of an expression. The application command returns the value of an object.
+// AppleScript syntax
+//private cmd_get_expression ::= [get] expression [as class_name]
+getCommandExpression ::= get expression
+                      //|([get] objectReferenceWrapper [coercion_expression])//Application syntax ()
+                              //when application (ref -> gmd_get->obj_ref_>...)object_ref turns into get command
+
+//>>Run<<
+//The AppleScript Run command acts on script objects. It causes statements in a script object definition,
+// other than handler and property definitions, to be executed.
+runCommandExpression ::= (run [script_object_variable])
+|(run [referenceToApplicationVar]) // application command syntax
+private referenceToApplicationVar ::= application_reference
+private script_object_variable ::= referenceIdentifier
+//scriptObjectVariable A variable identifier whose value is a script object. This parameter is optional if the
+// Run command is used within an appropriate Tell statement. Class: Script
+
+//>>Set<<
+//The AppleScript command assigns one or more values to one or more variables. It can also be used to share
+// data among lists, records, or script objects—see the Notes section below and “Data Sharing” (page 206).
+//private cmd_set_statement ::= setCommandSyntaxSet|setCommandSyntaxReturning
+
+creationStatement ::= 
+setCommandSyntaxSet|setCommandSyntaxReturning
+|copyCommandStatement//|setCommandApplicationSyntax
+{methods=[getTargetComponent getComponentNameList]}
+
+private setCommandSyntaxSet ::=  set (((targetCompositeComponent|expression) to expression)|expression)  {pin=1}  //AppleScript|Application
+
+private setCommandSyntaxReturning ::=  expression returning (targetCompositeComponent|referenceExpression) {pin=2} //Application
+
+// OPERATORS & EXPRESSIONS
+// AppleScript includes operators for performing arithmetic operations(numeric_ex), comparing values(testing_ex),
+// performing Boolean evaluations(logical ex), and coercing values.
+// todo operator precedence (coercion and not order amend) also & insert here
+//todo to think about rational separate expressions for string list and records
+private logicalOrExpressionWrapper ::= logicalAndExpressionWrapper logicalOrExpression*
+left logicalOrExpression ::= LOR nls logicalAndExpressionWrapper
+
+private logicalAndExpressionWrapper ::= compareExpressionWrapper logicalAndExpression*
+left logicalAndExpression ::= LAND nls compareExpressionWrapper
+
+private compareExpressionWrapper ::= coercionExpressionWrapper compareExpression*
+left compareExpression ::= (equalityOperator|relational_operator) nls coercionExpressionWrapper
+
+private coercionExpressionWrapper ::= concatenationExpressionWrapper coercionExpression*
+left coercionExpression ::= AS nls concatenationExpressionWrapper {pin=3}
+
+private concatenationExpressionWrapper ::= additiveExpressionWrapper concatenationExpression*
+left concatenationExpression ::= BAND additiveExpressionWrapper
+
+private additiveExpressionWrapper ::= multiplicativeExpressionWrapper additiveExpression*
+left additiveExpression ::= (PLUS|MINUS) nls multiplicativeExpressionWrapper
+
+//todo to think how better to include this
+//additive_date_expression ::= (date_literal_expression ((PLUS|MINUS) nls additiveExpressionWrapper)+)
+
+private multiplicativeExpressionWrapper ::= powerExpressionWrapper multiplicativeExpression*
+left multiplicativeExpression ::= multiplicativeOperator nls powerExpressionWrapper
+
+private powerExpressionWrapper ::= objectRefWrapper powerExpression*
+left powerExpression ::= POW objectRefWrapper
+
+
+private prefixExpression ::= (prefixOperator nls prefixExpression) | valueExpression
+private prefixOperator ::= PLUS|MINUS|LNOT
+
+private objectRefWrapper ::=
+THE_KW? ((prefixExpression APS THE_KW?prefixExpression handlerInterleavedParametersCall?)|prefixExpression) [filterReference]
+((THE_KW? applicationObjectReference)|objectRef*)
+//left objectRef ::=
+//((of|in) THE_KW? ((prefixExpression APS THE_KW? prefixExpression)|prefixExpression)
+//[filterReference] THE_KW? applicationObjectReference?)
+private valueExpression ::= primaryExpression coercionExpression_2?
+//coercionExpression is included in coercionExpressionWrapper
+
+private primaryExpression ::=
+                             literalExpression//literals and paren expressions are included into ref.expr...
+                             |referenceExpression //handlerCallExpression?//handler call here??
+                             |parenthesizedExpression
+                             |apple_script_command_expression
+//                             |appleScriptPropertiesConstant
+                             //|builtInTypeName //todo to think where to include this in the end
+                             |reservedWords
+
+private handlerCallExpression ::= handlerLabeledParametersCall|handlerPositionalParametersCall
+//|handlerInterleavedParametersCall
+
+
+//todo to consider remove literal expression from reference_expression ?
+ referenceExpression ::=  // page 190
+                                //|literal_object_reference //included in propertyRef (rational?)
+                                refForm
+                                |application_reference
+                                |file_reference
+                                |referenceIdentifier handlerCallExpression?//how to include here and not in property ref?
+//{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
+//implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
+
+private equalityOperator ::= NE|EQ
+private relational_operator ::= LT|GT|LE|GE|containment_start_end_operator|containment_any_part_operator
+                        //|as class_type
+//otherwise it is hard to write rules separately for containment or relational
+// todo need to control it(argument types) with an inspections
+//private containment_expression ::= containment_any_part_expression|containment_start_end_expression
+
+// List and String
+private containment_start_end_operator ::= STARTS_BEGINS_WITH|ENDS_WITH
+//List, Record, String
+private containment_any_part_operator ::= isContain|doesNotContain|isIn|isNotIn
+
+private isContain ::=contain|contains
+private doesNotContain ::= "does not contain"|"doesn't contain"
+private isIn ::= "is in"|"is contained by"
+private isNotIn ::= "is not in"|"is not contained by"|"isn't contained by"
+private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
+
+private coercionExpression_2 ::= coercionBuiltInExpression|coercionExternalExpression
+left coercionBuiltInExpression ::= AS nls builtInClassName {pin=3}
+left coercionExternalExpression ::= AS nls referenceIdentifier {pin=3}
