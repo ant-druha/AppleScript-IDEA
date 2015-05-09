@@ -13,8 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Andrey on 21.04.2015.
@@ -30,7 +28,7 @@ public abstract class AbstractAppleScriptTargetComponent extends
 
     @Override
     public boolean isGlobal() {
-        return isProperty() || getText().toLowerCase().contains("global");//or "local".equals(getFirstChild().getText())
+        return isProperty() || findChildByType(AppleScriptTypes.GLOBAL)!=null;
     }
 
 //    @Override
@@ -40,32 +38,34 @@ public abstract class AbstractAppleScriptTargetComponent extends
 
     @Override
     public boolean isProperty() {
-        return this instanceof AppleScriptPropertyDeclarationStatement;
+        return findChildByType(AppleScriptTypes.PROP)!=null
+                || findChildByType(AppleScriptTypes.PROPERTY)!=null;
     }
 
     @Override
     public boolean isVariable() {
-        return this instanceof AppleScriptVariableDeclarationStatement
-                || (this instanceof AppleScriptTargetComponentName
+        return (findChildByType(AppleScriptTypes.LOCAL)!=null
+                || findChildByType(AppleScriptTypes.GLOBAL)!=null)
+                || (this instanceof AppleScriptTargetVariable
                 && getFirstChild() instanceof AppleScriptComponentName);
-//                && getFirstChild() instanceof AppleScriptComponentName; /*!isProperty() && !(getComponentNameList().size()>1);*/
+//                && getFirstChild() instanceof AppleScriptComponentName; /*!isProperty() && !(getTargetVariableListRecursive().size()>1);*/
     }
 
 //    @Override
 //    public boolean isVariableList() {
 //        return this instanceof AppleScriptTargetCompositeComponent
-//                && getFirstChild() instanceof AppleScriptTargetListLiteral;/*getComponentNameList().size()>1;*/
+//                && getFirstChild() instanceof AppleScriptTargetListLiteral;/*getTargetVariableListRecursive().size()>1;*/
 //    }
 //
 //    @Override
 //    public boolean isVariableRecord() {
 //        return this instanceof AppleScriptTargetCompositeComponent
-//                && getFirstChild() instanceof AppleScriptTargetRecordLiteral;/*getComponentNameList().size()>1;*/
+//                && getFirstChild() instanceof AppleScriptTargetRecordLiteral;/*getTargetVariableListRecursive().size()>1;*/
 //    }
 
     @Nullable
     @Override
-    public AppleScriptExpression getValueExpression() {
+    public AppleScriptExpression findAssignedValue() {
         if (isProperty()) {
             AppleScriptPropertyDeclarationStatement myProperty = (AppleScriptPropertyDeclarationStatement) this;
             return myProperty.getExpression();
@@ -105,11 +105,6 @@ public abstract class AbstractAppleScriptTargetComponent extends
         if (componentName != null) {
             return componentName.getName();
         }
-
-//        if (isProperty() || isVariable()) {
-//            return getComponentNameList().isEmpty() || getComponentNameList().get(0) == null
-//                    ? super.getName() : getComponentNameList().get(0).getName();
-//        }
         return super.getName();
     }
 
@@ -119,13 +114,11 @@ public abstract class AbstractAppleScriptTargetComponent extends
     public PsiElement getNameIdentifier() {
         //returning this in case of property statement makes IDEA to highlight the whole statement
         return getComponentName();
-//        return this;
-//        return super.getNameIdentifier() ==null ? this : super.getNameIdentifier();
     }
 
 //    @NotNull
 //    @Override
-//    public List<AppleScriptComponentName> getComponentNameList() {
+//    public List<AppleScriptComponentName> getTargetVariableListRecursive() {
 //        final List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
 //        //final PsiElement firstChild = this.getFirstChild(); //bad hierarchy
 //        if (isProperty()) {
@@ -151,14 +144,14 @@ public abstract class AbstractAppleScriptTargetComponent extends
 ////            List<AppleScriptTargetCompositeComponent> compositeList =
 ////                    targetList.getTargetCompositeComponentList();
 ////            for (AppleScriptTargetCompositeComponent compositeComponent : compositeList) {
-////                result.addAll(compositeComponent.getComponentNameList());
+////                result.addAll(compositeComponent.getTargetVariableListRecursive());
 ////            }
 ////        } else if (isVariableRecord()) {
 ////            AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) getFirstChild();
 ////            List<AppleScriptTargetCompositeComponent> compositeList =
 ////                    targetRecord.getTargetCompositeComponentList();
 ////            for (AppleScriptTargetCompositeComponent compositeComponent : compositeList) {
-////                result.addAll(compositeComponent.getComponentNameList());
+////                result.addAll(compositeComponent.getTargetVariableListRecursive());
 ////            }
 ////        }
 //
@@ -194,7 +187,7 @@ public abstract class AbstractAppleScriptTargetComponent extends
                 AppleScriptTargetComponent thisComponent = (AppleScriptTargetComponent) getElement();
 
                 if (isProperty()) {
-                    String valueText = getValueExpression() != null ? getValueExpression().getText() : null;
+                    String valueText = findAssignedValue() != null ? findAssignedValue().getText() : null;
                     result.append(getName()).append(" : ").append(valueText);
                 } else if (isVariable()) {
                     result.append(getName());

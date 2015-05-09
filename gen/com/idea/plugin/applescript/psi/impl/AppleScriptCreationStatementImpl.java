@@ -4,10 +4,8 @@ package com.idea.plugin.applescript.psi.impl;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.lang.ASTNode;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 import com.idea.plugin.applescript.psi.*;
 
 public class AppleScriptCreationStatementImpl extends AppleScriptPsiElementImpl implements AppleScriptCreationStatement {
@@ -35,12 +33,6 @@ public class AppleScriptCreationStatementImpl extends AppleScriptPsiElementImpl 
 
   @Override
   @Nullable
-  public AppleScriptTargetComponentName getTargetComponentName() {
-    return findChildByClass(AppleScriptTargetComponentName.class);
-  }
-
-  @Override
-  @Nullable
   public AppleScriptTargetListLiteral getTargetListLiteral() {
     return findChildByClass(AppleScriptTargetListLiteral.class);
   }
@@ -51,14 +43,20 @@ public class AppleScriptCreationStatementImpl extends AppleScriptPsiElementImpl 
     return findChildByClass(AppleScriptTargetRecordLiteral.class);
   }
 
+  @Override
   @Nullable
-  public AppleScriptPsiElement getTargetComponent() {
-    return AppleScriptPsiImplUtil.getTargetComponent(this);
+  public AppleScriptTargetVariable getTargetVariable() {
+    return findChildByClass(AppleScriptTargetVariable.class);
+  }
+
+  @Nullable
+  public AppleScriptPsiElement getAssignmentTarget() {
+    return AppleScriptPsiImplUtil.getAssignmentTarget(this);
   }
 
   @NotNull
-  public List<AppleScriptComponentName> getComponentNameList() {
-    return AppleScriptPsiImplUtil.getComponentNameList(this);
+  public List<AppleScriptComponentName> getTargetVariableList() {
+    return AppleScriptPsiImplUtil.getTargetVariableListRecursive(this);
   }
 
 }

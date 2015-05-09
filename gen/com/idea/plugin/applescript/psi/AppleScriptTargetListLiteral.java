@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 public interface AppleScriptTargetListLiteral extends AppleScriptPsiElement {
 
   @NotNull
-  List<AppleScriptTargetComponentName> getTargetComponentNameList();
-
-  @NotNull
   List<AppleScriptTargetListLiteral> getTargetListLiteralList();
 
   @NotNull
   List<AppleScriptTargetRecordLiteral> getTargetRecordLiteralList();
 
   @NotNull
-  List<AppleScriptComponentName> getComponentNameList();
+  List<AppleScriptTargetVariable> getTargetVariableList();
+
+  @NotNull
+  List<AppleScriptTargetVariable> getTargetVariableListRecursive();
 
 }

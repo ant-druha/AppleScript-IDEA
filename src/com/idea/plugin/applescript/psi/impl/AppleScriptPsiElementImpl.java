@@ -11,6 +11,7 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -42,19 +43,16 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                     result.add(componentName);
                 }
             } else if (child instanceof AppleScriptHandlerPositionalParametersDefinition) {
-                AppleScriptHandlerPositionalParametersDefinition handlerDeclaration =
-                        (AppleScriptHandlerPositionalParametersDefinition) child;
+                AppleScriptHandlerPositionalParametersDefinition handlerDeclaration = (AppleScriptHandlerPositionalParametersDefinition) child;
                 result.addAll(handlerDeclaration.getComponentNameList());
             } else if (child instanceof AppleScriptHandlerLabeledParametersDefinition) {
-                AppleScriptHandlerLabeledParametersDefinition handlerDeclaration =
-                        (AppleScriptHandlerLabeledParametersDefinition) child;
+                AppleScriptHandlerLabeledParametersDefinition handlerDeclaration = (AppleScriptHandlerLabeledParametersDefinition) child;
                 result.addAll(handlerDeclaration.getComponentNameList());
             } else if (child instanceof AppleScriptCreationStatement) {
                 AppleScriptCreationStatement creationStatement = (AppleScriptCreationStatement) child;
-                AppleScriptPsiElement targetComponentClass = creationStatement.getTargetComponent();
-                if (targetComponentClass instanceof AppleScriptTargetComponentName) {
-                    AppleScriptComponentName currentComponent =
-                            ((AppleScriptTargetComponentName) targetComponentClass).getComponentName();
+                AppleScriptPsiElement assignmentTargetClass = creationStatement.getAssignmentTarget();
+                if (assignmentTargetClass instanceof AppleScriptTargetVariable) {
+                    AppleScriptComponentName currentComponent = ((AppleScriptTargetVariable) assignmentTargetClass).getComponentName();
                     boolean duplicatedDeclaration = false;
                     boolean duplicatedDeclarationReplaced = false;
                     for (Iterator<AppleScriptComponentName> it = result.iterator(); it.hasNext(); ) {
@@ -71,16 +69,20 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                         result.add(currentComponent);
                     }
                 } else {
-                    List<AppleScriptComponentName> currentComponentNameList = null;
-                    if (targetComponentClass instanceof AppleScriptTargetListLiteral) {
-                        AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) targetComponentClass;
-                        currentComponentNameList = targetList.getComponentNameList();
-                    } else if (targetComponentClass instanceof AppleScriptTargetRecordLiteral) {
-                        AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) targetComponentClass;
-                        currentComponentNameList = targetRecord.getComponentNameList();
+                    List<AppleScriptComponentName> currentTargetComponentNameList = new ArrayList<AppleScriptComponentName>();
+                    if (assignmentTargetClass instanceof AppleScriptTargetListLiteral) {
+                        AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) assignmentTargetClass;
+                        for (AppleScriptTargetVariable targetVariable : targetList.getTargetVariableListRecursive()) {
+                            currentTargetComponentNameList.add(targetVariable.getComponentName());
+                        }
+                    } else if (assignmentTargetClass instanceof AppleScriptTargetRecordLiteral) {
+                        AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) assignmentTargetClass;
+                        for (AppleScriptTargetVariable targetVariable : targetRecord.getTargetVariableListRecursive()) {
+                            currentTargetComponentNameList.add(targetVariable.getComponentName());
+                        }
                     }
-                    if (currentComponentNameList != null && !currentComponentNameList.isEmpty()) {
-                        for (AppleScriptComponentName currentComponent : currentComponentNameList) {
+                    if (!currentTargetComponentNameList.isEmpty()) {
+                        for (AppleScriptComponentName currentComponent : currentTargetComponentNameList) {
                             boolean duplicatedDeclaration = false;
                             boolean duplicatedDeclarationRemoved = false;
                             for (Iterator<AppleScriptComponentName> it = result.iterator(); it.hasNext(); ) {
@@ -100,8 +102,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                     }
                 }
 //                }
-            } else if (recursively && child instanceof AppleScriptBlockBody
-                    && !(context instanceof AppleScriptIfCompoundStatement)) { // do not scan other inner blocks of if statement
+            } else if (recursively && child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) { // do
+            // not scan other inner blocks of if statement
                 processTopDeclarations(child, result, true);
             }
 
@@ -112,10 +114,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
 
     }
 
-    public static boolean processDeclarationsImpl(@Nullable PsiElement context,
-                                                  PsiScopeProcessor processor,
-                                                  ResolveState state,
-                                                  @Nullable PsiElement lastParent) {
+    public static boolean processDeclarationsImpl(@Nullable PsiElement context, PsiScopeProcessor processor, ResolveState state, @Nullable
+    PsiElement lastParent) {
         if (context == null) {
             return true;
         }
@@ -138,25 +138,23 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                         result.add(componentName);
                     }
                 } else if (child instanceof AppleScriptHandlerPositionalParametersDefinition) {
-                    AppleScriptHandlerPositionalParametersDefinition handlerDeclaration =
-                            (AppleScriptHandlerPositionalParametersDefinition) child;
+                    AppleScriptHandlerPositionalParametersDefinition handlerDeclaration = (AppleScriptHandlerPositionalParametersDefinition)
+                            child;
                     result.addAll(handlerDeclaration.getComponentNameList());
                 } else if (child instanceof AppleScriptHandlerLabeledParametersDefinition) {
-                    AppleScriptHandlerLabeledParametersDefinition handlerDeclaration =
-                            (AppleScriptHandlerLabeledParametersDefinition) child;
+                    AppleScriptHandlerLabeledParametersDefinition handlerDeclaration = (AppleScriptHandlerLabeledParametersDefinition) child;
                     result.addAll(handlerDeclaration.getComponentNameList());
                 } else if (child instanceof AppleScriptFormalParameterList) {
                     AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
-                    List<AppleScriptComponentName> cmList = parameterList.getComponentNameList();
+                    List<AppleScriptComponentName> cmList = parameterList.getTargetVariableListRecursive();
                     if (!cmList.isEmpty()) {
                         result.addAll(cmList);
                     }
                 } else if (child instanceof AppleScriptCreationStatement) {
                     AppleScriptCreationStatement creationStatement = (AppleScriptCreationStatement) child;
-                    AppleScriptPsiElement targetComponentClass = creationStatement.getTargetComponent();
-                    if (targetComponentClass instanceof AppleScriptTargetComponentName) {
-                        AppleScriptComponentName currentComponent =
-                                ((AppleScriptTargetComponentName) targetComponentClass).getComponentName();
+                    AppleScriptPsiElement assignmentTargetClass = creationStatement.getAssignmentTarget();
+                    if (assignmentTargetClass instanceof AppleScriptTargetVariable) {
+                        AppleScriptComponentName currentComponent = ((AppleScriptTargetVariable) assignmentTargetClass).getComponentName();
                         boolean duplicatedDeclaration = false;
                         boolean duplicatedDeclarationRemoved = false;
                         for (Iterator<AppleScriptComponentName> it = result.iterator(); it.hasNext(); ) {
@@ -173,16 +171,20 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                             result.add(currentComponent);
                         }
                     } else {
-                        List<AppleScriptComponentName> currentComponentNameList = null;
-                        if (targetComponentClass instanceof AppleScriptTargetListLiteral) {
-                            AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) targetComponentClass;
-                            currentComponentNameList = targetList.getComponentNameList();
-                        } else if (targetComponentClass instanceof AppleScriptTargetRecordLiteral) {
-                            AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) targetComponentClass;
-                            currentComponentNameList = targetRecord.getComponentNameList();
+                        List<AppleScriptComponentName> currentTargetComponentNameList = new ArrayList<AppleScriptComponentName>();
+                        if (assignmentTargetClass instanceof AppleScriptTargetListLiteral) {
+                            AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) assignmentTargetClass;
+                            for (AppleScriptTargetVariable targetVariable : targetList.getTargetVariableListRecursive()) {
+                                currentTargetComponentNameList.add(targetVariable.getComponentName());
+                            }
+                        } else if (assignmentTargetClass instanceof AppleScriptTargetRecordLiteral) {
+                            AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) assignmentTargetClass;
+                            for (AppleScriptTargetVariable targetVariable : targetRecord.getTargetVariableListRecursive()) {
+                                currentTargetComponentNameList.add(targetVariable.getComponentName());
+                            }
                         }
-                        if (currentComponentNameList != null && !currentComponentNameList.isEmpty()) {
-                            for (AppleScriptComponentName currentComponent : currentComponentNameList) {
+                        if (!currentTargetComponentNameList.isEmpty()) {
+                            for (AppleScriptComponentName currentComponent : currentTargetComponentNameList) {
                                 boolean duplicatedDeclaration = false;
                                 boolean duplicatedDeclarationRemoved = false;
                                 for (Iterator<AppleScriptComponentName> it = result.iterator(); it.hasNext(); ) {
@@ -201,8 +203,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                             }
                         }
                     }
-                } else if (child instanceof AppleScriptBlockBody
-                        && !(context instanceof AppleScriptIfCompoundStatement)) // do not scan other inner blocks of if statement
+                } else if (child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) // do not scan other
+                // inner blocks of if statement
                 {
                     processTopDeclarations(child, result, false);//we do not need a recursion
                 } else if (child instanceof AppleScriptComponentName) {
@@ -219,13 +221,10 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     }
 
     @Override
-    public boolean processDeclarations(@NotNull PsiScopeProcessor processor,
-                                       @NotNull ResolveState state,
-                                       PsiElement lastParent,
-                                       @NotNull PsiElement place) {
+    public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement lastParent, @NotNull
+    PsiElement place) {
 
-        return processDeclarationsImpl(this, processor, state, lastParent)
-                && super.processDeclarations(processor, state, lastParent, place);
+        return processDeclarationsImpl(this, processor, state, lastParent) && super.processDeclarations(processor, state, lastParent, place);
     }
 
     @Override

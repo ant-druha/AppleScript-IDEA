@@ -35,9 +35,14 @@ public class AppleScriptComponentResolver implements ResolveCache.AbstractResolv
         return new ArrayList<AppleScriptComponentName>(resultSet);
     }
 
+    /**
+     *
+     * @param scopeElement element for which max scope is calculated
+     * @return max resolve scope for scopeElement
+     */
     @Nullable
     private PsiElement getMaxScope(AppleScriptReferenceElement scopeElement) {
-        return getHandlerDefinitionScope(scopeElement.getContext());
+        return getHandlerDefinitionScope(scopeElement.getContext());//currently only handler def. are processed
     }
 
     @Nullable

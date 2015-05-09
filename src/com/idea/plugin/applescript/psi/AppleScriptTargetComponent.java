@@ -18,9 +18,7 @@ import java.util.List;
  * (global/local variable declaration), variable declaration and initialization (variable in creation statement,
  * property declaration), handler parameter declaration
  */
-public interface AppleScriptTargetComponent extends AppleScriptPsiElement , PsiNameIdentifierOwner
-//        AppleScriptNamedElement
-{
+public interface AppleScriptTargetComponent extends AppleScriptPsiElement , PsiNameIdentifierOwner {
 
     //todo может и стоит добавить метоы isList, isRecord и переопределить их для листа и записи?
     //todo будет просто влженный targetComponent - обычный в листе - будут имплементироваться каждый своими
@@ -28,9 +26,6 @@ public interface AppleScriptTargetComponent extends AppleScriptPsiElement , PsiN
     //todo + можно будет брать valueExpression у всего рекорда или листа
     //todo тогда анноторовать creation statement как targetComponent ?
     //todo а обрабатывать targetComponent уже можно будет какой где потребуется (для структуры или резолва)
-
-    //todo кароч. аннотировать targetList/Record Component как targetComponent и они будут включать просто componentName,
-    //todo а не targetComponentName конечным компонентом !
 
     // todo кажется, логичным сделать tragetList & targetRecord -> targetComponentName, только без имени и
     // todo без nameIdentifier (=null) так они не должны ни во что будут резолвиться и должны просто игнориться
@@ -84,11 +79,13 @@ public interface AppleScriptTargetComponent extends AppleScriptPsiElement , PsiN
 //    boolean isParentProperty();
 
     /**
+     * todo to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
+     * todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
      *
-     * @return value (if any) this component holds
+     * @return value expression (if any) this component holds
      */
     @Nullable
-    AppleScriptExpression getValueExpression();
+    AppleScriptExpression findAssignedValue();
 
     @Nullable
     @Override
@@ -112,7 +109,7 @@ public interface AppleScriptTargetComponent extends AppleScriptPsiElement , PsiN
 //     * todo: to think if this is a parent property or property with the built in class -> no componentName
 //     */
 //    @NotNull
-//    List<AppleScriptComponentName> getComponentNameList();
+//    List<AppleScriptComponentName> getTargetVariableListRecursive();
 
     /**
      * This should be implemented by all classes implementing targetComponent

@@ -84,9 +84,9 @@ public interface AppleScriptTypes {
   IElementType RUN_COMMAND_EXPRESSION = new AppleScriptElementType("RUN_COMMAND_EXPRESSION");
   IElementType SCRIPT_OBJECT_DEFINITION_STATEMENT = new AppleScriptElementType("SCRIPT_OBJECT_DEFINITION_STATEMENT");
   IElementType STRING_LITERAL_EXPRESSION = new AppleScriptElementType("STRING_LITERAL_EXPRESSION");
-  IElementType TARGET_COMPONENT_NAME = new AppleScriptElementType("TARGET_COMPONENT_NAME");
   IElementType TARGET_LIST_LITERAL = new AppleScriptElementType("TARGET_LIST_LITERAL");
   IElementType TARGET_RECORD_LITERAL = new AppleScriptElementType("TARGET_RECORD_LITERAL");
+  IElementType TARGET_VARIABLE = new AppleScriptElementType("TARGET_VARIABLE");
   IElementType TELL_COMPOUND_STATEMENT = new AppleScriptElementType("TELL_COMPOUND_STATEMENT");
   IElementType TELL_SIMPLE_STATEMENT = new AppleScriptElementType("TELL_SIMPLE_STATEMENT");
   IElementType TEXT_ITEM_DELIMITERS_PROPERTY = new AppleScriptElementType("TEXT_ITEM_DELIMITERS_PROPERTY");
@@ -130,7 +130,7 @@ public interface AppleScriptTypes {
   IElementType BUT = new AppleScriptTokenType("but");
   IElementType BY = new AppleScriptTokenType("by");
   IElementType CASE = new AppleScriptTokenType("case");
-  IElementType CC = new AppleScriptTokenType("Â¬");
+  IElementType CC = new AppleScriptTokenType("¬");
   IElementType CLOSE = new AppleScriptTokenType("close");
   IElementType COLON = new AppleScriptTokenType(":");
   IElementType COMMA = new AppleScriptTokenType(",");
@@ -511,14 +511,14 @@ public interface AppleScriptTypes {
       else if (type == STRING_LITERAL_EXPRESSION) {
         return new AppleScriptStringLiteralExpressionImpl(node);
       }
-      else if (type == TARGET_COMPONENT_NAME) {
-        return new AppleScriptTargetComponentNameImpl(node);
-      }
       else if (type == TARGET_LIST_LITERAL) {
         return new AppleScriptTargetListLiteralImpl(node);
       }
       else if (type == TARGET_RECORD_LITERAL) {
         return new AppleScriptTargetRecordLiteralImpl(node);
+      }
+      else if (type == TARGET_VARIABLE) {
+        return new AppleScriptTargetVariableImpl(node);
       }
       else if (type == TELL_COMPOUND_STATEMENT) {
         return new AppleScriptTellCompoundStatementImpl(node);

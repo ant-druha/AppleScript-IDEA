@@ -23,12 +23,6 @@ public class AppleScriptFormalParameterListImpl extends AppleScriptPsiElementImp
 
   @Override
   @NotNull
-  public List<AppleScriptTargetComponentName> getTargetComponentNameList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, AppleScriptTargetComponentName.class);
-  }
-
-  @Override
-  @NotNull
   public List<AppleScriptTargetListLiteral> getTargetListLiteralList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, AppleScriptTargetListLiteral.class);
   }
@@ -39,9 +33,15 @@ public class AppleScriptFormalParameterListImpl extends AppleScriptPsiElementImp
     return PsiTreeUtil.getChildrenOfTypeAsList(this, AppleScriptTargetRecordLiteral.class);
   }
 
+  @Override
   @NotNull
-  public List<AppleScriptComponentName> getComponentNameList() {
-    return AppleScriptPsiImplUtil.getComponentNameList(this);
+  public List<AppleScriptTargetVariable> getTargetVariableList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, AppleScriptTargetVariable.class);
+  }
+
+  @NotNull
+  public List<AppleScriptComponentName> getTargetVariableListRecursive() {
+    return AppleScriptPsiImplUtil.getTargetVariableListRecursive(this);
   }
 
 }

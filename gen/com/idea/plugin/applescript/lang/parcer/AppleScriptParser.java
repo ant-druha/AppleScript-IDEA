@@ -244,14 +244,14 @@ public class AppleScriptParser implements PsiParser {
     else if (t == STRING_LITERAL_EXPRESSION) {
       r = stringLiteralExpression(b, 0);
     }
-    else if (t == TARGET_COMPONENT_NAME) {
-      r = targetComponentName(b, 0);
-    }
     else if (t == TARGET_LIST_LITERAL) {
       r = targetListLiteral(b, 0);
     }
     else if (t == TARGET_RECORD_LITERAL) {
       r = targetRecordLiteral(b, 0);
+    }
+    else if (t == TARGET_VARIABLE) {
+      r = targetVariable(b, 0);
     }
     else if (t == TELL_COMPOUND_STATEMENT) {
       r = tell_compound_statement(b, 0);
@@ -1417,7 +1417,7 @@ public class AppleScriptParser implements PsiParser {
 
   /* ********************************************************** */
   // (copy|put) 
-  // (((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetCompositeComponent|expression)
+  // (((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetVariablePattern|expression)
   static boolean copyCommandStatement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "copyCommandStatement")) return false;
     if (!nextTokenIs(b, "", COPY, PUT)) return false;
@@ -1441,7 +1441,7 @@ public class AppleScriptParser implements PsiParser {
     return r;
   }
 
-  // ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetCompositeComponent|expression
+  // ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetVariablePattern|expression
   private static boolean copyCommandStatement_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "copyCommandStatement_1")) return false;
     boolean r;
@@ -1452,14 +1452,14 @@ public class AppleScriptParser implements PsiParser {
     return r;
   }
 
-  // ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetCompositeComponent
+  // ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetVariablePattern
   private static boolean copyCommandStatement_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "copyCommandStatement_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = copyCommandStatement_1_0_0(b, l + 1);
     r = r && copyCommandStatement_1_0_1(b, l + 1);
-    r = r && targetCompositeComponent(b, l + 1);
+    r = r && targetVariablePattern(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -1656,14 +1656,13 @@ public class AppleScriptParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // setCommandSyntaxSet|setCommandSyntaxReturning
-  // |copyCommandStatement
+  // setCommandAppleScript|setCommandApplication|copyCommandStatement
   public static boolean creationStatement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "creationStatement")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, "<creation statement>");
-    r = setCommandSyntaxSet(b, l + 1);
-    if (!r) r = setCommandSyntaxReturning(b, l + 1);
+    r = setCommandAppleScript(b, l + 1);
+    if (!r) r = setCommandApplication(b, l + 1);
     if (!r) r = copyCommandStatement(b, l + 1);
     exit_section_(b, l, m, CREATION_STATEMENT, r, false, null);
     return r;
@@ -2151,12 +2150,12 @@ public class AppleScriptParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // targetCompositeComponent
+  // targetVariablePattern
   static boolean formalParameterListPart(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "formalParameterListPart")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, null);
-    r = targetCompositeComponent(b, l + 1);
+    r = targetVariablePattern(b, l + 1);
     exit_section_(b, l, m, null, r, false, argument_list_part_recover_parser_);
     return r;
   }
@@ -5746,6 +5745,12 @@ public class AppleScriptParser implements PsiParser {
   }
 
   /* ********************************************************** */
+  // referenceExpression
+  static boolean referencePattern(PsiBuilder b, int l) {
+    return referenceExpression(b, l + 1);
+  }
+
+  /* ********************************************************** */
   // application_reference
   static boolean referenceToApplicationVar(PsiBuilder b, int l) {
     return application_reference(b, l + 1);
@@ -6391,76 +6396,108 @@ public class AppleScriptParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // expression returning (targetCompositeComponent|referenceExpression)
-  static boolean setCommandSyntaxReturning(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "setCommandSyntaxReturning")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, null);
-    r = expression(b, l + 1);
-    r = r && consumeToken(b, RETURNING);
-    p = r; // pin = 2
-    r = r && setCommandSyntaxReturning_2(b, l + 1);
-    exit_section_(b, l, m, null, r, p, null);
-    return r || p;
-  }
-
-  // targetCompositeComponent|referenceExpression
-  private static boolean setCommandSyntaxReturning_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "setCommandSyntaxReturning_2")) return false;
+  // setCommandAppleScriptSetSyntax|setCommandAppleScriptReturningSyntax
+  static boolean setCommandAppleScript(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandAppleScript")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = targetCompositeComponent(b, l + 1);
-    if (!r) r = referenceExpression(b, l + 1);
+    r = setCommandAppleScriptSetSyntax(b, l + 1);
+    if (!r) r = setCommandAppleScriptReturningSyntax(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   /* ********************************************************** */
-  // set (((targetCompositeComponent|expression) to expression)|expression)
-  static boolean setCommandSyntaxSet(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "setCommandSyntaxSet")) return false;
+  // expression returning targetVariablePattern
+  static boolean setCommandAppleScriptReturningSyntax(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandAppleScriptReturningSyntax")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, null);
+    r = expression(b, l + 1);
+    r = r && consumeToken(b, RETURNING);
+    p = r; // pin = 2
+    r = r && targetVariablePattern(b, l + 1);
+    exit_section_(b, l, m, null, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
+  // set ((targetVariablePattern to expression)|expression)
+  static boolean setCommandAppleScriptSetSyntax(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandAppleScriptSetSyntax")) return false;
     if (!nextTokenIs(b, SET)) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, null);
     r = consumeToken(b, SET);
     p = r; // pin = 1
-    r = r && setCommandSyntaxSet_1(b, l + 1);
+    r = r && setCommandAppleScriptSetSyntax_1(b, l + 1);
     exit_section_(b, l, m, null, r, p, null);
     return r || p;
   }
 
-  // ((targetCompositeComponent|expression) to expression)|expression
-  private static boolean setCommandSyntaxSet_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "setCommandSyntaxSet_1")) return false;
+  // (targetVariablePattern to expression)|expression
+  private static boolean setCommandAppleScriptSetSyntax_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandAppleScriptSetSyntax_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = setCommandSyntaxSet_1_0(b, l + 1);
+    r = setCommandAppleScriptSetSyntax_1_0(b, l + 1);
     if (!r) r = expression(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (targetCompositeComponent|expression) to expression
-  private static boolean setCommandSyntaxSet_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "setCommandSyntaxSet_1_0")) return false;
+  // targetVariablePattern to expression
+  private static boolean setCommandAppleScriptSetSyntax_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandAppleScriptSetSyntax_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = setCommandSyntaxSet_1_0_0(b, l + 1);
+    r = targetVariablePattern(b, l + 1);
     r = r && consumeToken(b, TO);
     r = r && expression(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // targetCompositeComponent|expression
-  private static boolean setCommandSyntaxSet_1_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "setCommandSyntaxSet_1_0_0")) return false;
+  /* ********************************************************** */
+  // setCommandApplicationSetSyntax|setCommandApplicationReturningSyntax
+  static boolean setCommandApplication(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandApplication")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = targetCompositeComponent(b, l + 1);
-    if (!r) r = expression(b, l + 1);
+    r = setCommandApplicationSetSyntax(b, l + 1);
+    if (!r) r = setCommandApplicationReturningSyntax(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  /* ********************************************************** */
+  // expression returning referencePattern
+  static boolean setCommandApplicationReturningSyntax(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandApplicationReturningSyntax")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, null);
+    r = expression(b, l + 1);
+    r = r && consumeToken(b, RETURNING);
+    p = r; // pin = 2
+    r = r && referencePattern(b, l + 1);
+    exit_section_(b, l, m, null, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
+  // set referencePattern to expression
+  static boolean setCommandApplicationSetSyntax(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "setCommandApplicationSetSyntax")) return false;
+    if (!nextTokenIs(b, SET)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, null);
+    r = consumeToken(b, SET);
+    p = r; // pin = 1
+    r = r && report_error_(b, referencePattern(b, l + 1));
+    r = p && report_error_(b, consumeToken(b, TO)) && r;
+    r = p && expression(b, l + 1) && r;
+    exit_section_(b, l, m, null, r, p, null);
+    return r || p;
   }
 
   /* ********************************************************** */
@@ -6613,31 +6650,7 @@ public class AppleScriptParser implements PsiParser {
   }
 
   /* ********************************************************** */
-  // componentName
-  public static boolean targetComponentName(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "targetComponentName")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, "<target component name>");
-    r = componentName(b, l + 1);
-    exit_section_(b, l, m, TARGET_COMPONENT_NAME, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // targetComponentName|targetListLiteral|targetRecordLiteral
-  static boolean targetCompositeComponent(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "targetCompositeComponent")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = targetComponentName(b, l + 1);
-    if (!r) r = targetListLiteral(b, l + 1);
-    if (!r) r = targetRecordLiteral(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // LCURLY [targetCompositeComponent] (COMMA targetCompositeComponent)* RCURLY
+  // LCURLY [targetVariablePattern] (COMMA targetVariablePattern)* RCURLY
   public static boolean targetListLiteral(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetListLiteral")) return false;
     if (!nextTokenIs(b, LCURLY)) return false;
@@ -6651,14 +6664,14 @@ public class AppleScriptParser implements PsiParser {
     return r;
   }
 
-  // [targetCompositeComponent]
+  // [targetVariablePattern]
   private static boolean targetListLiteral_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetListLiteral_1")) return false;
-    targetCompositeComponent(b, l + 1);
+    targetVariablePattern(b, l + 1);
     return true;
   }
 
-  // (COMMA targetCompositeComponent)*
+  // (COMMA targetVariablePattern)*
   private static boolean targetListLiteral_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetListLiteral_2")) return false;
     int c = current_position_(b);
@@ -6670,19 +6683,19 @@ public class AppleScriptParser implements PsiParser {
     return true;
   }
 
-  // COMMA targetCompositeComponent
+  // COMMA targetVariablePattern
   private static boolean targetListLiteral_2_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetListLiteral_2_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
-    r = r && targetCompositeComponent(b, l + 1);
+    r = r && targetVariablePattern(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   /* ********************************************************** */
-  // LCURLY[propertyLabelComponent COLON targetCompositeComponent] (COMMA propertyLabelComponent COLON targetCompositeComponent)* RCURLY
+  // LCURLY[propertyLabelComponent COLON targetVariablePattern] (COMMA propertyLabelComponent COLON targetVariablePattern)* RCURLY
   public static boolean targetRecordLiteral(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetRecordLiteral")) return false;
     if (!nextTokenIs(b, LCURLY)) return false;
@@ -6696,26 +6709,26 @@ public class AppleScriptParser implements PsiParser {
     return r;
   }
 
-  // [propertyLabelComponent COLON targetCompositeComponent]
+  // [propertyLabelComponent COLON targetVariablePattern]
   private static boolean targetRecordLiteral_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetRecordLiteral_1")) return false;
     targetRecordLiteral_1_0(b, l + 1);
     return true;
   }
 
-  // propertyLabelComponent COLON targetCompositeComponent
+  // propertyLabelComponent COLON targetVariablePattern
   private static boolean targetRecordLiteral_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetRecordLiteral_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = propertyLabelComponent(b, l + 1);
     r = r && consumeToken(b, COLON);
-    r = r && targetCompositeComponent(b, l + 1);
+    r = r && targetVariablePattern(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (COMMA propertyLabelComponent COLON targetCompositeComponent)*
+  // (COMMA propertyLabelComponent COLON targetVariablePattern)*
   private static boolean targetRecordLiteral_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetRecordLiteral_2")) return false;
     int c = current_position_(b);
@@ -6727,7 +6740,7 @@ public class AppleScriptParser implements PsiParser {
     return true;
   }
 
-  // COMMA propertyLabelComponent COLON targetCompositeComponent
+  // COMMA propertyLabelComponent COLON targetVariablePattern
   private static boolean targetRecordLiteral_2_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "targetRecordLiteral_2_0")) return false;
     boolean r;
@@ -6735,13 +6748,37 @@ public class AppleScriptParser implements PsiParser {
     r = consumeToken(b, COMMA);
     r = r && propertyLabelComponent(b, l + 1);
     r = r && consumeToken(b, COLON);
-    r = r && targetCompositeComponent(b, l + 1);
+    r = r && targetVariablePattern(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   /* ********************************************************** */
-  // tell objectRefWrapper nls //todo not to count Ø -| and CRLF char as a sep
+  // componentName
+  public static boolean targetVariable(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "targetVariable")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, "<target variable>");
+    r = componentName(b, l + 1);
+    exit_section_(b, l, m, TARGET_VARIABLE, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // targetVariable|targetListLiteral|targetRecordLiteral
+  static boolean targetVariablePattern(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "targetVariablePattern")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = targetVariable(b, l + 1);
+    if (!r) r = targetListLiteral(b, l + 1);
+    if (!r) r = targetRecordLiteral(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // tell objectRefWrapper nls //todo not to count ? -| and CRLF char as a sep
   //                                         blockBody? nls
   //                             end !(considering|ignoring|error|try|repeat|(using terms from))[tell]
   public static boolean tell_compound_statement(PsiBuilder b, int l) {

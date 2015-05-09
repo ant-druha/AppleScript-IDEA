@@ -14,18 +14,18 @@ public interface AppleScriptCreationStatement extends AppleScriptPsiElement {
   AppleScriptReferenceIdentifier getReferenceIdentifier();
 
   @Nullable
-  AppleScriptTargetComponentName getTargetComponentName();
-
-  @Nullable
   AppleScriptTargetListLiteral getTargetListLiteral();
 
   @Nullable
   AppleScriptTargetRecordLiteral getTargetRecordLiteral();
 
   @Nullable
-  AppleScriptPsiElement getTargetComponent();
+  AppleScriptTargetVariable getTargetVariable();
+
+  @Nullable
+  AppleScriptPsiElement getAssignmentTarget();
 
   @NotNull
-  List<AppleScriptComponentName> getComponentNameList();
+  List<AppleScriptComponentName> getTargetVariableList();
 
 }

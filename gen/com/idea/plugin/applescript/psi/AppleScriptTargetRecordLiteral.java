@@ -14,12 +14,15 @@ public interface AppleScriptTargetRecordLiteral extends AppleScriptPsiElement {
   List<AppleScriptComponentName> getComponentNameList();
 
   @NotNull
-  List<AppleScriptTargetComponentName> getTargetComponentNameList();
-
-  @NotNull
   List<AppleScriptTargetListLiteral> getTargetListLiteralList();
 
   @NotNull
   List<AppleScriptTargetRecordLiteral> getTargetRecordLiteralList();
+
+  @NotNull
+  List<AppleScriptTargetVariable> getTargetVariableList();
+
+  @NotNull
+  List<AppleScriptTargetVariable> getTargetVariableListRecursive();
 
 }

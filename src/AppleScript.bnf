@@ -285,13 +285,18 @@ usingTermsFromStatement ::= using terms from (application_reference|(script data
                             end !(considering|ignoring|error|try|repeat|tell|timeout)[using terms from] {pin=3}
 
 //
-private targetCompositeComponent ::= targetComponentName|targetListLiteral|targetRecordLiteral //make mixin class abstract ?
+//private targetCompositeComponent ::= targetVariable|targetListLiteral|targetRecordLiteral //make mixin class abstract ?
 //{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
 //implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
 
 //todo need to rename to clear name (remove Name suffix)
-targetComponentName ::= componentName
-//targetComponent ::= componentName
+//todo for example targetVariable or targetVariableComponent (like targetListLiteral)
+//todo or remove component and target words at all-> !!target component should not be visible in psi!! at
+//todo all (like Dart bnf)
+//todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
+//todo to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
+//todo see com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
+targetVariable ::= componentName
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
 
@@ -367,8 +372,8 @@ textItemDelimitersProperty ::= 'text item delimiters'
 //>>Record class<<
 recordLiteralExpression ::= recordLiteral (BAND nls primaryExpression)*
 private recordLiteral ::= LCURLY[propertyLabelComponent COLON expression] (COMMA propertyLabelComponent COLON expression)* RCURLY
-targetRecordLiteral ::= LCURLY[propertyLabelTargetComponent COLON targetCompositeComponent] (COMMA propertyLabelTargetComponent COLON targetCompositeComponent)* RCURLY
-//{ methods=[getComponentNameList] }
+targetRecordLiteral ::= LCURLY[propertyLabelComponent COLON targetVariablePattern] (COMMA propertyLabelComponent COLON targetVariablePattern)* RCURLY
+{ methods=[getTargetVariableListRecursive] }
 //todo inspection for only uniq property label names
 
 //>>String class<<
@@ -385,8 +390,8 @@ private listLiteral ::= LCURLY [expression|referenceIdentifier] (COMMA(expressio
 //targetListLiteralExpression ::= 
 //((targetListLiteral|parenthesizedExpression|targetComponentName)
 //(BAND nls primaryExpression)+)//any other(than string or record) class converted to a list
-targetListLiteral ::= LCURLY [targetCompositeComponent] (COMMA targetCompositeComponent)* RCURLY //{pin=4}
-{methods = [getComponentNameList] }
+targetListLiteral ::= LCURLY [targetVariablePattern] (COMMA targetVariablePattern)* RCURLY //{pin=4}
+{methods = [getTargetVariableListRecursive] }
 //The class identifier Styled Text is a synonym for a string that includes style and font information.
 //>>Styled Text class<<
 private styledTextLiteralExpression ::= STRING_LITERAL
@@ -447,7 +452,7 @@ propertyReference ::=  propertyLabelReference
 
 private propertyLabelReference ::= builtInClassName|referenceIdentifier|literalExpression//|appleScriptProperty
 private propertyLabelComponent ::= builtInClassName|componentName//|appleScriptProperty|componentName
-private propertyLabelTargetComponent ::= builtInClassName|targetComponentName//|appleScriptProperty|componentName
+//private propertyLabelTargetComponent ::= builtInClassName|targetVariable//|appleScriptProperty|componentName
 
 //todo can be any valueExpression here !?!?
 //private propertyValueExpression ::= /*applicationStandardCommandNames|*/referenceIdentifier
@@ -719,10 +724,10 @@ handlerPositionalParametersDefinition ::= (on|to) handlerNameNonStrictDeclaratio
 left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
-{ methods = [getComponentNameList] }
+{ methods = [getTargetVariableListRecursive] }
 
 //todo change implementation (nor a targetNamedComponent)
-private formalParameterListPart ::= targetCompositeComponent {recoverWhile="argument_list_part_recover"}
+private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
 private argument_list_recover ::= !(RPAREN)
 private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"}
@@ -788,7 +793,7 @@ private apple_script_command_expression ::= countCommandExpression|getCommandExp
 //There are only five AppleScript commands: Get, Set, Count, Copy, and Run.
 //>>copy<<
 private copyCommandStatement ::= (copy|put) 
-(((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetCompositeComponent|expression) {pin=1}
+(((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetVariablePattern|expression) {pin=1}
 
 //>>count<<
 // AppleScript syntax
@@ -839,14 +844,24 @@ private script_object_variable ::= referenceIdentifier
 // data among lists, records, or script objects—see the Notes section below and “Data Sharing” (page 206).
 //private cmd_set_statement ::= setCommandSyntaxSet|setCommandSyntaxReturning
 
-creationStatement ::= 
-setCommandSyntaxSet|setCommandSyntaxReturning
-|copyCommandStatement//|setCommandApplicationSyntax
-{methods=[getTargetComponent getComponentNameList]}
+creationStatement ::= setCommandAppleScript|setCommandApplication|copyCommandStatement
+{methods=[getAssignmentTarget getTargetVariableListRecursive]}
 
-private setCommandSyntaxSet ::=  set (((targetCompositeComponent|expression) to expression)|expression)  {pin=1}  //AppleScript|Application
+//set AppleScript command
+private setCommandAppleScript ::= setCommandAppleScriptSetSyntax|setCommandAppleScriptReturningSyntax
+private setCommandAppleScriptSetSyntax ::= set ((targetVariablePattern to expression)|expression) {pin=1}//fall back to single expression=(
+private setCommandAppleScriptReturningSyntax ::= expression returning targetVariablePattern {pin=2}
+//set Application command
+private setCommandApplication ::= setCommandApplicationSetSyntax|setCommandApplicationReturningSyntax
+private setCommandApplicationSetSyntax ::= set referencePattern to expression {pin=1}
+private setCommandApplicationReturningSyntax ::=  expression returning referencePattern {pin=2}
+//private setCommandApplicationSetSyntax ::= set expression to expression {pin=1}
 
-private setCommandSyntaxReturning ::=  expression returning (targetCompositeComponent|referenceExpression) {pin=2} //Application
+//The name of the variable in which to store the value, or a list of variable patterns,
+//or a record of variable patterns. Class: Identifier, list, or record
+private targetVariablePattern ::= targetVariable|targetListLiteral|targetRecordLiteral
+private referencePattern ::= referenceExpression //variable reference /list of variable refs/record of refs
+
 
 // OPERATORS & EXPRESSIONS
 // AppleScript includes operators for performing arithmetic operations(numeric_ex), comparing values(testing_ex),

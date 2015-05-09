@@ -302,16 +302,16 @@ public class AppleScriptVisitor extends PsiElementVisitor {
     visitExpression(o);
   }
 
-  public void visitTargetComponentName(@NotNull AppleScriptTargetComponentName o) {
-    visitTargetComponent(o);
-  }
-
   public void visitTargetListLiteral(@NotNull AppleScriptTargetListLiteral o) {
     visitPsiElement(o);
   }
 
   public void visitTargetRecordLiteral(@NotNull AppleScriptTargetRecordLiteral o) {
     visitPsiElement(o);
+  }
+
+  public void visitTargetVariable(@NotNull AppleScriptTargetVariable o) {
+    visitTargetComponent(o);
   }
 
   public void visitTellCompoundStatement(@NotNull AppleScriptTellCompoundStatement o) {
