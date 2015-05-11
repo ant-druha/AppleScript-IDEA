@@ -21,9 +21,8 @@ public class AppleScriptStructureViewModel extends StructureViewModelBase implem
     public AppleScriptStructureViewModel(@NotNull PsiFile psiFile, @Nullable Editor editor) {
         super(psiFile, editor, new AppleScriptStructureViewElement(psiFile));
         withSorters(Sorter.ALPHA_SORTER);
-        withSuitableClasses(AppleScriptPropertyDeclarationStatement.class, AppleScriptHandlerLabeledParametersDefinition.class,
-                AppleScriptHandlerInterleavedParametersDefinition.class, AppleScriptHandlerPositionalParametersDefinition.class,
-                AppleScriptTargetComponent.class); //todo to check this
+        withSuitableClasses(AppleScriptPropertyDeclaration.class, AppleScriptHandlerLabeledParametersDefinition.class,
+                AppleScriptHandlerInterleavedParametersDefinition.class, AppleScriptHandlerPositionalParametersDefinition.class, AppleScriptComponent.class); //todo to check this
     }
 
 
@@ -42,6 +41,6 @@ public class AppleScriptStructureViewModel extends StructureViewModelBase implem
     public boolean isAlwaysLeaf(StructureViewTreeElement element) {
         final Object value = element.getValue();
         return value instanceof AppleScriptComponentName;
-//        return value instanceof AppleScriptTargetComponent;
+//        return value instanceof AppleScriptComponent;
     }
 }

@@ -34,8 +34,8 @@ public abstract class AppleScriptNamedElementImpl extends ASTWrapperPsiElement i
 
     @Override
     public PsiReference getReference() {
-//        if (this instanceof AppleScriptTargetComponent) {
-//            return new AppleScriptTargetReferenceImpl((AppleScriptTargetComponent)this);
+//        if (this instanceof AppleScriptComponent) {
+//            return new AppleScriptTargetReferenceImpl((AppleScriptComponent)this);
 //        }
         return super.getReference(); //null
     }

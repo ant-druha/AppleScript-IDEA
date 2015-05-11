@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.formatter;
 
-import com.idea.plugin.applescript.psi.impl.PsiImplUtil;
+import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.intellij.formatting.Spacing;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -36,7 +36,7 @@ public class AppleScriptSpacingProcessor {
     }
 
     static boolean isWhiteSpace(final ASTNode node) {
-        return node != null && (PsiImplUtil.isWhiteSpaceOrNls(node) || node.getTextLength() == 0);
+        return node != null && (AppleScriptPsiImplUtil.isWhiteSpaceOrNls(node) || node.getTextLength() == 0);
     }
 
     private void _init(@Nullable final ASTNode child) {
@@ -69,11 +69,11 @@ public class AppleScriptSpacingProcessor {
 
         final IElementType elementType = myNode.getElementType();
         final IElementType parentType = myNode.getTreeParent() == null ? null : myNode.getTreeParent().getElementType();
-        final ASTNode node1 = ((AbstractBlock) child1).getNode();
+        final ASTNode node1 = child1.getNode();
 //        final ASTNode node1 = myChild1;
 //        final IElementType type1 = myType1;
         final IElementType type1 = node1.getElementType();
-        final ASTNode node2 = ((AbstractBlock) child2).getNode();
+        final ASTNode node2 = child2.getNode();
 //        final ASTNode node2 = myChild2;
 //        final IElementType type2 = myType2;
         final IElementType parent2 = node2.getTreeParent().getElementType();

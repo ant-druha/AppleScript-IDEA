@@ -5,7 +5,6 @@
 
 //  parserUtilClass="com.idea.plugin.applescript.lang.parser.AppleScriptGeneratedParserUtilBase" //for external grammar
 
-//    extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
     extends="com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl"
     implements="com.idea.plugin.applescript.psi.AppleScriptPsiElement"
 
@@ -35,6 +34,7 @@
     DOES_NOT_CONTAIN="regexp:(does not contain)|(doesn't contain)"
     IS_IN="regexp:(is in)|(is contained by)"
     IS_NOT_IN="regexp:(is not in)|(is not contained by)|(isn't contained by)"
+    IS_CONTAIN="regexp:(contain|contains)"
 
     // comparison operators
     GT="regexp:(>|((is)? greater than)|(comes after)|(is not less than or equal (to)?)|(isn't less than or equal (to)?))"
@@ -44,6 +44,13 @@
     NE="regexp:((isn't equal (to)?)|(is not equal (to)?)|(doesn't equal)|(does not equal)|(is not)|(isn't))"
     EQ="regexp:(=|((is)? equal to)|is|equal|equals)"
     REF_OP="regexp:(a reference to|a ref to|a ref|reference to|ref)"
+//    GT='regexp:(">"|"is greater than"|"greater than"|"comes after"|"is not less than or equal to"|"is not less than or equal"|"isn't less than or equal to"|"isn't less than or equal")'
+//    LE='regexp:("?"|"<="|"is less than or equal to"|"less than or equal to"|"is less than or equal"|"less than or equal"|"is not greater than"|"isn't greater than"|"does not come after"|"doesn't come after")'
+//    GE='regexp:("?"|">="|"is greater than or equal to"|"greater than or equal to"|"is greater than or equal"|"greater than or equal"|"is not less than"|"isn't less than"|"does not come before"|"doesn't come before")'
+//    LT='regexp:("<"|"is less than"|"less than"|"comes before"|"is not greater than or equal to"|"is not greater than or equal"|"isn't greater than or equal to"|"isn't greater than or equal")'
+//    NE='regexp:("isn't equal to"|"isn't equal"|"is not equal to"|"is not equal"|"doesn't equal"|"does not equal"|"is not"|"isn't")'
+//    EQ='regexp:("="|"is equal to"|"equal to"|"is"|"equal"|"equals")'
+//    REF_OP='regexp:("a reference to"|"a ref to"|"a ref"|"reference to"|"ref")'
 
     CC='¬'
     PLUS='+'
@@ -74,8 +81,13 @@
 //    EQUALS='equals'
     THAT='that'
     REFERENCE='reference'
-    IS='is'
-    ITS='its'
+//    ITS='its'
+    C_WHITE_SPACE='regexp:(white space)'
+    APP_RESPONSES='regexp:((application responses)|(app responses))'
+    SCRIPTING_ADDITIONS='scripting additions'
+    CURRENT_DATE='current date'
+    TEXT_ITEM_DELIMETERS='text item delimiters'
+    MISSING_VALUE='missing value'
 
     //constants
     PI_CONSTANT='pi'              //3.1412926
@@ -145,7 +157,7 @@ componentName ::= identifier//|appleScriptProperty
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptNamedElementImpl"
  implements="com.idea.plugin.applescript.psi.AppleScriptNamedElement"}
 
-private statement ::= control_statement|propertyDeclarationStatement|variableDeclarationStatement
+private statement ::= control_statement|propertyDeclarationStatement|varDeclarationList
                       |handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
 //                      |handlerRunDefinition|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
                       |handlerInterleavedParametersDefinition
@@ -212,11 +224,17 @@ private offendingObject ::= classTypeName|objectRefWrapper
 tryStatement ::= try nls
                      blockBody? nls
                      on error [errorMessageVar] [number errorNumberVar] [from offendingObjectVar]
-                     [to expectedTypeVar] [partial result resultListVar]
-                     [global componentName (COMMA componentName)* nls]
-                     [local componentName (COMMA componentName)* nls] nls
+                     [to expectedTypeVar] [partial result resultListVar] nls
+                     [varDeclarationList] nls
                      blockBody? nls
                   end !(considering|ignoring|tell|repeat|(using terms from))[error|try] {pin=1}
+
+varDeclarationListPart ::=  componentName
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+varDeclarationList ::= varAccessDeclaration (COMMA varDeclarationListPart)*
+
 private errorMessageVar ::= componentName
 private errorNumberVar ::= componentName
 private offendingObjectVar ::= referenceIdentifier
@@ -251,7 +269,7 @@ ignoringStatement ::= ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnor
                         [but considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls]
                            blockBody? nls
                       end ignoring {pin=2}
-considerOrIgnoreAttribute ::= (applicationClass responses)|case|diacriticals|expansion|hyphens|punctuation|'white space'
+considerOrIgnoreAttribute ::= (APP_RESPONSES)|case|diacriticals|expansion|hyphens|punctuation|C_WHITE_SPACE
 
 withTimeoutStatement ::= with timeout [of] integerLiteralExpression (seconds|second !(classTypeName)) nls //index ref
                            blockBody? nls
@@ -270,7 +288,7 @@ private useStatement ::= useAppleScriptStatement|useScriptingAdditionsStatement|
 
 useAppleScriptStatement ::= use 'AppleScript' [version stringLiteralExpression] {pin=2}
 
-useScriptingAdditionsStatement ::= use 'scripting additions'
+useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
                                    [((with importing)|(without importing)|importing) expression ] {pin=2}
 
 useApplicationOrScriptStatement ::= use [referenceIdentifier COLON] (script|applicationClass) dataSpecifier
@@ -280,40 +298,34 @@ private dataSpecifier ::= referenceExpression|stringLiteralExpression
 
 useFrameworkStatement ::= use  framework  dataSpecifier {pin=2}
 
-usingTermsFromStatement ::= using terms from (application_reference|(script dataSpecifier)|(scripting additions)) nls
+usingTermsFromStatement ::= using terms from (application_reference|(script dataSpecifier)|(SCRIPTING_ADDITIONS)) nls
                                blockBody? nls
                             end !(considering|ignoring|error|try|repeat|tell|timeout)[using terms from] {pin=3}
 
-//
-//private targetCompositeComponent ::= targetVariable|targetListLiteral|targetRecordLiteral //make mixin class abstract ?
-//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
-//implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
-
-//todo need to rename to clear name (remove Name suffix)
-//todo for example targetVariable or targetVariableComponent (like targetListLiteral)
-//todo or remove component and target words at all-> !!target component should not be visible in psi!! at
-//todo all (like Dart bnf)
 //todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
 //todo to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
 //todo see com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
+//todo ???may be creat new class for targetVariable ? which will extend component and implement namedElement in one class???
+//todo then hierarchy could be broken...?
 targetVariable ::= componentName
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 
 ifSimpleStatement ::= if expression //what todo with recursion here?
-                                    then (!(ifCompoundStatement) (statement|expression) /*sep**/) //todo only simple statements are allowed here
+                                    then (/*!(ifCompoundStatement)*/ (statement|expression) /*sep*/) //todo only simple statements are allowed here
 //                                    {pin=4}
 
-ifCompoundStatement ::= if expression nls [then] nls
+ifCompoundStatement ::= if expression [then] sep //sep is important - otherwise if simple statement is parsed
                                        blockBody? nls
-                                   (else if expression nls [then] nls
+                                   (else if expression [then] nls
                                        blockBody? nls )*
                                    (else nls
                                         blockBody? nls)?
                                    end /*!(considering|ignoring|tell|error|try|repeat)*/ [if] {pin=10}
-
+//{recoverWhile=ifRecover}
+//ifRecover::= !(end)
 // value class types
 private literalExpression ::=
               stringLiteralExpression
@@ -351,7 +363,7 @@ private dec_significand ::= ('.'DIGITS)|(DIGITS'.'DIGITS*)
 
 // >>Date class<<
 dateLiteralExpression ::= (date stringLiteralExpression)|currentDateCommand // hack! scripting addition command Current Date !
-private currentDateCommand ::= 'current date'
+private currentDateCommand ::= CURRENT_DATE
 
 //>> List reference
 //private list_specifier ::= (class|length|rest|reverse) of list_literal_expression // ref by properties
@@ -367,14 +379,18 @@ private currentDateCommand ::= 'current date'
 //                            |missing_value_constant|result_constant|anything_constant|save_opt_constant
 //                            |string_constant|version_constant
 
-textItemDelimitersProperty ::= 'text item delimiters'
+textItemDelimitersProperty ::= TEXT_ITEM_DELIMETERS
 
 //>>Record class<<
 recordLiteralExpression ::= recordLiteral (BAND nls primaryExpression)*
-private recordLiteral ::= LCURLY[propertyLabelComponent COLON expression] (COMMA propertyLabelComponent COLON expression)* RCURLY
-targetRecordLiteral ::= LCURLY[propertyLabelComponent COLON targetVariablePattern] (COMMA propertyLabelComponent COLON targetVariablePattern)* RCURLY
+private recordLiteral ::= LCURLY[objectPropertyDeclaration] (COMMA objectPropertyDeclaration)* RCURLY
+
+//todo the same as for the list:
+//todo create RecordLiteralExpression class for usual list, then create TargetList class extends
+// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentNameListRecursive method
+targetRecordLiteral ::= LCURLY[objectPropertyTargetDeclaration] (COMMA objectPropertyTargetDeclaration)* RCURLY
 { methods=[getTargetVariableListRecursive] }
-//todo inspection for only uniq property label names
+//todo inspection for only unique property label names
 
 //>>String class<<
 stringLiteralExpression ::= STRING_LITERAL (BAND ((CC sep)|CC)? primaryExpression)* //sep results in more that one new line
@@ -390,7 +406,9 @@ private listLiteral ::= LCURLY [expression|referenceIdentifier] (COMMA(expressio
 //targetListLiteralExpression ::= 
 //((targetListLiteral|parenthesizedExpression|targetComponentName)
 //(BAND nls primaryExpression)+)//any other(than string or record) class converted to a list
-targetListLiteral ::= LCURLY [targetVariablePattern] (COMMA targetVariablePattern)* RCURLY //{pin=4}
+//todo create ListLiteralExpression class for usual list, then create TargetList class extends
+// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentNameListRecursive method
+targetListLiteral ::= LCURLY [targetVariablePattern|expression] (COMMA targetVariablePattern|expression)* RCURLY //{pin=4}
 {methods = [getTargetVariableListRecursive] }
 //The class identifier Styled Text is a synonym for a string that includes style and font information.
 //>>Styled Text class<<
@@ -451,7 +469,7 @@ propertyReference ::=  propertyLabelReference
 
 
 private propertyLabelReference ::= builtInClassName|referenceIdentifier|literalExpression//|appleScriptProperty
-private propertyLabelComponent ::= builtInClassName|componentName//|appleScriptProperty|componentName
+private propertyLabelComponentName ::= builtInClassName|componentName//|appleScriptProperty|componentName
 //private propertyLabelTargetComponent ::= builtInClassName|targetVariable//|appleScriptProperty|componentName
 
 //todo can be any valueExpression here !?!?
@@ -528,21 +546,40 @@ aReferenceToLiteralExpression ::= REF_OP referenceExpression
 
 //private
 
-propertyDeclarationStatement ::= propertyCommonDeclarationStatement//|propertyParentDeclarationStatement
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+private propertyDeclarationStatement ::= propertyDeclaration//|objectPropertyDeclaration//|propertyParentDeclarationStatement
+//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponentplements="com.idea.plugin.applescript.psi.AppleScriptComponent"
 
-variableDeclarationStatement ::= variableGlobalDeclarationStatement|variableLocalDeclarationStatement
+varAccessDeclaration ::= variableGlobalDeclaration|variableLocalDeclaration
 //todo method isGlobal()/isLocal() etc
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptTargetComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptTargetComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-//todo what's parent property name? + it does not contain componentName how to search?
-//private propertyParentDeclarationStatement ::= (property|prop) parent COLON parentSpecifier
-private propertyCommonDeclarationStatement ::= (property|prop) propertyLabelComponent COLON propertyInitializer
+//AppleScript propertyDeclaration
+propertyDeclaration ::= (property|prop) propertyLabelComponentName COLON propertyInitializer
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-private variableGlobalDeclarationStatement ::= global propertyLabelComponent
-private variableLocalDeclarationStatement ::= local propertyLabelComponent
+//Object (AppleScript record or application object) propertyDeclaration
+objectPropertyDeclaration ::= propertyLabelComponentName COLON propertyInitializer
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+//targetRecordLiteral ::= LCURLY[propertyLabelComponentName COLON targetVariablePattern] (COMMA propertyLabelComponentName COLON targetVariablePattern)* RCURLY
+//used in a target record
+
+//
+//todo MAY BE THE SAME as for the list or record ????
+//todo create ListLiteralExpression class for usual list, then create TargetList class extends
+//todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentNameListRecursive method
+//todo only here the recursion is not really needed.
+//todo And override getComponentName method, which will return needed componentName (label name)
+//fallback to expression - it is also valid construct
+objectPropertyTargetDeclaration ::= propertyLabelComponentName COLON (targetVariablePattern|propertyInitializer)
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+private variableGlobalDeclaration ::= global propertyLabelComponentName
+private variableLocalDeclaration ::= local propertyLabelComponentName
 
 private propertyInitializer ::= expression
 //An expression is any series of lexical elements that has a value. Expressions are used in scripts to represent
@@ -587,7 +624,7 @@ private month_constant ::= 'January'|'February'|'March'|'April'|'May'|'June'|'Ju
 
 private current_application_constant ::= current applicationClass
 private anythingProperty ::= anything  // any container|simple type value (can be used in set statements|bool.stmt|param.list
-private missing_value_constant ::= 'missing value'
+private missing_value_constant ::= MISSING_VALUE
 private resultProperty ::= result
 private parentProperty ::= parent
 private save_opt_constant ::= yes|no|ask
@@ -629,7 +666,7 @@ handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|a
 // labeled parameter (whose label is to) that specifies where to move the object.
 
 
-private handlerNameNonStrictDeclaration ::= componentName|reservedWordsNotParameterLabel/*|with*/ //reference_expression could be for example: 'perform mail action with messages' impossible to
+private handlerNameNonStrictDeclaration ::= componentName//|reservedWordsNotParameterLabel/*|with*/ //reference_expression could be for example: 'perform mail action with messages' impossible to
  // match such names...
 
 handlerNamePartReference ::= referenceIdentifier //|propertyLabelComponent
@@ -715,16 +752,18 @@ private handlerCallGuardPredicate ::=
   //{recoverWhile="setRecover"}
   //expression //todo if prarmater=handlerLabeledParametersCall? (ident.+label)
 
-handlerPositionalParametersDefinition ::= (on|to) handlerNameNonStrictDeclaration LPAREN formalParameterList? RPAREN
-                                                [global componentName (COMMA componentName)*]
-                                                [local componentName (COMMA componentName)*] nls
+handlerPositionalParametersDefinition ::= (on|to) componentName LPAREN [formalParameterList] RPAREN
+                                            [varDeclarationList] nls
                                                blockBody? nls
-                                            end !(considering|ignoring|error|try|repeat|tell|timeout|(using terms from))[handlerNameStrict] {pin=3}
+                                            end !(considering|ignoring|error|try|repeat|tell|timeout|(using terms from))[handlerNameStrict]
+//                                            {pin=3} or Grammar kit will also make formalParameterList as Component
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
 
 left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
-{ methods = [getTargetVariableListRecursive] }
+{ methods = [getTargetVariableComponentNameListRecursive] }
 
 //todo change implementation (nor a targetNamedComponent)
 private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
@@ -860,6 +899,7 @@ private setCommandApplicationReturningSyntax ::=  expression returning reference
 //The name of the variable in which to store the value, or a list of variable patterns,
 //or a record of variable patterns. Class: Identifier, list, or record
 private targetVariablePattern ::= targetVariable|targetListLiteral|targetRecordLiteral
+
 private referencePattern ::= referenceExpression //variable reference /list of variable refs/record of refs
 
 
@@ -941,12 +981,12 @@ private relational_operator ::= LT|GT|LE|GE|containment_start_end_operator|conta
 // List and String
 private containment_start_end_operator ::= STARTS_BEGINS_WITH|ENDS_WITH
 //List, Record, String
-private containment_any_part_operator ::= isContain|doesNotContain|isIn|isNotIn
+private containment_any_part_operator ::= IS_CONTAIN|DOES_NOT_CONTAIN|IS_IN|IS_NOT_IN
 
-private isContain ::=contain|contains
-private doesNotContain ::= "does not contain"|"doesn't contain"
-private isIn ::= "is in"|"is contained by"
-private isNotIn ::= "is not in"|"is not contained by"|"isn't contained by"
+//private isContain ::=contain|contains
+//private doesNotContain ::= "does not contain"|"doesn't contain"
+//private isIn ::= "is in"|"is contained by"
+//private isNotIn ::= "is not in"|"is not contained by"|"isn't contained by"
 private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
 
 private coercionExpression_2 ::= coercionBuiltInExpression|coercionExternalExpression

@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.resolve;
 
+import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptComponentName;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.intellij.psi.PsiElement;
@@ -26,13 +27,13 @@ public class AppleScriptComponentResolver implements ResolveCache.AbstractResolv
 
     @Override
     public List<? extends PsiElement> resolve(@NotNull AppleScriptReferenceElement scopeElement, boolean incompleteCode) {
-        final Set<AppleScriptComponentName> resultSet = new HashSet<AppleScriptComponentName>();
+        final Set<AppleScriptComponent> resultSet = new HashSet<AppleScriptComponent>();
 
         // local
         PsiElement maxScope = getMaxScope(scopeElement);
-        final AppleScriptComponentNameScopeProcessor resolveProcessor = new AppleScriptComponentNameScopeProcessor(resultSet);
+        final AppleScriptComponentScopeProcessor resolveProcessor = new AppleScriptComponentScopeProcessor(resultSet);
         PsiTreeUtil.treeWalkUp(resolveProcessor, scopeElement, maxScope, ResolveState.initial());
-        return new ArrayList<AppleScriptComponentName>(resultSet);
+        return new ArrayList<AppleScriptComponent>(resultSet);
     }
 
     /**

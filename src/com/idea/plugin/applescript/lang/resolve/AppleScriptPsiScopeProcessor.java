@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.resolve;
 
+import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptComponentName;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveState;

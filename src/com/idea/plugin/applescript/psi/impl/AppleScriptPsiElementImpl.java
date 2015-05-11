@@ -6,6 +6,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveState;
 import com.intellij.psi.scope.PsiScopeProcessor;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,8 @@ import java.util.Set;
 
 /**
  * Created by Andrey on 14.04.2015.
+ * <p/>
+ * todo !!! we need to add AppleScriptComponent and not to ComponentName !!!
  */
 public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements AppleScriptPsiElement {
     public AppleScriptPsiElementImpl(ASTNode node) {
@@ -28,23 +31,23 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         final PsiElement[] children = context.getChildren();
 
         for (PsiElement child : children) {
-            if (child instanceof AppleScriptPropertyDeclarationStatement) {
-                AppleScriptPropertyDeclarationStatement propertyDeclaration = (AppleScriptPropertyDeclarationStatement) child;
+            if (child instanceof AppleScriptPropertyDeclaration) {
+                AppleScriptPropertyDeclaration propertyDeclaration = (AppleScriptPropertyDeclaration) child;
 
                 AppleScriptComponentName componentName = propertyDeclaration.getComponentName();
                 if (componentName != null) {
                     result.add(componentName);
                 }
-            } else if (child instanceof AppleScriptVariableDeclarationStatement) {
-                AppleScriptVariableDeclarationStatement variableDeclaration = (AppleScriptVariableDeclarationStatement) child;
-
-                AppleScriptComponentName componentName = variableDeclaration.getComponentName();
-                if (componentName != null) {
-                    result.add(componentName);
+            } else if (child instanceof AppleScriptVarDeclarationList) {
+                AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
+//                AppleScriptVarDeclarationList[] variables = PsiTreeUtil.getChildrenOfType(child, AppleScriptVarDeclarationList.class);
+                result.add(varList.getVarAccessDeclaration().getComponentName());
+                for (AppleScriptVarDeclarationListPart listPart : varList.getVarDeclarationListPartList()) {
+                    result.add(listPart.getComponentName());
                 }
             } else if (child instanceof AppleScriptHandlerPositionalParametersDefinition) {
                 AppleScriptHandlerPositionalParametersDefinition handlerDeclaration = (AppleScriptHandlerPositionalParametersDefinition) child;
-                result.addAll(handlerDeclaration.getComponentNameList());
+                result.add(handlerDeclaration.getComponentName());
             } else if (child instanceof AppleScriptHandlerLabeledParametersDefinition) {
                 AppleScriptHandlerLabeledParametersDefinition handlerDeclaration = (AppleScriptHandlerLabeledParametersDefinition) child;
                 result.addAll(handlerDeclaration.getComponentNameList());
@@ -103,7 +106,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                 }
 //                }
             } else if (recursively && child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) { // do
-            // not scan other inner blocks of if statement
+                // not scan other inner blocks of if statement
                 processTopDeclarations(child, result, true);
             }
 
@@ -124,29 +127,30 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         for (PsiElement child : children) {
             if (child != lastParent) {
 
-                if (child instanceof AppleScriptPropertyDeclarationStatement) {
-                    AppleScriptPropertyDeclarationStatement propertyDeclaration = (AppleScriptPropertyDeclarationStatement) child;
+                if (child instanceof AppleScriptPropertyDeclaration) {
+                    AppleScriptPropertyDeclaration propertyDeclaration = (AppleScriptPropertyDeclaration) child;
                     AppleScriptComponentName componentName = propertyDeclaration.getComponentName();
                     if (componentName != null) {
                         result.add(componentName);
                     }
-                } else if (child instanceof AppleScriptVariableDeclarationStatement) {
-                    AppleScriptVariableDeclarationStatement variableDeclaration = (AppleScriptVariableDeclarationStatement) child;
-
-                    AppleScriptComponentName componentName = variableDeclaration.getComponentName();
-                    if (componentName != null) {
-                        result.add(componentName);
+                } else if (child instanceof AppleScriptVarDeclarationList) {
+                    AppleScriptVarDeclarationList[] variables = PsiTreeUtil.getChildrenOfType(child, AppleScriptVarDeclarationList.class);
+                    AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
+//                AppleScriptVarDeclarationList[] variables = PsiTreeUtil.getChildrenOfType(child, AppleScriptVarDeclarationList.class);
+                    result.add(varList.getVarAccessDeclaration().getComponentName());
+                    for (AppleScriptVarDeclarationListPart listPart : varList.getVarDeclarationListPartList()) {
+                        result.add(listPart.getComponentName());
                     }
                 } else if (child instanceof AppleScriptHandlerPositionalParametersDefinition) {
                     AppleScriptHandlerPositionalParametersDefinition handlerDeclaration = (AppleScriptHandlerPositionalParametersDefinition)
                             child;
-                    result.addAll(handlerDeclaration.getComponentNameList());
+                    result.add(handlerDeclaration.getComponentName());
                 } else if (child instanceof AppleScriptHandlerLabeledParametersDefinition) {
                     AppleScriptHandlerLabeledParametersDefinition handlerDeclaration = (AppleScriptHandlerLabeledParametersDefinition) child;
                     result.addAll(handlerDeclaration.getComponentNameList());
                 } else if (child instanceof AppleScriptFormalParameterList) {
                     AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
-                    List<AppleScriptComponentName> cmList = parameterList.getTargetVariableListRecursive();
+                    List<AppleScriptComponentName> cmList = parameterList.getTargetVariableComponentNameListRecursive();
                     if (!cmList.isEmpty()) {
                         result.addAll(cmList);
                     }

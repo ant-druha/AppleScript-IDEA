@@ -18,10 +18,6 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 %type IElementType
 %unicode
 
-EOL="\r"|"\n"|"\r\n"
-LINE_WS=[\ \t\f]
-WHITE_SPACE=({LINE_WS}|{EOL})+
-
 //EOL="\r"|"\n"|"\r\n"
 //LINE_WS=[\ \t\f]
 //WHITE_SPACE=({LINE_WS}|{EOL})+

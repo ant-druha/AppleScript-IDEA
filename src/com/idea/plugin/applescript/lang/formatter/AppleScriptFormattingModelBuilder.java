@@ -1,12 +1,10 @@
 package com.idea.plugin.applescript.lang.formatter;
 
-import com.idea.plugin.applescript.AppleScriptFile;
 import com.idea.plugin.applescript.AppleScriptLanguage;
-import com.idea.plugin.applescript.psi.impl.PsiImplUtil;
+import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.intellij.formatting.Block;
 import com.intellij.formatting.FormattingModel;
 import com.intellij.formatting.FormattingModelBuilder;
-import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
@@ -14,7 +12,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
-import com.intellij.psi.formatter.DocumentBasedFormattingModel;
 import com.intellij.psi.formatter.FormatterUtil;
 import com.intellij.psi.formatter.FormattingDocumentModelImpl;
 import com.intellij.psi.formatter.PsiBasedFormattingModel;
@@ -55,12 +52,12 @@ public class AppleScriptFormattingModelBuilder implements FormattingModelBuilder
         @Override
         protected String replaceWithPsiInLeaf(TextRange textRange, String whiteSpace, ASTNode leafElement) {
             if (!myCanModifyAllWhiteSpaces) {
-                if (PsiImplUtil.isWhiteSpaceOrNls(leafElement)) return null;
+                if (AppleScriptPsiImplUtil.isWhiteSpaceOrNls(leafElement)) return null;
             }
 
             IElementType elementTypeToUse = TokenType.WHITE_SPACE;
             ASTNode prevNode = TreeUtil.prevLeaf(leafElement);
-            if (prevNode != null && PsiImplUtil.isWhiteSpaceOrNls(prevNode)) {
+            if (prevNode != null && AppleScriptPsiImplUtil.isWhiteSpaceOrNls(prevNode)) {
                 elementTypeToUse = prevNode.getElementType();
             }
             FormatterUtil.replaceWhiteSpace(whiteSpace, leafElement, elementTypeToUse, textRange);

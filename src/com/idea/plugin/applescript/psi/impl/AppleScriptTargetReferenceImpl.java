@@ -2,16 +2,14 @@ package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.AppleScriptFile;
 import com.idea.plugin.applescript.psi.AppleScriptComponentName;
-import com.idea.plugin.applescript.psi.AppleScriptTargetComponent;
+import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptTargetReference;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,9 +17,9 @@ import java.util.Set;
  */
 public class AppleScriptTargetReferenceImpl extends AppleScriptReferenceElementImpl implements AppleScriptTargetReference {
 
-    AppleScriptTargetComponent myElement;
+    AppleScriptComponent myElement;
 
-    public AppleScriptTargetReferenceImpl(AppleScriptTargetComponent targetComponent) {
+    public AppleScriptTargetReferenceImpl(AppleScriptComponent targetComponent) {
         super(targetComponent.getNode());
         myElement = targetComponent;
 

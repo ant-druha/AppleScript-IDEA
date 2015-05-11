@@ -1,9 +1,11 @@
 package com.idea.plugin.applescript.lang.resolve;
 
+import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptComponentName;
 import com.idea.plugin.applescript.psi.AppleScriptNamedElement;
 import com.intellij.openapi.util.Key;
 import com.intellij.psi.scope.PsiScopeProcessor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -22,19 +24,18 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 
     @Nullable
     @Override
-    public <T> T getHint(Key<T> hintKey) {
+    public <T> T getHint(@NotNull Key<T> hintKey) {
         return null;
     }
 
     @Override
-    public void handleEvent(Event event, @Nullable Object associated) {
+    public void handleEvent(@NotNull Event event, @Nullable Object associated) {
 
     }
 
 
     @Override
     protected boolean doExecute(AppleScriptComponentName element) {
-
         if (this.myName.equals(element.getName())) {
             myResult.add(element);
             return false;
@@ -43,4 +44,12 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 
     }
 
+//    @Override
+//    protected boolean doExecute(AppleScriptComponent element) {
+//        if (this.myName.equals(element.getName())) {
+//            myResult.add(element.getComponentName());
+//            return false;
+//        }
+//        return true;
+//    }
 }
