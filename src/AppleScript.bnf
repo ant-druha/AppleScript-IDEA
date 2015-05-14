@@ -100,7 +100,6 @@
   //  FILE='file'
 
     STRING_LITERAL='regexp:"([^"\\]|\\.)*"'
-    //DIGIT='regexp:[0-9]'
     DIGITS='regexp:[0-9]+'
 
     DEC_EXPONENT='regexp:[Ee][+-]?[_0-9]*'
@@ -110,9 +109,7 @@
     RAW_CODE='regexp:(<<[^>>]*>>)'
     MULTI_LINE_COMMENT_START='(*'
     MULTI_LINE_COMMENT_END='*)'
-    WHITE_SPACE='regexp:[\ \t\f]'//to remove whitespace PSI handling from parser..todo to think how to handle
-    //  WHITE_SPACE ='regexp:[\ \t\f]|¬(\r|\n|\r\n)'           // Whitespaces
-    //  CRLF='regexp:(\n|\r|\r\n)'
+    WHITE_SPACE='regexp:[\ \t\f]'
     COMMA=','
     LCURLY='{'
     RCURLY='}'
@@ -125,7 +122,6 @@
 
 appleScriptFile ::= compilation_unit_
 
-//!expression can be a statement!(but statement does not have a value like expression)
 private compilation_unit_ ::=
                       (
                         (statement sep*)
@@ -157,19 +153,18 @@ componentName ::= identifier//|appleScriptProperty
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptNamedElementImpl"
  implements="com.idea.plugin.applescript.psi.AppleScriptNamedElement"}
 
-private statement ::= control_statement|propertyDeclarationStatement|varDeclarationList
-                      |handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
-//                      |handlerRunDefinition|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
-                      |handlerInterleavedParametersDefinition
+private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
+                      |handlerDefinition
                       |scriptObjectDefinitionStatement
                       |returnStatement|continue_statement
-                      |creationStatement
-//                      |setCommandSyntaxReturning //todo to think where to include better without recursion
-//                      |setCommandSyntaxSet
+                      |assignmentStatement
 
+private handlerDefinition ::= handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
+//                      |handlerRunDefinition|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
+                      |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
-private control_statement ::= ifStatement | tryStatement | tell_statement | repeatStatement | exitStatement
+private controlStatement ::= ifStatement | tryStatement | tell_statement | repeatStatement | exitStatement
 |consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|useStatement
 
 exitStatement ::= exit [repeat]
@@ -528,7 +523,7 @@ relativeReference ::= ([classTypeName](before|([in]front of) )referenceExpressio
 
 // >>Reference class<<
 //private aRefTo ::= 'a reference to'|'a ref to'|'a ref'|'reference to'|'ref'
-aReferenceToLiteralExpression ::= REF_OP referenceExpression
+aReferenceToLiteralExpression ::= REF_OP objectRefWrapper //referenceExpression
 // <<//A value of class Reference is a reference to an object. A reference can refer to an application object
 // such as a window or file, or to an AppleScript object such as an item in a list or a property in a record.
 // You can create a value of class Reference by using the A Reference To operator. In addition, applications can
@@ -684,14 +679,23 @@ private userLabelComponent ::= THE_KW?componentName
 //private handler_declaration_block ::= lbl_param_handler_declaration | pos_param_handler_declaration |
 //                                      interleaved_param_handler_declaration
 
-handlerLabeledParametersDefinition ::= (on|to) handlerNameNonStrictDeclaration !LPAREN [(of|in)? directParameterVar]
-                                         (handlerParameterLabel userParameterVar)*
-                                         [given userLabelComponent COLON userParameterVar (COMMA userLabelComponent COLON userParameterVar)*] //nls //should be sep here
-                                         [global componentName (COMMA componentName)*] //nls
-                                         [local componentName (COMMA componentName)*] nls
+handlerLabeledParametersDefinition ::= (on|to) componentName !LPAREN labeledParameterDeclarationList
+                                         [given THE_KW? objectPropertyTargetDeclaration (COMMA THE_KW? objectPropertyTargetDeclaration)*] //nls //should be sep here
+                                         [varDeclarationList] nls
                                            blockBody? nls
                                         end [handlerNameStrict] //!expression// sep or EOF here todo think: sep is needed for validation but could be issues with not included handlerNameStrict
-                                        //{pin=2}
+//                                        {pin=2}
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"
+methods=[getParameterComponentNameList]}
+
+labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
+{methods=[getComponentNameList]}
+directParameterDeclaration ::= directParameterVar
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+labeledParameterDeclarationPart ::= handlerParameterLabel userParameterVar
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
 private handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
 //handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
 //handlerNameStrictDeclaration ::=((componentName|reservedWordsNotParameterLabel) )*
@@ -750,14 +754,15 @@ private handlerCallGuardPredicate ::=
   handlerCallGuardPredicate|
   expression
   //{recoverWhile="setRecover"}
-  //expression //todo if prarmater=handlerLabeledParametersCall? (ident.+label)
+  //expression //todo if parameter=handlerLabeledParametersCall? (ident.+label)
 
 handlerPositionalParametersDefinition ::= (on|to) componentName LPAREN [formalParameterList] RPAREN
                                             [varDeclarationList] nls
                                                blockBody? nls
                                             end !(considering|ignoring|error|try|repeat|tell|timeout|(using terms from))[handlerNameStrict]
 //                                            {pin=3} or Grammar kit will also make formalParameterList as Component
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 
 left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
@@ -883,7 +888,7 @@ private script_object_variable ::= referenceIdentifier
 // data among lists, records, or script objects—see the Notes section below and “Data Sharing” (page 206).
 //private cmd_set_statement ::= setCommandSyntaxSet|setCommandSyntaxReturning
 
-creationStatement ::= setCommandAppleScript|setCommandApplication|copyCommandStatement
+assignmentStatement ::= setCommandAppleScript|setCommandApplication|copyCommandStatement
 {methods=[getAssignmentTarget getTargetVariableListRecursive]}
 
 //set AppleScript command
