@@ -19,7 +19,8 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 %unicode
 
 ONE_NL=(\r|\n|\r\n)
-WHITE_SPACE=[\ \t\f]
+CC="¬"
+WHITE_SPACE=[\ \t\f]|{CC}{ONE_NL}|{CC}
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE})*
 
 STARTS_BEGINS_WITH=("start""s with"|"start with"|"begin""s with"|"begin with")
@@ -55,7 +56,6 @@ RAW_CODE=("<<"[^">>"]*">>")
 
   "("                         { return LPAREN; }
   ")"                         { return RPAREN; }
-  "¬"                         { return CC; }
   "+"                         { return PLUS; }
   "-"                         { return MINUS; }
   "*"                         { return STAR; }
