@@ -37,6 +37,7 @@ public interface AppleScriptComponent extends AppleScriptPsiElement, PsiNameIden
     boolean isScriptProperty();
 
     /**
+     * todo implement each handler as a component ! (currently not so with InterleavedParameters
      *
      * @return true if handler declaration
      */

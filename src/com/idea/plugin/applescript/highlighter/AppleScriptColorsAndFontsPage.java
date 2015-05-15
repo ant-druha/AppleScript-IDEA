@@ -1,7 +1,6 @@
 package com.idea.plugin.applescript.highlighter;
 
 import com.idea.plugin.applescript.AppleScriptFileType;
-import com.idea.plugin.applescript.AppleScriptIcons;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
@@ -11,11 +10,11 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.idea.plugin.applescript.highlighter.AppleScriptSyntaxHighlighterColors.*;
-
 import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.idea.plugin.applescript.highlighter.AppleScriptSyntaxHighlighterColors.*;
 
 /**
  * Created by Andrey on 04.04.2015.

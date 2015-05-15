@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
-import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.PARAMETER_LABEL_NAMES;
+import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.HANDLER_PARAMETER_LABELS;
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 
 /**
@@ -43,7 +43,7 @@ public class AppleScriptColorAnnotator implements Annotator {
                     String labelName = childElement.getText();
                     if (labelNames.contains(labelName)) {
                         String newLabelName = null;
-                        for (IElementType type : PARAMETER_LABEL_NAMES.getTypes()) {
+                      for (IElementType type : HANDLER_PARAMETER_LABELS.getTypes()) {
                             if (!labelNames.contains(type.toString().toLowerCase().substring(21))) {
                                 newLabelName = type.toString().toLowerCase().substring(21);
                             }

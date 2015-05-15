@@ -19,7 +19,9 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 %unicode
 
 ONE_NL=(\r|\n|\r\n)
-WHITE_SPACE=[\ \t\f]
+CC="¬"
+WHITE_SPACE_CHAR=[\ \t\f]
+WHITE_SPACE={WHITE_SPACE_CHAR}|{CC}({WHITE_SPACE_CHAR})*({ONE_NL})?//|{CC}
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE})*
 
 STARTS_BEGINS_WITH=("start""s with"|"start with"|"begin""s with"|"begin with")
@@ -55,7 +57,6 @@ RAW_CODE=("<<"[^">>"]*">>")
 
   "("                         { return LPAREN; }
   ")"                         { return RPAREN; }
-  "¬"                         { return CC; }
   "+"                         { return PLUS; }
   "-"                         { return MINUS; }
   "*"                         { return STAR; }
@@ -76,7 +77,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "instead of"                { return INSTEAD_OF; }
   "that"                      { return THAT; }
   "reference"                 { return REFERENCE; }
-  "its"                       { return ITS; }
   "scripting additions"       { return SCRIPTING_ADDITIONS; }
   "current date"              { return CURRENT_DATE; }
   "text item delimiters"      { return TEXT_ITEM_DELIMETERS; }

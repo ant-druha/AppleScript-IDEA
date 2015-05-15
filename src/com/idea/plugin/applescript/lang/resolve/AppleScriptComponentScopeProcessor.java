@@ -23,7 +23,7 @@ public class AppleScriptComponentScopeProcessor extends AppleScriptPsiScopeProce
     }
 
     @Override
-    protected boolean doExecute(AppleScriptComponentName element) {
+    protected boolean doExecute(@NotNull AppleScriptComponentName element) {
         PsiElement parentElement = element.getContext();
         //todo to check why it is not working with just Component class
         if (parentElement instanceof AppleScriptComponent) {

@@ -35,13 +35,12 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 
 
     @Override
-    protected boolean doExecute(AppleScriptComponentName element) {
+    protected boolean doExecute(@NotNull AppleScriptComponentName element) {
         if (this.myName.equals(element.getName())) {
             myResult.add(element);
             return false;
         }
         return true;
-
     }
 
 //    @Override

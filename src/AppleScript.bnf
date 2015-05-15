@@ -388,7 +388,7 @@ targetRecordLiteral ::= LCURLY[objectPropertyTargetDeclaration] (COMMA objectPro
 //todo inspection for only unique property label names
 
 //>>String class<<
-stringLiteralExpression ::= STRING_LITERAL (BAND ((CC sep)|CC)? primaryExpression)* //sep results in more that one new line
+stringLiteralExpression ::= STRING_LITERAL (BAND primaryExpression)* //sep results in more that one new line
 //private string_literal ::= STRING_LITERAL
 
 //>>List class<<
@@ -669,7 +669,7 @@ handlerNamePartReference ::= referenceIdentifier //|propertyLabelComponent
 // after the command name. The word of or in before directParamName is required in user-defined handlers,
 // but is optional in terminology-defined handlers (for example, those defined by applications).
 private  directParameterVar ::= THE_KW?componentName
-private userParameterVar ::= THE_KW?componentName
+private userParameterVar ::= THE_KW?targetVariablePattern /// instead of componentName
 private userLabelReference ::= THE_KW?referenceIdentifier
 private userLabelComponent ::= THE_KW?componentName
 //private parentSpecifier ::= referenceIdentifier|expression
@@ -693,7 +693,7 @@ labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeled
 {methods=[getComponentNameList]}
 directParameterDeclaration ::= directParameterVar
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
-labeledParameterDeclarationPart ::= handlerParameterLabel userParameterVar
+labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? componentName //userParameterVar //todo implement targetVariablePattern here !!!
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
@@ -794,13 +794,27 @@ private argument_list_part_recover ::= !(RPAREN|COMMA)
 //                           end quit {pin=2}
 
 //todo to think about handlerNamePartDeclaration as reference and componentName in start/ent of this expression
-handlerInterleavedParametersDefinition ::= (on|to) handlerNamePartDefinition COLON userParameterVar (handlerNamePartDefinition COLON userParameterVar)* nls
+handlerInterleavedParametersDefinition ::= (on|to) componentName handlerNameSuffix nls
                                                blockBody? nls
-                                             end [handlerNamePartDefinition COLON (handlerNamePartDefinition COLON)*]
-handlerNamePartDefinition ::= componentName //|propertyLabelComponent
+                                             end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-//handlerInterleavedParametersDefinitionName ::= componentName COLON userParameterVar (componentName COLON userParameterVar)*
+//private handlerInterleavedParametersNameStart ::= componentName
 
+handlerInterleavedParametersNameSuffixPart ::= componentName //|propertyLabelComponent
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+private handlerNamePartRef ::= referenceIdentifier
+
+handlerNameSuffix ::=  COLON userParameterVar (handlerInterleavedParametersNameSuffixPart COLON userParameterVar)*
+//formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
+//{ methods = [getTargetVariableComponentNameListRecursive] }
+//
+////todo change implementation (nor a targetNamedComponent)
+//private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
+//labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
 //(tell scriptObject to|scriptObject"'s" |my)handlerNamePart
 //todo if left associate then 'foo:5 bar:105' detects as a valid call, but it should not!
 //if check on a parser level - need to add checks for:tell_simple_statement,and property_reference
@@ -810,8 +824,6 @@ left handlerInterleavedParametersCall ::= COLON userParameterVal (handlerNamePar
 scriptObjectDefinitionStatement ::= script [scriptObjectName] nls
                                        blockBody? nls
                                     end [script] {pin=1}
-
-
 
 private scriptObjectName ::= componentName
 

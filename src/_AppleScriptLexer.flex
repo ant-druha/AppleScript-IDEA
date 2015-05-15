@@ -20,7 +20,8 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 
 ONE_NL=(\r|\n|\r\n)
 CC="¬"
-WHITE_SPACE=[\ \t\f]|{CC}{ONE_NL}|{CC}
+WHITE_SPACE_CHAR=[\ \t\f]
+WHITE_SPACE={WHITE_SPACE_CHAR}|{CC}({WHITE_SPACE_CHAR})*({ONE_NL})?//|{CC}
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE})*
 
 STARTS_BEGINS_WITH=("start""s with"|"start with"|"begin""s with"|"begin with")

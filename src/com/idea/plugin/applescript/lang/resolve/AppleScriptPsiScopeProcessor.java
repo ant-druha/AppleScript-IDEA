@@ -20,5 +20,5 @@ public abstract class AppleScriptPsiScopeProcessor implements PsiScopeProcessor 
         return doExecute((AppleScriptComponentName)element);
     }
 
-    protected abstract boolean doExecute(AppleScriptComponentName element);
+  protected abstract boolean doExecute(@NotNull AppleScriptComponentName element);
 }
