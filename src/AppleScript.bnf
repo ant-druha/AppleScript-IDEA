@@ -155,7 +155,8 @@ componentName ::= identifier//|appleScriptProperty
 
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
                       |handlerDefinition
-                      |scriptObjectDefinitionStatement
+                      |scriptObjectDefinition
+                      |scriptObjectUnnamedDefinition
                       |returnStatement|continue_statement
                       |assignmentStatement
 
@@ -171,7 +172,7 @@ exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
-blockBody ::= (statement|COMMENT|expression|RAW_CODE)? (nls (statement|COMMENT|expression|RAW_CODE))*
+blockBody ::= (statement|COMMENT|expression|RAW_CODE)? (nls (statement|COMMENT|expression|RAW_CODE))* {pin=1}
 
 repeatForeverStatement ::= repeat nls
                             blockBody? nls
@@ -244,12 +245,16 @@ private applicationClass ::= application|app
 
 // tell front window of application "Finder" to close | object_specifier_statement == front window of application "Finder"
 // For more information on how to specify an application object, see the application class.
-tell_simple_statement ::= tell (/*handlerCallGuardPredicate|*/objectRefWrapper)
-to (statement|(expression handlerInterleavedParametersCall)) {pin=3}
+tell_simple_statement ::= tell (handlerCallGuardPredicate|/*objectRefWrapper*/tellObjectReference)
+to (statement|(expression handlerInterleavedParametersCall?)) //{pin=2}
+
+private tellObjectReference ::= objectRefWrapper
+//{recoverWhile="tellRecover"}
+//tellRecover ::= !(to)
 //object_specifier_statement is a reference to an application object, system object, or script object.
 tell_compound_statement ::= tell objectRefWrapper nls //todo not to count Ø -| and CRLF char as a sep
                                         blockBody? nls
-                            end !(considering|ignoring|error|try|repeat|(using terms from))[tell] {pin=4}
+                            end !(considering|ignoring|error|try|repeat|(using terms from))[tell] {pin=6}
 
 private expectedType ::= classTypeName|referenceIdentifier
 private errorNumber ::= integerLiteralExpression|referenceIdentifier
@@ -798,9 +803,9 @@ handlerInterleavedParametersDefinition ::= (on|to) componentName handlerNameSuff
                                                blockBody? nls
                                              end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+//{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-//private handlerInterleavedParametersNameStart ::= componentName
 
 handlerInterleavedParametersNameSuffixPart ::= componentName //|propertyLabelComponent
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
@@ -809,9 +814,12 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 private handlerNamePartRef ::= referenceIdentifier
 
 handlerNameSuffix ::=  COLON userParameterVar (handlerInterleavedParametersNameSuffixPart COLON userParameterVar)*
-//formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
-//{ methods = [getTargetVariableComponentNameListRecursive] }
-//
+{methods=[getHandlerNamePartList getNamedParameterListRecursive]}
+
+handlerSelectorPart ::= componentName COLON userParameterVar
+{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
+implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
+
 ////todo change implementation (nor a targetNamedComponent)
 //private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 //labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
@@ -821,9 +829,15 @@ handlerNameSuffix ::=  COLON userParameterVar (handlerInterleavedParametersNameS
 //todo 'my foo:5 bar:105' handler incorrectly attached only to 'foo'.need to be 'my foo'
 left handlerInterleavedParametersCall ::= COLON userParameterVal (handlerNamePartReference COLON userParameterVal)*
 
-scriptObjectDefinitionStatement ::= script [scriptObjectName] nls
-                                       blockBody? nls
-                                    end [script] {pin=1}
+scriptObjectDefinition ::= script scriptObjectName nls
+                                  blockBody nls
+                           end [script] //{pin=2}
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptObject"
+implements="com.idea.plugin.applescript.psi.AppleScriptObject"}
+
+scriptObjectUnnamedDefinition ::= script nls
+                                  blockBody? nls
+                                 end [script] {pin=3}
 
 private scriptObjectName ::= componentName
 
@@ -900,8 +914,13 @@ private script_object_variable ::= referenceIdentifier
 // data among lists, records, or script objects—see the Notes section below and “Data Sharing” (page 206).
 //private cmd_set_statement ::= setCommandSyntaxSet|setCommandSyntaxReturning
 
+//todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
+//todo to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
+//todo see com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
+//todo ???may be creat new class for targetVariable ? which will extend component and implement namedElement in one class???
+//todo then hierarchy could be broken...?
 assignmentStatement ::= setCommandAppleScript|setCommandApplication|copyCommandStatement
-{methods=[getAssignmentTarget getTargetVariableListRecursive]}
+{methods=[getAssignmentTarget getTargetVariableListRecursive getTargetsToValuesMapping]}
 
 //set AppleScript command
 private setCommandAppleScript ::= setCommandAppleScriptSetSyntax|setCommandAppleScriptReturningSyntax

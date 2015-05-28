@@ -60,6 +60,10 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         AppleScriptHandlerInterleavedParametersDefinition handlerDefinition =
                 (AppleScriptHandlerInterleavedParametersDefinition) child;
         result.add(handlerDefinition.getComponentName());
+        result.addAll(handlerDefinition.getHandlerNameSuffix().getHandlerNamePartList());
+      } else if (child instanceof AppleScriptHandlerNameSuffix) {
+        AppleScriptHandlerNameSuffix handlerNameSuffix = (AppleScriptHandlerNameSuffix) child;
+        result.addAll(handlerNameSuffix.getNamedParameterListRecursive());
       } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {
         AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
         result.addAll(params.getComponentNameList());
@@ -127,15 +131,14 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         }
 //                }
       } else if (recursively && child instanceof AppleScriptBlockBody && !(context instanceof
-              AppleScriptIfCompoundStatement)) { // do
-        // not scan other inner blocks of if statement
+              AppleScriptIfCompoundStatement)) { // do not scan other inner blocks of if statement
         processTopDeclarations(child, result, true);
-      }
-
-      if (child instanceof AppleScriptComponentName) {
-        result.add((AppleScriptComponentName) child);
-      }
-      if (child instanceof AppleScriptComponent) {
+      } else if (child instanceof AppleScriptObject) {
+        result.add(((AppleScriptObject) child).getComponentName());
+        if (recursively) {
+          processTopDeclarations(child, result, true);
+        }
+      } else if (child instanceof AppleScriptComponent) {
         result.add(((AppleScriptComponent) child).getComponentName());
       }
     }
@@ -184,6 +187,10 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
           AppleScriptHandlerInterleavedParametersDefinition handlerDefinition =
                   (AppleScriptHandlerInterleavedParametersDefinition) child;
           result.add(handlerDefinition.getComponentName());
+          result.addAll(handlerDefinition.getHandlerNameSuffix().getHandlerNamePartList());
+        } else if (child instanceof AppleScriptHandlerNameSuffix) {
+          AppleScriptHandlerNameSuffix handlerNameSuffix = (AppleScriptHandlerNameSuffix) child;
+          result.addAll(handlerNameSuffix.getNamedParameterListRecursive());
         } else if (child instanceof AppleScriptFormalParameterList) {
           AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
           List<AppleScriptComponentName> cmList = parameterList.getTargetVariableComponentNameListRecursive();
@@ -257,14 +264,15 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
             }
           }
         } else if (child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) //
-        // do not scan other
-        // inner blocks of if statement
+        // do not scan other inner blocks of if statement
         {
           processTopDeclarations(child, result, false);//we do not need a recursion
         } else if (child instanceof AppleScriptComponentName) {
           result.add((AppleScriptComponentName) child);
-        }
-        if (child instanceof AppleScriptComponent) {
+        } else if (child instanceof AppleScriptObject) {
+          result.add(((AppleScriptObject) child).getComponentName());
+//          processTopDeclarations(child, result, false);
+        } else if (child instanceof AppleScriptComponent) {
           result.add(((AppleScriptComponent) child).getComponentName());
         }
 
@@ -280,8 +288,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
 
   @Override
   public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement
-          lastParent, @NotNull
-                                     PsiElement place) {
+          lastParent, @NotNull PsiElement place) {
 
     return processDeclarationsImpl(this, processor, state, lastParent) && super.processDeclarations(processor, state,
             lastParent, place);

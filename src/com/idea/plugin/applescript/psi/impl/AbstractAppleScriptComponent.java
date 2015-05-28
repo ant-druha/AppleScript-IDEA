@@ -223,6 +223,10 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
             }
             setTextAttributesKey(CodeInsightColors.NOT_USED_ELEMENT_ATTRIBUTES);
           }
+        } else {
+          if (getName() != null) {
+            result.append(getName());
+          }
         }
         return result.toString();
       }

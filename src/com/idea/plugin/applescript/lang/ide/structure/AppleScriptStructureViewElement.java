@@ -39,7 +39,8 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
   public Collection<StructureViewTreeElement> getChildrenBase() {
     final NavigatablePsiElement element = getElement();
     final List<StructureViewTreeElement> result = new ArrayList<StructureViewTreeElement>();
-    if (element != null && element instanceof AppleScriptFile) {
+    if (element != null && element instanceof AppleScriptFile
+            || element instanceof AppleScriptObject) {
       if (!isRoot) {
         result.add(new AppleScriptStructureViewElement(element, true));
         return result;
@@ -50,7 +51,6 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
                       (myScriptComponents),
               ResolveState.initial(), null);
       for (AppleScriptComponent namedComponent : myScriptComponents) {
-//                PsiElement namedComponent = namedComponent.getParent();//todo may be getContext() ?
         if (namedComponent instanceof AppleScriptHandlerPositionalParametersDefinition) {
           result.add(new AppleScriptStructureViewElement(namedComponent));
         } else if (namedComponent instanceof AppleScriptPropertyDeclaration) {
@@ -58,23 +58,15 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
         } else if (namedComponent instanceof AppleScriptVarAccessDeclaration || namedComponent instanceof
                 AppleScriptVarDeclarationListPart) {
           result.add(new AppleScriptStructureViewElement(namedComponent));
-        } else if (namedComponent.getName() != null) {
+        } else if (namedComponent instanceof AppleScriptObject && namedComponent != element) {
+          result.add(new AppleScriptStructureViewElement(namedComponent, true));
+        } else if (namedComponent.getName() != null
+                && !(namedComponent instanceof AppleScriptHandlerInterleavedParametersNameSuffixPart)
+                && namedComponent != element) {
           result.add(new AppleScriptStructureViewElement(namedComponent));
         }
       }
-    } else if (element instanceof AppleScriptHandlerLabeledParametersCall) {
-      //todo handle handler declaration
     }
-//        else if (element instanceof AppleScriptPropertyDeclaration
-//                && element.getText() != null && element.getText().toLowerCase().contains("parent")) {
-//            //todo: to think about parent
-//            result.add(new AppleScriptStructureViewElement(element));
-//        }
-//        else if (element instanceof AppleScriptPropertyDeclaration) {
-//            result.add(new AppleScriptStructureViewElement(element));
-//        } else if (element instanceof AppleScriptComponent){
-//            result.add(new AppleScriptStructureViewElement(element));
-//        }
     Collections.sort(result, new Comparator<StructureViewTreeElement>() {
       @Override
       public int compare(StructureViewTreeElement o1, StructureViewTreeElement o2) {

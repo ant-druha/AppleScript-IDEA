@@ -2,6 +2,8 @@ package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.util.Pair;
+import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,25 +119,34 @@ public class AppleScriptPsiImplUtil {
   }
 
   @Nullable
-  public static AppleScriptPsiElement getAssignmentTarget(@NotNull AppleScriptAssignmentStatement creationStatement) {
-    AppleScriptTargetVariable targetVariable = creationStatement.getTargetVariable();
-    AppleScriptTargetListLiteral targetListLiteral = creationStatement.getTargetListLiteral();
-    AppleScriptTargetRecordLiteral recordLiteral = creationStatement.getTargetRecordLiteral();
+  public static AppleScriptPsiElement getAssignmentTarget(@NotNull AppleScriptAssignmentStatement assignmentStatement) {
+    AppleScriptTargetVariable targetVariable = assignmentStatement.getTargetVariable();
+    AppleScriptTargetListLiteral targetListLiteral = assignmentStatement.getTargetListLiteral();
+    AppleScriptTargetRecordLiteral recordLiteral = assignmentStatement.getTargetRecordLiteral();
     return targetVariable != null ? targetVariable : targetListLiteral != null ? targetListLiteral : recordLiteral !=
             null ? recordLiteral
             : null;
   }
 
   @NotNull
+  public static List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping(@NotNull
+                                                                                                   AppleScriptAssignmentStatement assignmentStatement) {
+    List<Pair<AppleScriptPsiElement, AppleScriptExpression>> result = new SmartList<Pair<AppleScriptPsiElement,
+            AppleScriptExpression>>();
+
+    return result;
+  }
+
+  @NotNull
   public static List<AppleScriptComponentName> getTargetVariableListRecursive(@NotNull AppleScriptAssignmentStatement
-                                                                                        creationStatement) {
+                                                                                      assignmentStatement) {
     List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
-    AppleScriptTargetVariable targetComponentName = creationStatement.getTargetVariable();
+    AppleScriptTargetVariable targetComponentName = assignmentStatement.getTargetVariable();
     if (targetComponentName != null) {
       result.add(targetComponentName.getComponentName());
       return result;
     }
-    AppleScriptTargetListLiteral targetListLiteral = creationStatement.getTargetListLiteral();
+    AppleScriptTargetListLiteral targetListLiteral = assignmentStatement.getTargetListLiteral();
     if (targetListLiteral != null) {
       for (AppleScriptTargetVariable targetVariable : targetListLiteral.getTargetVariableListRecursive()) {
         AppleScriptComponentName componentName = targetVariable.getComponentName();
@@ -145,7 +156,7 @@ public class AppleScriptPsiImplUtil {
       }
       return result;
     }
-    AppleScriptTargetRecordLiteral targetRecordLiteral = creationStatement.getTargetRecordLiteral();
+    AppleScriptTargetRecordLiteral targetRecordLiteral = assignmentStatement.getTargetRecordLiteral();
     if (targetRecordLiteral != null) {
       for (AppleScriptTargetVariable targetVariable : targetRecordLiteral.getTargetVariableListRecursive()) {
         AppleScriptComponentName componentName = targetVariable.getComponentName();
@@ -157,6 +168,40 @@ public class AppleScriptPsiImplUtil {
 //            result.addAll(targetRecordLiteral.getComponentNameList());
 //            return result;
     }
+    return result;
+  }
+
+  public static List<AppleScriptComponentName> getHandlerNamePartList(AppleScriptHandlerNameSuffix handlerNameSuffix) {
+    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
+    List<AppleScriptHandlerInterleavedParametersNameSuffixPart> namePartComponentList = handlerNameSuffix
+            .getHandlerInterleavedParametersNameSuffixPartList();
+    for (AppleScriptHandlerInterleavedParametersNameSuffixPart namePart : namePartComponentList) {
+      result.add(namePart.getComponentName());
+    }
+    return result;
+  }
+
+  public static List<AppleScriptComponentName> getNamedParameterListRecursive(AppleScriptHandlerNameSuffix
+                                                                                      handlerNameSuffix) {
+    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
+    List<AppleScriptTargetVariable> targetVariables = handlerNameSuffix.getTargetVariableList();
+    List<AppleScriptTargetListLiteral> targetLists = handlerNameSuffix.getTargetListLiteralList();
+    List<AppleScriptTargetRecordLiteral> targetRecords = handlerNameSuffix.getTargetRecordLiteralList();
+    for (AppleScriptTargetVariable targetVariable : targetVariables) {
+      result.add(targetVariable.getComponentName());
+    }
+
+    for (AppleScriptTargetListLiteral targetList : targetLists) {
+      for (AppleScriptTargetVariable targetVar : targetList.getTargetVariableListRecursive()) {
+        result.add(targetVar.getComponentName());
+      }
+    }
+    for (AppleScriptTargetRecordLiteral targetRecord : targetRecords) {
+      for (AppleScriptTargetVariable targetVar : targetRecord.getTargetVariableListRecursive()) {
+        result.add(targetVar.getComponentName());
+      }
+    }
+
     return result;
   }
 
