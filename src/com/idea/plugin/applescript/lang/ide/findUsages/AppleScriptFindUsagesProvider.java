@@ -1,7 +1,7 @@
 package com.idea.plugin.applescript.lang.ide.findUsages;
 
 import com.idea.plugin.applescript.AppleScriptLexerAdapter;
-import com.idea.plugin.applescript.psi.AppleScriptComponentName;
+import com.idea.plugin.applescript.psi.AppleScriptNamedElement;
 import com.idea.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.lang.cacheBuilder.DefaultWordsScanner;
 import com.intellij.lang.cacheBuilder.WordsScanner;
@@ -18,47 +18,47 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
 
-    private static final DefaultWordsScanner WORDS_SCANNER = new DefaultWordsScanner(new AppleScriptLexerAdapter(),
-            TokenSet.create(AppleScriptTypes.IDENTIFIER),
-            TokenSet.create(AppleScriptTypes.COMMENT),
-            TokenSet.create(AppleScriptTypes.STRING_LITERAL));
+  private static final DefaultWordsScanner WORDS_SCANNER = new DefaultWordsScanner(new AppleScriptLexerAdapter(),
+          TokenSet.create(AppleScriptTypes.IDENTIFIER),
+          TokenSet.create(AppleScriptTypes.COMMENT),
+          TokenSet.create(AppleScriptTypes.STRING_LITERAL));
 
-    @Nullable
-    @Override
-    public WordsScanner getWordsScanner() {
-        return WORDS_SCANNER;
-    }
+  @Nullable
+  @Override
+  public WordsScanner getWordsScanner() {
+    return WORDS_SCANNER;
+  }
 
-    @Override
-    public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
-        return psiElement instanceof PsiNamedElement;
-    }
+  @Override
+  public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
+    return psiElement instanceof PsiNamedElement;
+  }
 
-    @Nullable
-    @Override
-    public String getHelpId(@NotNull PsiElement psiElement) {
-        return null;
-    }
+  @Nullable
+  @Override
+  public String getHelpId(@NotNull PsiElement psiElement) {
+    return null;
+  }
 
-    @NotNull
-    @Override
-    public String getType(@NotNull PsiElement element) {
-        return element instanceof AppleScriptComponentName ? ((AppleScriptComponentName)element).toString() : "reference";
-    }
+  @NotNull
+  @Override
+  public String getType(@NotNull PsiElement element) {
+    return element instanceof AppleScriptNamedElement ? "declaration" : "reference";
+  }
 
-    @NotNull
-    @Override
-    public String getDescriptiveName(@NotNull PsiElement element) {
-        if (element instanceof PsiNamedElement) {
-            return StringUtil.notNullize(((PsiNamedElement) element).getName());
-        }
-        return "";
+  @NotNull
+  @Override
+  public String getDescriptiveName(@NotNull PsiElement element) {
+    if (element instanceof PsiNamedElement) {
+      return StringUtil.notNullize(((PsiNamedElement) element).getName());
     }
+    return "";
+  }
 
-    @NotNull
-    @Override
-    public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
-        final String name = element instanceof PsiNamedElement ? ((PsiNamedElement) element).getName() : null;
-        return name != null ? name : element.getText();
-    }
+  @NotNull
+  @Override
+  public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
+    final String name = element instanceof PsiNamedElement ? ((PsiNamedElement) element).getName() : null;
+    return name != null ? name : element.getText();
+  }
 }

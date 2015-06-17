@@ -3,6 +3,9 @@ package com.idea.plugin.applescript.psi.impl;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.Pair;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.SmartList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,38 +21,38 @@ public class AppleScriptPsiImplUtil {
 
   @NotNull
   public static List<AppleScriptTargetVariable> getTargetVariableListRecursive(@NotNull AppleScriptTargetListLiteral
-                                                                                         targetList) {
-    final List<AppleScriptTargetVariable> componentNames = new ArrayList<AppleScriptTargetVariable>();
-    for (AppleScriptTargetVariable targetComponentName : targetList.getTargetVariableList()) {
-      componentNames.add(targetComponentName);
+                                                                                       targetList) {
+    final List<AppleScriptTargetVariable> components = new ArrayList<AppleScriptTargetVariable>();
+    for (AppleScriptTargetVariable targetComponent : targetList.getTargetVariableList()) {
+      components.add(targetComponent);
     }
-    return componentNames;
+    return components;
   }
 
   @NotNull
-  public static List<AppleScriptComponentName> getTargetVariableComponentNameListRecursive(@NotNull
-                                                                                             AppleScriptFormalParameterList
-                                                                                                   parameterList) {
-    final List<AppleScriptComponentName> componentNames = new ArrayList<AppleScriptComponentName>();
+  public static List<AppleScriptComponent> getTargetVariableComponentListRecursive(@NotNull
+                                                                                   AppleScriptFormalParameterList
+                                                                                           parameterList) {
+    final List<AppleScriptComponent> components = new ArrayList<AppleScriptComponent>();
     List<AppleScriptTargetVariable> targetVariables = parameterList.getTargetVariableList();
     List<AppleScriptTargetListLiteral> targetLists = parameterList.getTargetListLiteralList();
     List<AppleScriptTargetRecordLiteral> targetRecords = parameterList.getTargetRecordLiteralList();
 
     for (AppleScriptTargetVariable targetVariable : targetVariables) {
-      componentNames.add(targetVariable.getComponentName());
+      components.add(targetVariable);
     }
 
     for (AppleScriptTargetListLiteral targetList : targetLists) {
       for (AppleScriptTargetVariable targetVar : targetList.getTargetVariableListRecursive()) {
-        componentNames.add(targetVar.getComponentName());
+        components.add(targetVar);
       }
     }
     for (AppleScriptTargetRecordLiteral targetRecord : targetRecords) {
       for (AppleScriptTargetVariable targetVar : targetRecord.getTargetVariableListRecursive()) {
-        componentNames.add(targetVar.getComponentName());
+        components.add(targetVar);
       }
     }
-    return componentNames;
+    return components;
   }
 
   private static void addRecordTargetVariablesRecursive(@NotNull AppleScriptTargetRecordLiteral targetRecord, @NotNull
@@ -73,46 +76,47 @@ public class AppleScriptPsiImplUtil {
     }
   }
 
-  public static List<AppleScriptComponentName> getParameterComponentNameList(@NotNull
-                                                                             AppleScriptHandlerLabeledParametersDefinition handler) {
-    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
+  public static List<AppleScriptComponent> getParameterComponentList(@NotNull
+                                                                     AppleScriptHandlerLabeledParametersDefinition
+                                                                             handler) {
+    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
     AppleScriptLabeledParameterDeclarationList parameterList = handler.getLabeledParameterDeclarationList();
     List<AppleScriptObjectPropertyTargetDeclaration> givenProperties = handler.getObjectPropertyTargetDeclarationList();
     AppleScriptDirectParameterDeclaration directParameter = parameterList.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parameterList
             .getLabeledParameterDeclarationPartList();
     if (directParameter != null) {
-      result.add(directParameter.getComponentName());
+      result.add(directParameter);
     }
     for (AppleScriptLabeledParameterDeclarationPart labeledParameter : labeledParameters) {
-      result.add(labeledParameter.getComponentName());
+      result.add(labeledParameter);
     }
     for (AppleScriptObjectPropertyTargetDeclaration property : givenProperties) {
-      result.add(property.getComponentName());
+      result.add(property);
     }
     return result;
   }
 
-  public static List<AppleScriptComponentName> getComponentNameList(@NotNull
-                                                                    AppleScriptLabeledParameterDeclarationList
-                                                                            parametersDeclaration) {
-    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
+  public static List<AppleScriptComponent> getComponentList(@NotNull
+                                                            AppleScriptLabeledParameterDeclarationList
+                                                                    parametersDeclaration) {
+    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
     AppleScriptDirectParameterDeclaration directParameter = parametersDeclaration.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parametersDeclaration
             .getLabeledParameterDeclarationPartList();
     if (directParameter != null) {
-      result.add(directParameter.getComponentName());
+      result.add(directParameter);
     }
     for (AppleScriptLabeledParameterDeclarationPart labeledParameter : labeledParameters) {
-      result.add(labeledParameter.getComponentName());
+      result.add(labeledParameter);
     }
     return result;
   }
 
   @NotNull
   public static List<AppleScriptTargetVariable> getTargetVariableListRecursive(@NotNull
-                                                                                 AppleScriptTargetRecordLiteral
-                                                                                         targetRecord) {
+                                                                               AppleScriptTargetRecordLiteral
+                                                                                       targetRecord) {
     final List<AppleScriptTargetVariable> targetVariables = new ArrayList<AppleScriptTargetVariable>();
     addRecordTargetVariablesRecursive(targetRecord, targetVariables);
     return targetVariables;
@@ -138,71 +142,46 @@ public class AppleScriptPsiImplUtil {
   }
 
   @NotNull
-  public static List<AppleScriptComponentName> getTargetVariableListRecursive(@NotNull AppleScriptAssignmentStatement
-                                                                                      assignmentStatement) {
-    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
-    AppleScriptTargetVariable targetComponentName = assignmentStatement.getTargetVariable();
-    if (targetComponentName != null) {
-      result.add(targetComponentName.getComponentName());
+  public static List<AppleScriptComponent> getTargetVariableListRecursive(@NotNull AppleScriptAssignmentStatement
+                                                                                  assignmentStatement) {
+    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    AppleScriptTargetVariable targetComponent = assignmentStatement.getTargetVariable();
+    if (targetComponent != null) {
+      result.add(targetComponent);
       return result;
     }
     AppleScriptTargetListLiteral targetListLiteral = assignmentStatement.getTargetListLiteral();
     if (targetListLiteral != null) {
       for (AppleScriptTargetVariable targetVariable : targetListLiteral.getTargetVariableListRecursive()) {
-        AppleScriptComponentName componentName = targetVariable.getComponentName();
-        if (componentName != null) {//todo to check
-          result.add(componentName);
-        }
+        result.add(targetVariable);
       }
       return result;
     }
     AppleScriptTargetRecordLiteral targetRecordLiteral = assignmentStatement.getTargetRecordLiteral();
     if (targetRecordLiteral != null) {
       for (AppleScriptTargetVariable targetVariable : targetRecordLiteral.getTargetVariableListRecursive()) {
-        AppleScriptComponentName componentName = targetVariable.getComponentName();
-        if (componentName != null) {//todo to check
-          result.add(componentName);
-        }
+        result.add(targetVariable);
       }
       return result;
-//            result.addAll(targetRecordLiteral.getComponentNameList());
-//            return result;
     }
     return result;
   }
 
-  public static List<AppleScriptComponentName> getHandlerNamePartList(AppleScriptHandlerNameSuffix handlerNameSuffix) {
-    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
-    List<AppleScriptHandlerInterleavedParametersNameSuffixPart> namePartComponentList = handlerNameSuffix
-            .getHandlerInterleavedParametersNameSuffixPartList();
-    for (AppleScriptHandlerInterleavedParametersNameSuffixPart namePart : namePartComponentList) {
-      result.add(namePart.getComponentName());
-    }
-    return result;
+  public static PsiElement getSelectorIdentifier(AppleScriptArgumentSelector argumentSelector) {
+    return PsiTreeUtil.findChildOfType(argumentSelector, AppleScriptIdentifier.class);
   }
 
-  public static List<AppleScriptComponentName> getNamedParameterListRecursive(AppleScriptHandlerNameSuffix
-                                                                                      handlerNameSuffix) {
-    List<AppleScriptComponentName> result = new ArrayList<AppleScriptComponentName>();
-    List<AppleScriptTargetVariable> targetVariables = handlerNameSuffix.getTargetVariableList();
-    List<AppleScriptTargetListLiteral> targetLists = handlerNameSuffix.getTargetListLiteralList();
-    List<AppleScriptTargetRecordLiteral> targetRecords = handlerNameSuffix.getTargetRecordLiteralList();
-    for (AppleScriptTargetVariable targetVariable : targetVariables) {
-      result.add(targetVariable.getComponentName());
-    }
-
-    for (AppleScriptTargetListLiteral targetList : targetLists) {
-      for (AppleScriptTargetVariable targetVar : targetList.getTargetVariableListRecursive()) {
-        result.add(targetVar.getComponentName());
+  public static String getSelectorName(AppleScriptArgumentSelector argumentSelector) {
+    StringBuilder result = new StringBuilder();
+    ASTNode child = argumentSelector.getNode().getFirstChildNode();
+    while (child != null) {
+      final IElementType tt = child.getElementType();
+      if (tt == AppleScriptTypes.IDENTIFIER || tt == AppleScriptTypes.COLON) {
+        result.append(child.getText());
       }
+      child = child.getTreeNext();
     }
-    for (AppleScriptTargetRecordLiteral targetRecord : targetRecords) {
-      for (AppleScriptTargetVariable targetVar : targetRecord.getTargetVariableListRecursive()) {
-        result.add(targetVar.getComponentName());
-      }
-    }
-
-    return result;
+    return result.toString();
   }
 
   public static boolean isWhiteSpaceOrNls(ASTNode node) {

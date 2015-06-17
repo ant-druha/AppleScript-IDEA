@@ -41,4 +41,5 @@ public interface AppleScriptTokenTypesSets {
 
     TokenSet STRINGS = TokenSet.create(STRING_LITERAL);
     TokenSet WHITE_SPACES_SET = TokenSet.create(NLS, com.intellij.psi.TokenType.WHITE_SPACE);
+  TokenSet COMMENT_OR_WHITE_SPACE = TokenSet.create(NLS, com.intellij.psi.TokenType.WHITE_SPACE, COMMENT);
 }

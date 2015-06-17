@@ -20,10 +20,14 @@ import java.util.List;
 /**
  * Created by Andrey on 21.04.2015.
  */
-public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElementImpl implements AppleScriptComponent {
+public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl implements AppleScriptComponent {
 
-  public AbstractAppleScriptComponent(@NotNull ASTNode node) {
+  public BaseAppleScriptComponent(@NotNull ASTNode node) {
     super(node);
+  }
+
+  public String toString() {
+    return getNode().getElementType().toString();
   }
 
   @Override
@@ -34,7 +38,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
 
   @Override
   public boolean isResolveTarget() {
-    return !isObjectProperty(); //!!! should should be enough !!!
+    return !isObjectProperty(); //!!! should be enough !!!
   }
 
   @Override
@@ -46,12 +50,12 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   public boolean isObjectProperty() {
     return getContext() instanceof AppleScriptRecordLiteralExpression || getContext() instanceof
             AppleScriptTargetRecordLiteral;
-//        return false;
   }
 
   @Nullable
   @Override
   public PsiElement getOriginalDeclaration() {
+    //todo (re)move this to targetReference
     PsiReference myReference = getReference();
     if (myReference != null) {
       PsiElement myTarget = myReference.resolve();
@@ -69,21 +73,16 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
 
   @Override
   public boolean isScriptProperty() {
-    if (findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null) {
-      return true;
-    }
-    return getOriginalDeclaration() instanceof AppleScriptPropertyDeclaration;
+    return findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null ||
+            getOriginalDeclaration() instanceof AppleScriptPropertyDeclaration;
   }
 
   @Override
   public boolean isVariable() {
     return (findChildByType(AppleScriptTypes.LOCAL) != null || findChildByType(AppleScriptTypes.GLOBAL) != null) ||
-            (this instanceof AppleScriptTargetVariable && getFirstChild() instanceof AppleScriptComponentName) ||
+            (this instanceof AppleScriptTargetVariable && getFirstChild() instanceof AppleScriptIdentifier) ||
             this instanceof AppleScriptVarDeclarationListPart ||
-            getContext() instanceof AppleScriptLabeledParameterDeclarationList;// 'on' is also a label!!
-//        else if (getContext() instanceof AppleScriptComponent) {//if this is a component in component->variable init
-//            return true;
-//        }
+            getContext() instanceof AppleScriptLabeledParameterDeclarationList;
   }
 
   @Nullable
@@ -99,20 +98,27 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
 
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
-    // we need to find all occurrences of this element (as it could be more than one, not as
-    // usual componentName like handlerName)
-    // todo: check usages cope
-    final AppleScriptComponentName componentName = getComponentName();
-    if (componentName != null) {
-      componentName.setName(newElementName);
+    //todo redefine in a interleaved handler
+    final AppleScriptIdentifier identifier = getAppleScriptIdentifier();
+    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+            newElementName);
+    if (identifierNew != null && identifier != null) {
+      getNode().replaceChild(identifier.getNode(), identifierNew.getNode());
     }
     return this;
   }
 
   @Override
   public PsiReference getReference() {
-    return new AppleScriptTargetReferenceImpl(this);
-//        return super.getReference();
+    final String targetName = getName() != null ? getName() : getNode().getText();
+    //todo to think how to better simplify
+    if (this instanceof AppleScriptHandlerPositionalParametersDefinition || this instanceof AppleScriptHandler
+            || this instanceof AppleScriptSelectorIdentifier || this instanceof AppleScriptVarDeclarationListPart
+            || findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null
+            ) {
+      return null;
+    }
+    return new AppleScriptTargetReferenceImpl(this, targetName);
   }
 
   @NotNull
@@ -121,24 +127,32 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
     return super.getReferences();
   }
 
-  @Nullable
-  @Override
-  public abstract AppleScriptComponentName getComponentName();
 
   @Override
   public String getName() {
-    AppleScriptComponentName componentName = getComponentName();
-    if (componentName != null) {
-      return componentName.getName();
+    PsiElement nameIdentifier = getNameIdentifier();
+    if (nameIdentifier != null) {
+      return nameIdentifier.getText();
     }
-    return super.getName();
+    return getNode().getText();
+  }
+
+  @Override
+  public int getTextOffset() {
+    return getNameIdentifier() != null ? getNameIdentifier().getTextOffset() : super.getTextOffset();
   }
 
   @Nullable
   @Override
   public PsiElement getNameIdentifier() {
     //returning this in case of property statement makes IDEA to highlight the whole statement
-    return getComponentName();
+    return getAppleScriptIdentifier();
+  }
+
+  @NotNull
+  @Override
+  public AppleScriptIdentifier getAppleScriptIdentifier() {
+    return PsiTreeUtil.getChildOfType(this, AppleScriptIdentifier.class);
   }
 
   @Nullable
@@ -151,14 +165,13 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
     } else if (isHandler()) {
       return PlatformIcons.FUNCTION_ICON;
     }
-    // or list/record target component
     return AllIcons.General.Ellipsis;
   }
 
   @Override
   public ItemPresentation getPresentation() {
 
-    ItemPresentation presentation = new AppleScriptElementPresentation(this) {
+    return new AppleScriptElementPresentation(BaseAppleScriptComponent.this) {
       @Nullable
       @Override
       public String getPresentableText() {
@@ -178,13 +191,13 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
                     (AppleScriptHandlerPositionalParametersDefinition) thisComponent;
             AppleScriptFormalParameterList parameterList = handler.getFormalParameterList();
             if (parameterList != null) {
-              List<AppleScriptComponentName> myParameters = parameterList.getTargetVariableComponentNameListRecursive();
+              List<AppleScriptComponent> myParameters = parameterList.getTargetVariableComponentListRecursive();
               result.append("(");
               String prefix = "";
-              for (AppleScriptComponentName parmName : myParameters) {
+              for (AppleScriptComponent paramName : myParameters) {
                 result.append(prefix);
                 prefix = ",";
-                result.append(parmName.getName());
+                result.append(paramName.getName());
               }
               result.append(")");
             }
@@ -199,26 +212,22 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
             String sep = " : ";
             result.append(sep);
             if (directParameter != null) {
-//              sep = " : ";
-//              result.append(sep);
               PsiElement prevElement = directParameter.getPrevSibling();
-              while (AppleScriptTokenTypesSets.WHITE_SPACES_SET.contains(prevElement.getNode().getElementType())) {
+              while (prevElement != null &&
+                      AppleScriptTokenTypesSets.WHITE_SPACES_SET.contains(prevElement.getNode().getElementType())) {
                 prevElement = prevElement.getPrevSibling();
               }
-              if (prevElement.getNode().getElementType().equals(AppleScriptTypes.ON)
-                      || prevElement.getNode().getElementType().equals(AppleScriptTypes.OF)) {
+              if (prevElement != null &&
+                      (AppleScriptTypes.ON.equals(prevElement.getNode().getElementType())
+                              || prevElement.getNode().getElementType().equals(AppleScriptTypes.OF))) {
                 result.append(' ').append(prevElement.getText());
               }
-              result.append(' ').append(directParameter.getComponentName().getName());
+              result.append(' ').append(directParameter.getName());
             }
             if (!labeledParams.isEmpty()) {
-//              if (!" : ".equals(sep)) {
-//                sep = " : ";
-//                result.append(sep); //todo this is just for test!
-//              }
               for (AppleScriptLabeledParameterDeclarationPart labeledParam : labeledParams) {
-                result.append(' ').append(labeledParam.getHandlerParameterLabel().getText()).append(' ')
-                        .append(labeledParam.getComponentName().getName());
+                result.append(' ').append(labeledParam.getHandlerParameterLabel().getText()).append(' ');
+                result.append(labeledParam.getName());
               }
             }
             setTextAttributesKey(CodeInsightColors.NOT_USED_ELEMENT_ATTRIBUTES);
@@ -231,9 +240,5 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
         return result.toString();
       }
     };
-
-    return presentation;
   }
-
-
 }

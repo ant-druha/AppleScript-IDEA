@@ -2,14 +2,11 @@ package com.idea.plugin.applescript.psi;
 
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiNameIdentifierOwner;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * Created by Andrey on 21.04.2015. <p/>
@@ -18,7 +15,7 @@ import java.util.List;
  * Can be variable declaration (global/local variable declaration), variable declaration and initialization (variable
  * in creation statement, property declaration), handler parameter declaration, handler declaration
  */
-public interface AppleScriptComponent extends AppleScriptPsiElement, PsiNameIdentifierOwner {
+public interface AppleScriptComponent extends AppleScriptPsiElement, AppleScriptNamedElement {
 
     //todo create AppleScriptComponentType enum and methods to get the component type from class => easier to maintain
     /**
@@ -106,16 +103,6 @@ public interface AppleScriptComponent extends AppleScriptPsiElement, PsiNameIden
     @NotNull
     @Override
     PsiReference[] getReferences();
-
-    /**
-     * This should be implemented by all classes implementing targetComponent
-     * !!!this is not implemented in abstract component!!!
-     *
-     * @return componentName class of this element
-     */
-    @Nullable
-    AppleScriptComponentName getComponentName();
-
 
     @Nullable
     @Override

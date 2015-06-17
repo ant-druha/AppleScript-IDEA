@@ -48,10 +48,20 @@
         <annotator language="AppleScript"
                    implementationClass="com.idea.plugin.applescript.lang.ide.annotator.AppleScriptColorAnnotator"/>
 
-        <!--<resolveScopeProvider implementation="com.idea.plugin.applescript.lang.resolve.AppleScriptResolveScopeProvider"/>-->
+        <!--not used -->
+        <targetElementEvaluator language="AppleScript"
+                                implementationClass="com.idea.plugin.applescript.lang.resolve.AppleScriptTargetElementEvaluator"/>
 
+        <!--<gotoDeclarationHandler implementation="com.idea.plugin.applescript.lang.resolve.AppleScriptGotoDeclarationHandler"/>-->
+
+        <!-- find usages-->
         <lang.findUsagesProvider language="AppleScript"
                                  implementationClass="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptFindUsagesProvider"/>
+        <pom.declarationSearcher
+                implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerDeclarationSearcher"/>
+        <referencesSearch
+                implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerReferencesSearch"/>
+
 
         <elementDescriptionProvider
                 implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptElementDescriptionProvider"/>

@@ -143,15 +143,15 @@ private nls ::= NLS* // zero or more new lines and spaces
 identifier ::= var_identifier|appleScriptProperty
 
 //appleScriptNativeHandler ::= run|quit|idle|open
-
-referenceIdentifier ::= identifier|applicationStandardCommandNames
+private identifierOrStandardCommands ::= identifier|applicationStandardCommandNames
+referenceIdentifier ::= identifierOrStandardCommands
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
 implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
 
 //todo include appleScriptPropertiesConstant here ??
-componentName ::= identifier//|appleScriptProperty
-{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptNamedElementImpl"
- implements="com.idea.plugin.applescript.psi.AppleScriptNamedElement"}
+//componentName ::= identifier//|appleScriptProperty
+//{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptNamedElementImpl"
+// implements="com.idea.plugin.applescript.psi.AppleScriptNamedElement"}
 
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
                       |handlerDefinition
@@ -200,7 +200,8 @@ repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopVal
 private stepValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
 private stopValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
 private startValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
-private loopVariable ::= componentName
+private loopVariable ::= directParameterDeclaration
+
 
 repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression nls
                          blockBody? nls
@@ -225,14 +226,14 @@ tryStatement ::= try nls
                      blockBody? nls
                   end !(considering|ignoring|tell|repeat|(using terms from))[error|try] {pin=1}
 
-varDeclarationListPart ::=  componentName
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+varDeclarationListPart ::= identifier
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
  implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 varDeclarationList ::= varAccessDeclaration (COMMA varDeclarationListPart)*
 
-private errorMessageVar ::= componentName
-private errorNumberVar ::= componentName
+private errorMessageVar ::= directParameterDeclaration
+private errorNumberVar ::= directParameterDeclaration
 private offendingObjectVar ::= referenceIdentifier
 private resultListVar ::= referenceIdentifier
 private expectedTypeVar ::= referenceIdentifier
@@ -246,7 +247,7 @@ private applicationClass ::= application|app
 // tell front window of application "Finder" to close | object_specifier_statement == front window of application "Finder"
 // For more information on how to specify an application object, see the application class.
 tell_simple_statement ::= tell (handlerCallGuardPredicate|/*objectRefWrapper*/tellObjectReference)
-to (statement|(expression handlerInterleavedParametersCall?)) //{pin=2}
+to (statement | handlerInterleavedParametersCall | expression ) //{pin=2}
 
 private tellObjectReference ::= objectRefWrapper
 //{recoverWhile="tellRecover"}
@@ -307,8 +308,8 @@ usingTermsFromStatement ::= using terms from (application_reference|(script data
 //todo see com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
 //todo ???may be creat new class for targetVariable ? which will extend component and implement namedElement in one class???
 //todo then hierarchy could be broken...?
-targetVariable ::= componentName
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+targetVariable ::= identifier
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private ifStatement ::= ifCompoundStatement|ifSimpleStatement
@@ -387,7 +388,7 @@ private recordLiteral ::= LCURLY[objectPropertyDeclaration] (COMMA objectPropert
 
 //todo the same as for the list:
 //todo create RecordLiteralExpression class for usual list, then create TargetList class extends
-// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentNameListRecursive method
+// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
 targetRecordLiteral ::= LCURLY[objectPropertyTargetDeclaration] (COMMA objectPropertyTargetDeclaration)* RCURLY
 { methods=[getTargetVariableListRecursive] }
 //todo inspection for only unique property label names
@@ -407,7 +408,7 @@ private listLiteral ::= LCURLY [expression|referenceIdentifier] (COMMA(expressio
 //((targetListLiteral|parenthesizedExpression|targetComponentName)
 //(BAND nls primaryExpression)+)//any other(than string or record) class converted to a list
 //todo create ListLiteralExpression class for usual list, then create TargetList class extends
-// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentNameListRecursive method
+// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
 targetListLiteral ::= LCURLY [targetVariablePattern|expression] (COMMA targetVariablePattern|expression)* RCURLY //{pin=4}
 {methods = [getTargetVariableListRecursive] }
 //The class identifier Styled Text is a synonym for a string that includes style and font information.
@@ -451,7 +452,7 @@ file_reference ::= THE_KW?(file|alias) expression // example p.193
 left applicationObjectReference ::= (of|in) THE_KW? application_reference
 
 //todo any handler can only be attached to the identifier!
-private refForm ::= (my referenceIdentifier handlerInterleavedParametersCall)
+private refForm ::= (my handlerInterleavedCallOrPropertyReference )
                     |(my?
                     (arbitraryReference
                     |everyElemReference
@@ -463,23 +464,19 @@ private refForm ::= (my referenceIdentifier handlerInterleavedParametersCall)
                     |propertyReference handlerCallExpression?
                      ))
 
-
+private handlerInterleavedCallOrPropertyReference ::= handlerInterleavedParametersCall | propertyReference
 
 propertyReference ::=  propertyLabelReference
 
 
 private propertyLabelReference ::= builtInClassName|referenceIdentifier|literalExpression//|appleScriptProperty
-private propertyLabelComponentName ::= builtInClassName|componentName//|appleScriptProperty|componentName
+private propertyLabelIdentifier ::= builtInClassName|identifier//|appleScriptProperty|componentName
 //private propertyLabelTargetComponent ::= builtInClassName|targetVariable//|appleScriptProperty|componentName
 
 //todo can be any valueExpression here !?!?
 //private propertyValueExpression ::= /*applicationStandardCommandNames|*/referenceIdentifier
 //|literalExpression //todo may be better not to include here? (need only for list/record/string references?)
 
-left objectRef ::=
-((of|in) THE_KW? ((prefixExpression APS THE_KW? prefixExpression handlerInterleavedParametersCall?)|prefixExpression handlerInterleavedParametersCall?)
-[filterReference] THE_KW? applicationObjectReference?)
-//{pin(".*")=1} //if pin then in form 'of ' error is not reported
 
 
 arbitraryReference ::= some classTypeName {pin=1}
@@ -551,17 +548,17 @@ private propertyDeclarationStatement ::= propertyDeclaration//|objectPropertyDec
 
 varAccessDeclaration ::= variableGlobalDeclaration|variableLocalDeclaration
 //todo method isGlobal()/isLocal() etc
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 //AppleScript propertyDeclaration
-propertyDeclaration ::= (property|prop) propertyLabelComponentName COLON propertyInitializer
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+propertyDeclaration ::= (property|prop) propertyLabelIdentifier COLON propertyInitializer
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 //Object (AppleScript record or application object) propertyDeclaration
-objectPropertyDeclaration ::= propertyLabelComponentName COLON propertyInitializer
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+objectPropertyDeclaration ::= propertyLabelIdentifier COLON propertyInitializer
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 //targetRecordLiteral ::= LCURLY[propertyLabelComponentName COLON targetVariablePattern] (COMMA propertyLabelComponentName COLON targetVariablePattern)* RCURLY
@@ -570,16 +567,16 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 //
 //todo MAY BE THE SAME as for the list or record ????
 //todo create ListLiteralExpression class for usual list, then create TargetList class extends
-//todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentNameListRecursive method
+//todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
 //todo only here the recursion is not really needed.
 //todo And override getComponentName method, which will return needed componentName (label name)
 //fallback to expression - it is also valid construct
-objectPropertyTargetDeclaration ::= propertyLabelComponentName COLON (targetVariablePattern|propertyInitializer)
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+objectPropertyTargetDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializer)
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-private variableGlobalDeclaration ::= global propertyLabelComponentName
-private variableLocalDeclaration ::= local propertyLabelComponentName
+private variableGlobalDeclaration ::= global propertyLabelIdentifier
+private variableLocalDeclaration ::= local propertyLabelIdentifier
 
 private propertyInitializer ::= expression
 //An expression is any series of lexical elements that has a value. Expressions are used in scripts to represent
@@ -666,17 +663,21 @@ handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|a
 // labeled parameter (whose label is to) that specifies where to move the object.
 
 
-private handlerNameNonStrictDeclaration ::= componentName//|reservedWordsNotParameterLabel/*|with*/ //reference_expression could be for example: 'perform mail action with messages' impossible to
+//private handlerNameNonStrictDeclaration ::= componentName//|reservedWordsNotParameterLabel/*|with*/ //reference_expression could be for example: 'perform mail action with messages' impossible to
  // match such names...
 
-handlerNamePartReference ::= referenceIdentifier //|propertyLabelComponent
+argumentSelector ::= identifierOrStandardCommands COLON //|propertyLabelComponent
+{methods=[getSelectorIdentifier getSelectorName]}
+
+//private handlerNamePartReference ::= referenceIdentifier //|propertyLabelComponent
 //An identifier for the direct parameter variable. If it is included, directParamName must be listed immediately
 // after the command name. The word of or in before directParamName is required in user-defined handlers,
 // but is optional in terminology-defined handlers (for example, those defined by applications).
-private  directParameterVar ::= THE_KW?componentName
-private userParameterVar ::= THE_KW?targetVariablePattern /// instead of componentName
-private userLabelReference ::= THE_KW?referenceIdentifier
-private userLabelComponent ::= THE_KW?componentName
+//private  directParameterVar ::= THE_KW?componentName
+//private  directParameterVar ::= THE_KW? identifier
+private userParameterVar ::= THE_KW? targetVariablePattern /// instead of componentName
+private userLabelReference ::= THE_KW? referenceIdentifier
+//private userLabelComponent ::= THE_KW? componentName
 //private parentSpecifier ::= referenceIdentifier|expression
 
 //===HANDLERS===
@@ -684,22 +685,24 @@ private userLabelComponent ::= THE_KW?componentName
 //private handler_declaration_block ::= lbl_param_handler_declaration | pos_param_handler_declaration |
 //                                      interleaved_param_handler_declaration
 
-handlerLabeledParametersDefinition ::= (on|to) componentName !LPAREN labeledParameterDeclarationList
+handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
                                          [given THE_KW? objectPropertyTargetDeclaration (COMMA THE_KW? objectPropertyTargetDeclaration)*] //nls //should be sep here
                                          [varDeclarationList] nls
                                            blockBody? nls
                                         end [handlerNameStrict] //!expression// sep or EOF here todo think: sep is needed for validation but could be issues with not included handlerNameStrict
 //                                        {pin=2}
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"
-methods=[getParameterComponentNameList]}
+methods=[getParameterComponentList]}
 
 labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
-{methods=[getComponentNameList]}
-directParameterDeclaration ::= directParameterVar
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
-labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? componentName //userParameterVar //todo implement targetVariablePattern here !!!
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{methods=[getComponentList]}
+//directParameterDeclaration ::= directParameterVar
+directParameterDeclaration ::= THE_KW? identifier
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? identifier //userParameterVar //todo implement targetVariablePattern here !!!
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
 //handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
@@ -752,7 +755,7 @@ private handlerCallGuardPredicate ::=
 (&((referenceIdentifier/*|applicationStandardCommandNames*/) handlerParameterLabel)(referenceIdentifier/*|applicationStandardCommandNames*/))
 //set (AppleScripts text_item_delimiters) to {", "} ->
 //|(&(parenthesized_expression handlerParameterLabel)parenthesized_expression)
- userParameterVal ::= expression
+private userParameterVal ::= expression
  //todo to think why otherwise 'copy sayHello to name' is not detected as handler call (but only 'sayHello to name')
  //todo may be this is the correct bahavior??
  directParameterVal ::=
@@ -761,25 +764,25 @@ private handlerCallGuardPredicate ::=
   //{recoverWhile="setRecover"}
   //expression //todo if parameter=handlerLabeledParametersCall? (ident.+label)
 
-handlerPositionalParametersDefinition ::= (on|to) componentName LPAREN [formalParameterList] RPAREN
+handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
                                             [varDeclarationList] nls
                                                blockBody? nls
                                             end !(considering|ignoring|error|try|repeat|tell|timeout|(using terms from))[handlerNameStrict]
 //                                            {pin=3} or Grammar kit will also make formalParameterList as Component
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 
 left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
-{ methods = [getTargetVariableComponentNameListRecursive] }
+{ methods = [getTargetVariableComponentListRecursive] }
 
 //todo change implementation (nor a targetNamedComponent)
 private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
 private argument_list_recover ::= !(RPAREN)
-private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"}
+private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"} //todo expression ??
 private argument_list_part_recover ::= !(RPAREN|COMMA)
 
 //handlerRunDefinition ::= on run nls
@@ -799,26 +802,38 @@ private argument_list_part_recover ::= !(RPAREN|COMMA)
 //                           end quit {pin=2}
 
 //todo to think about handlerNamePartDeclaration as reference and componentName in start/ent of this expression
-handlerInterleavedParametersDefinition ::= (on|to) componentName handlerNameSuffix nls
+//handlerInterleavedParametersDefinition ::= (on|to) componentName handlerNameSuffix nls
+//                                               blockBody? nls
+//                                             end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
+//{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponentimplements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersSelectorPart+ nls
                                                blockBody? nls
                                              end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-//{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
+implements="com.idea.plugin.applescript.psi.AppleScriptHandler"}
 
 
-handlerInterleavedParametersNameSuffixPart ::= componentName //|propertyLabelComponent
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+//handlerInterleavedParametersNameSuffixPart ::= componentName //|propertyLabelComponent
+//{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+//implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private handlerNamePartRef ::= referenceIdentifier
 
-handlerNameSuffix ::=  COLON userParameterVar (handlerInterleavedParametersNameSuffixPart COLON userParameterVar)*
-{methods=[getHandlerNamePartList getNamedParameterListRecursive]}
+//handlerNameSuffix ::=  COLON userParameterVar (handlerInterleavedParametersNameSuffixPart COLON userParameterVar)*
+//{methods=[getHandlerNamePartList getNamedParameterListRecursive]}
 
-handlerSelectorPart ::= componentName COLON userParameterVar
+//handlerInterleavedParametersSelectorPart ::= componentName COLON userParameterVar
+//handlerInterleavedParametersSelectorPart ::= identifier COLON userParameterVar
+handlerInterleavedParametersSelectorPart ::= selectorIdentifier COLON userParameterVar
+ //todo not generate by grammar method getComponentName() ?? (need to try to return null here?)
+ //todo or remove component name from here at all, or other things to try (several componentNames etc)?
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
-implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
+implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart" }
+
+selectorIdentifier ::= identifier //todo do we need a separate class here? (implementing Component class?)
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent" }
 
 ////todo change implementation (nor a targetNamedComponent)
 //private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
@@ -827,7 +842,16 @@ implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
 //todo if left associate then 'foo:5 bar:105' detects as a valid call, but it should not!
 //if check on a parser level - need to add checks for:tell_simple_statement,and property_reference
 //todo 'my foo:5 bar:105' handler incorrectly attached only to 'foo'.need to be 'my foo'
-left handlerInterleavedParametersCall ::= COLON userParameterVal (handlerNamePartReference COLON userParameterVal)*
+//left handlerInterleavedParametersCall ::= handlerArgumentPart handlerArgument*
+//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"
+//implements="com.idea.plugin.applescript.psi.AppleScriptHandlerCall"}
+//handlerArgumentPart ::= COLON userParameterVal
+
+handlerInterleavedParametersCall ::= handlerArgument+
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"
+implements="com.idea.plugin.applescript.psi.AppleScriptHandlerCall"}
+
+handlerArgument ::= argumentSelector userParameterVal
 
 scriptObjectDefinition ::= script scriptObjectName nls
                                   blockBody nls
@@ -839,7 +863,7 @@ scriptObjectUnnamedDefinition ::= script nls
                                   blockBody? nls
                                  end [script] {pin=3}
 
-private scriptObjectName ::= componentName
+private scriptObjectName ::= identifier
 
 // ??? continue handlerName [ parameterList ] ???
 // ??? parameterList ??? on sayHello to someone | continue sayHello to someone
@@ -976,8 +1000,16 @@ private prefixExpression ::= (prefixOperator nls prefixExpression) | valueExpres
 private prefixOperator ::= PLUS|MINUS|LNOT
 
 private objectRefWrapper ::=
-THE_KW? ((prefixExpression APS THE_KW?prefixExpression handlerInterleavedParametersCall?)|prefixExpression) [filterReference]
+THE_KW? ((prefixExpression APS THE_KW? handlerInterleavedCallOrPrefixExpression)|prefixExpression) [filterReference]
 ((THE_KW? applicationObjectReference)|objectRef*)
+
+private handlerInterleavedCallOrPrefixExpression ::= handlerInterleavedParametersCall | prefixExpression
+
+left objectRef ::=
+((of|in) THE_KW? ((prefixExpression APS THE_KW? handlerInterleavedCallOrPrefixExpression)|handlerInterleavedCallOrPrefixExpression)
+[filterReference] THE_KW? applicationObjectReference?)
+//{pin(".*")=1} //if pin then in form 'of ' error is not reported
+
 //left objectRef ::=
 //((of|in) THE_KW? ((prefixExpression APS THE_KW? prefixExpression)|prefixExpression)
 //[filterReference] THE_KW? applicationObjectReference?)

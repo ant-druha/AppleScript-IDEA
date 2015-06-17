@@ -47,23 +47,27 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
       }
       THashSet<AppleScriptComponent> myScriptComponents = new THashSet<AppleScriptComponent>();
 
+      //todo AppleScriptComponentScopeProcessor takes only direct parent of component name -> takes selectorPart
+      //todo need to change to handler
       AppleScriptPsiElementImpl.processDeclarationsImpl(element, new AppleScriptComponentScopeProcessor
                       (myScriptComponents),
               ResolveState.initial(), null);
-      for (AppleScriptComponent namedComponent : myScriptComponents) {
-        if (namedComponent instanceof AppleScriptHandlerPositionalParametersDefinition) {
-          result.add(new AppleScriptStructureViewElement(namedComponent));
-        } else if (namedComponent instanceof AppleScriptPropertyDeclaration) {
-          result.add(new AppleScriptStructureViewElement(namedComponent));
-        } else if (namedComponent instanceof AppleScriptVarAccessDeclaration || namedComponent instanceof
+      for (AppleScriptComponent component : myScriptComponents) {
+        if (component instanceof AppleScriptHandlerPositionalParametersDefinition) {
+          result.add(new AppleScriptStructureViewElement(component));
+        } else if (component instanceof AppleScriptPropertyDeclaration) {
+          result.add(new AppleScriptStructureViewElement(component));
+        } else if (component instanceof AppleScriptVarAccessDeclaration || component instanceof
                 AppleScriptVarDeclarationListPart) {
-          result.add(new AppleScriptStructureViewElement(namedComponent));
-        } else if (namedComponent instanceof AppleScriptObject && namedComponent != element) {
-          result.add(new AppleScriptStructureViewElement(namedComponent, true));
-        } else if (namedComponent.getName() != null
-                && !(namedComponent instanceof AppleScriptHandlerInterleavedParametersNameSuffixPart)
-                && namedComponent != element) {
-          result.add(new AppleScriptStructureViewElement(namedComponent));
+          result.add(new AppleScriptStructureViewElement(component));
+        } else if (component instanceof AppleScriptObject && component != element) {
+          result.add(new AppleScriptStructureViewElement(component, true));
+        } else if (component instanceof AppleScriptHandler) {
+          result.add(new AppleScriptStructureViewElement(component));
+        } else if (component.getName() != null
+                && !(component instanceof AppleScriptHandlerInterleavedParametersSelectorPart)//todo remove
+                && component != element) {
+          result.add(new AppleScriptStructureViewElement(component));
         }
       }
     }

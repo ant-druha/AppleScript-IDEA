@@ -1,11 +1,10 @@
 package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.AppleScriptIcons;
-import com.idea.plugin.applescript.psi.*;
+import com.idea.plugin.applescript.psi.AppleScriptComponent;
+import com.idea.plugin.applescript.psi.AppleScriptObject;
 import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
-import com.intellij.openapi.editor.colors.CodeInsightColors;
-import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,15 +14,11 @@ import java.util.List;
 /**
  * Created by Andrey on 16.05.2015.
  */
-public abstract class AbstractAppleScriptObject extends AbstractAppleScriptComponent implements AppleScriptObject {
+public abstract class AbstractAppleScriptObject extends BaseAppleScriptComponent implements AppleScriptObject {
 
   public AbstractAppleScriptObject(@NotNull ASTNode node) {
     super(node);
   }
-
-  @Nullable
-  @Override
-  public abstract AppleScriptComponentName getComponentName();
 
   @Override
   public boolean isGlobal() {
@@ -56,7 +51,6 @@ public abstract class AbstractAppleScriptObject extends AbstractAppleScriptCompo
       @Nullable
       @Override
       public String getPresentableText() {
-        //AppleScriptComponent myScript = (AppleScriptObject) getElement();
         return getName();
       }
     };

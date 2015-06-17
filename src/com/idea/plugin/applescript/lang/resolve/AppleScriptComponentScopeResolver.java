@@ -1,7 +1,6 @@
 package com.idea.plugin.applescript.lang.resolve;
 
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
-import com.idea.plugin.applescript.psi.AppleScriptComponentName;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveState;
@@ -21,9 +20,10 @@ import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.HANDLER_
 /**
  * Created by Andrey on 20.04.2015.
  */
-public class AppleScriptComponentResolver implements ResolveCache.AbstractResolver<AppleScriptReferenceElement, List<? extends PsiElement>> {
+public class AppleScriptComponentScopeResolver implements ResolveCache.AbstractResolver<AppleScriptReferenceElement,
+        List<? extends PsiElement>> {
 
-    public static final AppleScriptComponentResolver INSTANCE = new AppleScriptComponentResolver();
+  public static final AppleScriptComponentScopeResolver INSTANCE = new AppleScriptComponentScopeResolver();
 
     @Override
     public List<? extends PsiElement> resolve(@NotNull AppleScriptReferenceElement scopeElement, boolean incompleteCode) {
