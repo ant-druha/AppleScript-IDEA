@@ -99,7 +99,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
     //todo redefine in a interleaved handler
-    final AppleScriptIdentifier identifier = getAppleScriptIdentifier();
+    final AppleScriptIdentifier identifier = getIdentifier();
     final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
             newElementName);
     if (identifierNew != null && identifier != null) {
@@ -146,14 +146,12 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Override
   public PsiElement getNameIdentifier() {
     //returning this in case of property statement makes IDEA to highlight the whole statement
-    return getAppleScriptIdentifier();
+    return getIdentifier();
   }
 
-  @NotNull
+  @Nullable
   @Override
-  public AppleScriptIdentifier getAppleScriptIdentifier() {
-    return PsiTreeUtil.getChildOfType(this, AppleScriptIdentifier.class);
-  }
+  public abstract AppleScriptIdentifier getIdentifier();
 
   @Nullable
   @Override

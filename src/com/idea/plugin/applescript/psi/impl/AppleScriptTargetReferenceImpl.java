@@ -53,7 +53,8 @@ public class AppleScriptTargetReferenceImpl extends AppleScriptReferenceElementI
     AppleScriptFile psiFile = (AppleScriptFile) getContainingFile();//todo need a check, ugly
     Set<AppleScriptComponent> allComponents = new HashSet<AppleScriptComponent>();
     psiFile.processTopDeclarationsImpl(allComponents);
-    final ResolveResult[] results = super.multiResolve(incompleteCode);
+    final ResolveResult[] results = super.multiResolve(incompleteCode);//todo this could return multiply results (for
+    // todo target variables )
 
     if (!allComponents.isEmpty()) {
       int offset = Integer.MAX_VALUE;

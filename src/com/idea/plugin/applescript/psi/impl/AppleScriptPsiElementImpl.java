@@ -140,6 +140,9 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     final PsiElement[] children = context.getChildren();
     final Set<AppleScriptComponent> result = new THashSet<AppleScriptComponent>();
     for (PsiElement child : children) {
+      // todo simplify: if element is a component -> add it (just check is it is not a handlerSelectorIdentifier)
+      // todo simplify: and handle other elements which are not components but which contain components (assignment
+      // statement etc)
       if (child != lastParent) {
 
         if (child instanceof AppleScriptPropertyDeclaration) {

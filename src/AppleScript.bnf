@@ -825,12 +825,14 @@ private handlerNamePartRef ::= referenceIdentifier
 
 //handlerInterleavedParametersSelectorPart ::= componentName COLON userParameterVar
 //handlerInterleavedParametersSelectorPart ::= identifier COLON userParameterVar
+//todo change to a named element
 handlerInterleavedParametersSelectorPart ::= selectorIdentifier COLON userParameterVar
  //todo not generate by grammar method getComponentName() ?? (need to try to return null here?)
  //todo or remove component name from here at all, or other things to try (several componentNames etc)?
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
 implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart" }
 
+//todo change to a named element
 selectorIdentifier ::= identifier //todo do we need a separate class here? (implementing Component class?)
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent" }

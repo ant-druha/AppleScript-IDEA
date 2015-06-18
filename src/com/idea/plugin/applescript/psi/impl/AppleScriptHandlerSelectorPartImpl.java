@@ -4,6 +4,9 @@ import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.IncorrectOperationException;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +26,12 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
   }
 
   @Override
+  public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
+    //todo implement
+    return super.setName(newElementName);
+  }
+
+  @Override
   public String getName() {
     return getParameterName();
   }
@@ -32,6 +41,17 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
   public PsiElement getNameIdentifier() {
     ASTNode paramNode = findParameterNode();
     return paramNode != null ? paramNode.getPsi() : null;
+  }
+
+  //todo might be null ...
+  @Nullable
+  @Override
+  public AppleScriptIdentifier getIdentifier() {
+    PsiElement parameter = getParameter();
+    AppleScriptIdentifier parameterId = PsiTreeUtil.findChildOfAnyType(parameter, AppleScriptIdentifier.class);
+//    AppleScriptSelectorIdentifier selectorId = findNotNullChildByClass(AppleScriptSelectorIdentifier.class);
+    return parameterId != null ? parameterId : PsiTreeUtil.getRequiredChildOfType(parameter != null ? parameter :
+            getLastChild(), AppleScriptIdentifier.class);
   }
 
   @Nullable
@@ -85,6 +105,6 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
   @Override
   public AppleScriptIdentifier getSelectorNameIdentifier() {
     AppleScriptSelectorIdentifier selectorId = findNotNullChildByClass(AppleScriptSelectorIdentifier.class);
-    return selectorId.getAppleScriptIdentifier();
+    return selectorId.getIdentifier();
   }
 }

@@ -1,9 +1,6 @@
 package com.idea.plugin.applescript.psi.impl;
 
-import com.idea.plugin.applescript.psi.AppleScriptHandler;
-import com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart;
-import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
-import com.idea.plugin.applescript.psi.AppleScriptTypes;
+import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.pom.PomNamedTarget;
@@ -33,7 +30,14 @@ public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComp
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
     //todo implement this
-    return super.setName(newElementName);
+    AppleScriptIdentifier myIdentifier = getParameters().get(0).getSelectorNameIdentifier();
+    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+            newElementName);
+    if (identifierNew != null && myIdentifier != null) {
+      myIdentifier.replace(identifierNew);
+//      getNode().replaceChild(myIdentifier.getNode(), identifierNew.getNode());
+    }
+    return this;
   }
 
   @Override
@@ -53,6 +57,14 @@ public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComp
     final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes
             .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
     return selector != null ? selector.getSelectorNameIdentifier() : null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptIdentifier getIdentifier() {
+    final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes
+            .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
+    return selector != null ? selector.getSelectorNameIdentifier() : getSelectors().get(0);
   }
 
   @Nullable
@@ -95,8 +107,8 @@ public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComp
 
   @NotNull
   @Override
-  public List<PsiElement> getSelectors() {
-    List<PsiElement> selectors = new ArrayList<PsiElement>();
+  public List<AppleScriptIdentifier> getSelectors() {
+    List<AppleScriptIdentifier> selectors = new ArrayList<AppleScriptIdentifier>();
     for (AppleScriptHandlerSelectorPart part : getParameters()) {
       if (part.getSelectorNameIdentifier() != null)
         selectors.add(part.getSelectorNameIdentifier());

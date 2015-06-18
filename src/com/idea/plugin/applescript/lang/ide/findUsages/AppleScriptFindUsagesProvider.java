@@ -1,7 +1,7 @@
 package com.idea.plugin.applescript.lang.ide.findUsages;
 
 import com.idea.plugin.applescript.AppleScriptLexerAdapter;
-import com.idea.plugin.applescript.psi.AppleScriptNamedElement;
+import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.lang.cacheBuilder.DefaultWordsScanner;
 import com.intellij.lang.cacheBuilder.WordsScanner;
@@ -43,7 +43,8 @@ public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
   @NotNull
   @Override
   public String getType(@NotNull PsiElement element) {
-    return element instanceof AppleScriptNamedElement ? "declaration" : "reference";
+    AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(element);
+    return componentType!=null ? componentType.toString().toLowerCase() : "reference";
   }
 
   @NotNull

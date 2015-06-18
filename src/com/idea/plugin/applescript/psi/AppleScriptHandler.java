@@ -31,7 +31,7 @@ public interface AppleScriptHandler extends AppleScriptComponent {
   String getSelector();
 
   @NotNull
-  List<PsiElement> getSelectors();
+  List<AppleScriptIdentifier> getSelectors();
 
   @NotNull
   List<AppleScriptHandlerSelectorPart> getParameters();

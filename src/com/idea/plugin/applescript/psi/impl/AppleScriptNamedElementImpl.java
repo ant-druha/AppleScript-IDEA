@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by Andrey on 08.04.2015.
  */
+//todo !!! use it for selectorIdentifier and handlerSelectorPart !!!
 public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementImpl implements AppleScriptNamedElement {
   public AppleScriptNamedElementImpl(@NotNull ASTNode node) {
     super(node);
@@ -24,7 +25,7 @@ public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementI
 
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
-    final AppleScriptIdentifier identifier = getAppleScriptIdentifier();
+    final AppleScriptIdentifier identifier = getIdentifier();
     final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
             newElementName);
     if (identifierNew != null && identifier != null) {
@@ -38,7 +39,6 @@ public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementI
     return super.getReference();//null
   }
 
-
   @Override
   public ItemPresentation getPresentation() {
     final PsiElement parent = getParent();
@@ -50,19 +50,18 @@ public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementI
 
   @Override
   public String getName() {
-    return getAppleScriptIdentifier().getText();
+    return getNameIdentifier() != null ? getNameIdentifier().getText() : getIdentifier().getText();
   }
 
   @Nullable
   @Override
   public PsiElement getNameIdentifier() {
-    return this;
-//  return PsiTreeUtil.getChildOfType(this, AppleScriptIdentifier.class);
+    return getIdentifier();
   }
 
   @NotNull
   @Override
-  public AppleScriptIdentifier getAppleScriptIdentifier() {
+  public AppleScriptIdentifier getIdentifier() {
     return PsiTreeUtil.getChildOfType(this, AppleScriptIdentifier.class);
   }
 }
