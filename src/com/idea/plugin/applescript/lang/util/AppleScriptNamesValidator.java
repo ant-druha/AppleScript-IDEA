@@ -40,6 +40,10 @@ public class AppleScriptNamesValidator implements NamesValidator {
   @Override
   public boolean isIdentifier(@NotNull String name, Project project) {
     //todo remove this hack (via rename handler and change signature refactoring...)
+    return isRenamingHandlerWithValidName(name, project) || isIdentifier(name);
+  }
+
+  private boolean isRenamingHandlerWithValidName(@NotNull String name, Project project) {
     PsiElement elementToRename;
     String oldName;
     Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
@@ -51,19 +55,18 @@ public class AppleScriptNamesValidator implements NamesValidator {
         final String[] newParts = name.split(":");
         final String[] oldParts = oldName != null ? oldName.split(":") : null;
         if (oldParts == null || oldParts.length != newParts.length) {
-          return isIdentifier(name);
+          return false;
         }
         for (String part : newParts) {
           if (!isIdentifier(part)) {
-            return isIdentifier(name);
+            return false;
           }
         }
         return true;
       } else
-        return isIdentifier(name);
+        return false;
     } else
-      return isIdentifier(name);
-
+      return false;
   }
 
 //  private PsiElement getHandlerDefinitionOrCallContext(PsiElement element) {
