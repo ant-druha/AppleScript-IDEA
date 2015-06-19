@@ -40,7 +40,7 @@ public class AppleScriptNamesValidator implements NamesValidator {
   @Override
   public boolean isIdentifier(@NotNull String name, Project project) {
     //todo remove this hack (via rename handler and change signature refactoring...)
-    return isRenamingHandlerWithValidName(name, project) || isIdentifier(name);
+    return isIdentifier(name) || isRenamingHandlerWithValidName(name, project);
   }
 
   private boolean isRenamingHandlerWithValidName(@NotNull String name, Project project) {

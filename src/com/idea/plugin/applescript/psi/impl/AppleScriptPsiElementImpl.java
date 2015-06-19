@@ -84,6 +84,10 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
           if (!cmList.isEmpty()) {
             result.addAll(cmList);
           }
+        } else if (child instanceof AppleScriptHandlerSelectorPart) {//todo to think is it make sense to make at as
+          // todo component...
+          AppleScriptHandlerSelectorPart parameterSelector = (AppleScriptHandlerSelectorPart) child;
+          result.addAll(parameterSelector.findParameters());
         } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {//+
           AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
           result.addAll(params.getComponentList());

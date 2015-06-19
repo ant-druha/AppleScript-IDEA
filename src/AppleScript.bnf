@@ -779,6 +779,7 @@ formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)*
 { methods = [getTargetVariableComponentListRecursive] }
 
 //todo change implementation (nor a targetNamedComponent)
+//todo впринципе можно тоже сделать это namedElement чтобы проще отображать в structureView
 private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
 private argument_list_recover ::= !(RPAREN)
@@ -825,12 +826,12 @@ private handlerNamePartRef ::= referenceIdentifier
 
 //handlerInterleavedParametersSelectorPart ::= componentName COLON userParameterVar
 //handlerInterleavedParametersSelectorPart ::= identifier COLON userParameterVar
-//todo change to a named element
+//todo change to a named element (but is named element - it is not selected by resolver...)
 handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
  //todo not generate by grammar method getComponentName() ?? (need to try to return null here?)
  //todo or remove component name from here at all, or other things to try (several componentNames etc)?
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
-implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart" }
+implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"} //todo add this to a class
 
 //this is needed so to redefine getIdentifier for handlerInterleavedParametersSelectorPart
 //not necessary should it be named element

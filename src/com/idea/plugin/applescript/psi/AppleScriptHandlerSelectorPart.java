@@ -9,10 +9,15 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * Created by andrey on 28/05/15.
  */
 public interface AppleScriptHandlerSelectorPart extends AppleScriptNamedElement, PsiNameIdentifierOwner {
+
+  @NotNull
+  List<AppleScriptComponent> findParameters();
 
   @Nullable
   @Override
