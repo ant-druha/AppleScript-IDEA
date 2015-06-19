@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by andrey on 28/05/15.
  */
-public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent implements
+public class AppleScriptHandlerSelectorPartImpl extends AppleScriptNamedElementImpl implements
         AppleScriptHandlerSelectorPart {
   public AppleScriptHandlerSelectorPartImpl(@NotNull ASTNode node) {
     super(node);
@@ -27,7 +27,7 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
 
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
-    //todo implement
+    //should work ok
     return super.setName(newElementName);
   }
 
@@ -43,13 +43,14 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
     return paramNode != null ? paramNode.getPsi() : null;
   }
 
-  //todo might be null ...
-  @Nullable
+  //todo might be null ... this is not used currently
+  @NotNull
   @Override
   public AppleScriptIdentifier getIdentifier() {
     PsiElement parameter = getParameter();
+//    AppleScriptSelectorId selectorIdentifier = findNotNullChildByClass(AppleScriptSelectorId.class);
+//    return selectorIdentifier.getIdentifier();
     AppleScriptIdentifier parameterId = PsiTreeUtil.findChildOfAnyType(parameter, AppleScriptIdentifier.class);
-//    AppleScriptSelectorIdentifier selectorId = findNotNullChildByClass(AppleScriptSelectorIdentifier.class);
     return parameterId != null ? parameterId : PsiTreeUtil.getRequiredChildOfType(parameter != null ? parameter :
             getLastChild(), AppleScriptIdentifier.class);
   }
@@ -73,11 +74,12 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
   public PsiElement getParameter() {
     final PsiElement first = getFirstChild();
     final PsiElement last = findLastChildByType(AppleScriptTypes.TARGET_VARIABLE);//todo could be list or record
-    // literal..! and what todo with the parameterName in this case? return null?
-    if (first != last && last != null) {
-      return last;
+    // todo literal..! and what to do with the parameterName in this case? return null?
+    final PsiElement lastAny = getLastChild();
+    if (first != lastAny && lastAny != null) {
+      return lastAny;
     }
-    return null;
+    return first != last && last != null ? last : null;
   }
 
   @NotNull
@@ -101,10 +103,10 @@ public class AppleScriptHandlerSelectorPartImpl extends BaseAppleScriptComponent
   }
 
   // !! IMPORTANT: defines handler's identifier !!
-  @Nullable
+  @NotNull
   @Override
   public AppleScriptIdentifier getSelectorNameIdentifier() {
-    AppleScriptSelectorIdentifier selectorId = findNotNullChildByClass(AppleScriptSelectorIdentifier.class);
+    AppleScriptSelectorId selectorId = findNotNullChildByClass(AppleScriptSelectorId.class);
     return selectorId.getIdentifier();
   }
 }

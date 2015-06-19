@@ -3,7 +3,6 @@ package com.idea.plugin.applescript.lang.ide.search;
 import com.idea.plugin.applescript.psi.AppleScriptHandler;
 import com.idea.plugin.applescript.psi.AppleScriptHandlerCall;
 import com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart;
-import com.idea.plugin.applescript.psi.AppleScriptSelectorIdentifier;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.Result;
 import com.intellij.psi.PsiElement;
@@ -46,12 +45,14 @@ public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiRefe
     PsiElement contextElement;
     if (element instanceof AppleScriptHandler) {
       handler = (AppleScriptHandler) element;
-    } else if (element instanceof AppleScriptSelectorIdentifier) {
-      contextElement = element.getContext() != null ? element.getContext().getContext() : null;
-      if (contextElement instanceof AppleScriptHandler) {
-        handler = (AppleScriptHandler) contextElement;
-      }
     }
+//    else if (element instanceof AppleScriptSelectorId) {
+//      //never here now (redefined in pomDeclarationSearcher)
+//      contextElement = element.getContext() != null ? element.getContext().getContext() : null;
+//      if (contextElement instanceof AppleScriptHandler) {
+//        handler = (AppleScriptHandler) contextElement;
+//      }
+//    }
 
     if (handler == null) return true;
 

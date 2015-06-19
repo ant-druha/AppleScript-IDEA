@@ -92,10 +92,6 @@ public interface AppleScriptComponent extends AppleScriptPsiElement, AppleScript
     @Override
     PsiElement getNameIdentifier();
 
-  @Nullable
-  @Override
-  AppleScriptIdentifier getIdentifier();
-
   /**
      *
      * @return reference to declared earlier component with the same name or to self if no other components were found

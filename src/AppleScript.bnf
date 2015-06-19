@@ -757,7 +757,7 @@ private handlerCallGuardPredicate ::=
 //|(&(parenthesized_expression handlerParameterLabel)parenthesized_expression)
 private userParameterVal ::= expression
  //todo to think why otherwise 'copy sayHello to name' is not detected as handler call (but only 'sayHello to name')
- //todo may be this is the correct bahavior??
+ //todo may be this is the correct behaviour??
  directParameterVal ::=
   handlerCallGuardPredicate|
   expression
@@ -782,7 +782,7 @@ formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)*
 private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
 private argument_list_recover ::= !(RPAREN)
-private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"} //todo expression ??
+private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"}
 private argument_list_part_recover ::= !(RPAREN|COMMA)
 
 //handlerRunDefinition ::= on run nls
@@ -826,28 +826,18 @@ private handlerNamePartRef ::= referenceIdentifier
 //handlerInterleavedParametersSelectorPart ::= componentName COLON userParameterVar
 //handlerInterleavedParametersSelectorPart ::= identifier COLON userParameterVar
 //todo change to a named element
-handlerInterleavedParametersSelectorPart ::= selectorIdentifier COLON userParameterVar
+handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
  //todo not generate by grammar method getComponentName() ?? (need to try to return null here?)
  //todo or remove component name from here at all, or other things to try (several componentNames etc)?
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
 implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart" }
 
-//todo change to a named element
-selectorIdentifier ::= identifier //todo do we need a separate class here? (implementing Component class?)
-{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent" }
+//this is needed so to redefine getIdentifier for handlerInterleavedParametersSelectorPart
+//not necessary should it be named element
+selectorId ::= identifier
+//{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptNamedElementImpl"
+//implements="com.idea.plugin.applescript.psi.AppleScriptNamedElement" }
 
-////todo change implementation (nor a targetNamedComponent)
-//private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
-//labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
-//(tell scriptObject to|scriptObject"'s" |my)handlerNamePart
-//todo if left associate then 'foo:5 bar:105' detects as a valid call, but it should not!
-//if check on a parser level - need to add checks for:tell_simple_statement,and property_reference
-//todo 'my foo:5 bar:105' handler incorrectly attached only to 'foo'.need to be 'my foo'
-//left handlerInterleavedParametersCall ::= handlerArgumentPart handlerArgument*
-//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"
-//implements="com.idea.plugin.applescript.psi.AppleScriptHandlerCall"}
-//handlerArgumentPart ::= COLON userParameterVal
 
 handlerInterleavedParametersCall ::= handlerArgument+
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"

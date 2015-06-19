@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.search;
 
-import com.idea.plugin.applescript.psi.AppleScriptSelectorIdentifier;
+import com.idea.plugin.applescript.psi.AppleScriptSelectorId;
 import com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters;
 import com.intellij.pom.PomDeclarationSearcher;
 import com.intellij.pom.PomTarget;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class AppleScriptHandlerDeclarationSearcher extends PomDeclarationSearcher {
   @Override
   public void findDeclarationsAt(@NotNull PsiElement element, int offsetInElement, Consumer<PomTarget> consumer) {
-    if (element instanceof AppleScriptSelectorIdentifier) {
+    if (element instanceof AppleScriptSelectorId) {
       AppleScriptHandlerInterleavedParameters handler;
       final PsiElement contextElement = element.getContext() != null ? element.getContext().getContext() : null;
       if (contextElement instanceof AppleScriptHandlerInterleavedParameters) {

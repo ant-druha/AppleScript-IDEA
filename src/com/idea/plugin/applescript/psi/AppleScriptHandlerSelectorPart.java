@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by andrey on 28/05/15.
  */
-public interface AppleScriptHandlerSelectorPart extends AppleScriptComponent, PsiNameIdentifierOwner {
+public interface AppleScriptHandlerSelectorPart extends AppleScriptNamedElement, PsiNameIdentifierOwner {
 
   @Nullable
   @Override
@@ -32,6 +32,10 @@ public interface AppleScriptHandlerSelectorPart extends AppleScriptComponent, Ps
   PsiElement getNameIdentifier();
 
   @NotNull
+  @Override
+  AppleScriptIdentifier getIdentifier();
+
+  @NotNull
   String getSelectorPart();
 
   @Nullable
@@ -41,7 +45,7 @@ public interface AppleScriptHandlerSelectorPart extends AppleScriptComponent, Ps
   @Override
   PsiElement setName(@NotNull String name) throws IncorrectOperationException;
 
-  @Nullable
+  @NotNull
   AppleScriptIdentifier getSelectorNameIdentifier();
 
 }

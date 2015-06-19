@@ -62,6 +62,13 @@
         <referencesSearch
                 implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerReferencesSearch"/>
 
+        <lang.refactoringSupport language="AppleScript"
+                                 implementationClass="com.idea.plugin.applescript.lang.ide.refactoring.AppleScriptRefactoringSupportProvider"/>
+
+        <!-- rename refactoring -->
+        <lang.namesValidator language="AppleScript"
+                             implementationClass="com.idea.plugin.applescript.lang.util.AppleScriptNamesValidator"/>
+
 
         <elementDescriptionProvider
                 implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptElementDescriptionProvider"/>

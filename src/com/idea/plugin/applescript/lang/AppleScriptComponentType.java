@@ -1,6 +1,8 @@
 package com.idea.plugin.applescript.lang;
 
+import com.idea.plugin.applescript.AppleScriptIcons;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
+import com.idea.plugin.applescript.psi.AppleScriptObject;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +21,7 @@ public enum AppleScriptComponentType {
     }
   },
   HANDLER(PlatformIcons.FUNCTION_ICON),
+  SCRIPT(AppleScriptIcons.FILE),
   //for other variable types
   VARIABLE(PlatformIcons.VARIABLE_ICON);
 
@@ -49,6 +52,9 @@ public enum AppleScriptComponentType {
       return VARIABLE;
     } else if (component.isScriptProperty() || component.isObjectProperty()) {
       return PROPERTY;
+    } else if (component instanceof AppleScriptObject) {
+      //todo how better to define this?
+      return SCRIPT;
     }
     return null;
   }

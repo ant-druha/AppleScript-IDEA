@@ -4,6 +4,7 @@ import com.intellij.navigation.NavigationItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiNameIdentifierOwner;
 import com.intellij.psi.PsiNamedElement;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -16,6 +17,6 @@ public interface AppleScriptNamedElement extends AppleScriptPsiElement, PsiNamed
   @Override
   PsiElement getNameIdentifier();
 
-  @Nullable
+  @NotNull
   AppleScriptIdentifier getIdentifier();
 }

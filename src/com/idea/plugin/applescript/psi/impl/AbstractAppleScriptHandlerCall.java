@@ -2,10 +2,7 @@ package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.lang.resolve.AppleScriptHandlerScopeProcessor;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
-import com.idea.plugin.applescript.psi.AppleScriptHandler;
-import com.idea.plugin.applescript.psi.AppleScriptHandlerArgument;
-import com.idea.plugin.applescript.psi.AppleScriptHandlerCall;
-import com.idea.plugin.applescript.psi.AppleScriptTypes;
+import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
@@ -111,8 +108,27 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
 
     @Override
     public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
-      //todo
-      return null;
+      //todo implement this via rename refactor: RenamePsiElementProcessor & RenameHandler for each distinct selector
+      final int selectors = getArguments().size();
+      final String[] selectorNames = newElementName.split(":");
+      if (selectorNames.length == selectors) {
+        for (int index = 0; index < selectors; index++) {
+          AppleScriptIdentifier myId = getArguments().get(index).getArgumentSelector().getSelectorIdentifier();
+          final AppleScriptIdentifier idNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+                  selectorNames[index]);
+          if (idNew != null && myId != null) {
+            myId.replace(idNew);
+          }
+        }
+      } else {
+        final AppleScriptIdentifier myIdentifier = getArguments().get(0).getArgumentSelector().getSelectorIdentifier();
+        final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+                newElementName);
+        if (identifierNew != null && myIdentifier != null) {
+          myIdentifier.replace(identifierNew);
+        }
+      }
+      return AbstractAppleScriptHandlerCall.this;
     }
 
     @Override

@@ -29,13 +29,25 @@ public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComp
 
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
-    //todo implement this
-    AppleScriptIdentifier myIdentifier = getParameters().get(0).getSelectorNameIdentifier();
-    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
-            newElementName);
-    if (identifierNew != null && myIdentifier != null) {
-      myIdentifier.replace(identifierNew);
-//      getNode().replaceChild(myIdentifier.getNode(), identifierNew.getNode());
+    //todo implement this via rename refactor: RenamePsiElementProcessor & RenameHandler for each distinct selector
+    final int selectors = getParameters().size();
+    final String[] selectorNames = newElementName.split(":");
+    if (selectorNames.length == selectors) {
+      for (int index = 0; index < selectors; index++) {
+        AppleScriptIdentifier myId = getParameters().get(index).getSelectorNameIdentifier();
+        final AppleScriptIdentifier idNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+                selectorNames[index]);
+        if (idNew != null && myId != null) {
+          myId.replace(idNew);
+        }
+      }
+    } else {
+      AppleScriptIdentifier myIdentifier = getParameters().get(0).getSelectorNameIdentifier();
+      final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+              newElementName);
+      if (identifierNew != null && myIdentifier != null) {
+        myIdentifier.replace(identifierNew);
+      }
     }
     return this;
   }
@@ -59,7 +71,7 @@ public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComp
     return selector != null ? selector.getSelectorNameIdentifier() : null;
   }
 
-  @Nullable
+  @NotNull
   @Override
   public AppleScriptIdentifier getIdentifier() {
     final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes

@@ -3,7 +3,6 @@ package com.idea.plugin.applescript.psi.impl;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.SmartList;
@@ -167,7 +166,7 @@ public class AppleScriptPsiImplUtil {
     return result;
   }
 
-  public static PsiElement getSelectorIdentifier(AppleScriptArgumentSelector argumentSelector) {
+  public static AppleScriptIdentifier getSelectorIdentifier(AppleScriptArgumentSelector argumentSelector) {
     return PsiTreeUtil.findChildOfType(argumentSelector, AppleScriptIdentifier.class);
   }
 

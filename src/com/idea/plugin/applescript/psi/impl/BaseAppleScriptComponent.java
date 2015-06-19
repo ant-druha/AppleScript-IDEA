@@ -98,7 +98,6 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
 
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
-    //todo redefine in a interleaved handler
     final AppleScriptIdentifier identifier = getIdentifier();
     final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
             newElementName);
@@ -113,7 +112,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
     final String targetName = getName() != null ? getName() : getNode().getText();
     //todo to think how to better simplify
     if (this instanceof AppleScriptHandlerPositionalParametersDefinition || this instanceof AppleScriptHandler
-            || this instanceof AppleScriptSelectorIdentifier || this instanceof AppleScriptVarDeclarationListPart
+            || this instanceof AppleScriptVarDeclarationListPart || this instanceof AppleScriptVarAccessDeclaration
             || findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null
             ) {
       return null;
@@ -149,7 +148,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
     return getIdentifier();
   }
 
-  @Nullable
+  @NotNull
   @Override
   public abstract AppleScriptIdentifier getIdentifier();
 

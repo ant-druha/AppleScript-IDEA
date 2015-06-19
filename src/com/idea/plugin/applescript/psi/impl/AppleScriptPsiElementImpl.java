@@ -30,92 +30,22 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     final PsiElement[] children = context.getChildren();
 
     for (PsiElement child : children) {
-      if (child instanceof AppleScriptPropertyDeclaration) {
-        result.add((AppleScriptPropertyDeclaration) child);
-      } else if (child instanceof AppleScriptVarDeclarationList) { //todo do we really need this? may be just add them
-        // todo separately as component classes
+      if (child instanceof AppleScriptVarDeclarationList) {
         AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
         result.add(varList.getVarAccessDeclaration());
         for (AppleScriptVarDeclarationListPart listPart : varList.getVarDeclarationListPartList()) {
           result.add(listPart);
         }
-      } else if (child instanceof AppleScriptHandlerPositionalParametersDefinition) {
-        AppleScriptHandlerPositionalParametersDefinition handlerDeclaration =
-                (AppleScriptHandlerPositionalParametersDefinition) child;
-        result.add(handlerDeclaration);
-      } else if (child instanceof AppleScriptHandlerLabeledParametersDefinition) {
-        AppleScriptHandlerLabeledParametersDefinition handlerDeclaration =
-                (AppleScriptHandlerLabeledParametersDefinition) child;
-        result.add(handlerDeclaration);
-//        result.addAll(handlerDeclaration.getParameterComponentNameList());
-      } else if (child instanceof AppleScriptHandlerInterleavedParametersDefinition) {
-        AppleScriptHandlerInterleavedParametersDefinition handlerDefinition =
-                (AppleScriptHandlerInterleavedParametersDefinition) child;
-        result.add(handlerDefinition);
-        //todo to think how is better handle getting all component names (check CIDR process declarations)
-//        result.addAll(handlerDefinition.getSelectors());
       } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {
         AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
         result.addAll(params.getComponentList());
       } else if (child instanceof AppleScriptObjectPropertyTargetDeclaration
-              && child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition) {
+              && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition
+              || child.getContext() instanceof AppleScriptHandler)) {
         AppleScriptObjectPropertyTargetDeclaration prop = (AppleScriptObjectPropertyTargetDeclaration) child;
         result.add(prop.getTargetVariable());
       } else if (child instanceof AppleScriptAssignmentStatement) {
-        AppleScriptAssignmentStatement creationStatement = (AppleScriptAssignmentStatement) child;
-        AppleScriptPsiElement assignmentTargetClass = creationStatement.getAssignmentTarget();
-        if (assignmentTargetClass instanceof AppleScriptTargetVariable) {
-          AppleScriptComponent currentComponent = ((AppleScriptTargetVariable) assignmentTargetClass);
-          boolean duplicatedDeclaration = false;
-          boolean duplicatedDeclarationReplaced = false;
-          for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
-            AppleScriptComponent ourAddedComponent = it.next();
-            if (ourAddedComponent.getName() != null && ourAddedComponent.getName().equals(currentComponent.getName())) {
-              duplicatedDeclaration = true;
-              if (ourAddedComponent.getTextOffset() > currentComponent.getTextOffset()) {
-                it.remove();
-                duplicatedDeclarationReplaced = true;
-              } //remove if currentComponent declared earlier, will add it later
-            }
-          }
-          if (!duplicatedDeclaration || duplicatedDeclarationReplaced) {
-            result.add(currentComponent);
-          }
-        } else {
-          List<AppleScriptComponent> currentTargetComponentList = new ArrayList<AppleScriptComponent>();
-          if (assignmentTargetClass instanceof AppleScriptTargetListLiteral) {
-            AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) assignmentTargetClass;
-            for (AppleScriptTargetVariable targetVariable : targetList.getTargetVariableListRecursive()) {
-              currentTargetComponentList.add(targetVariable);
-            }
-          } else if (assignmentTargetClass instanceof AppleScriptTargetRecordLiteral) {
-            AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) assignmentTargetClass;
-            for (AppleScriptTargetVariable targetVariable : targetRecord.getTargetVariableListRecursive()) {
-              currentTargetComponentList.add(targetVariable);
-            }
-          }
-          if (!currentTargetComponentList.isEmpty()) {
-            for (AppleScriptComponent currentComponent : currentTargetComponentList) {
-              boolean duplicatedDeclaration = false;
-              boolean duplicatedDeclarationRemoved = false;
-              for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
-                AppleScriptComponent ourAddedComponent = it.next();
-                if (ourAddedComponent.getName() != null && ourAddedComponent.getName().equals(currentComponent
-                        .getName())) {
-                  duplicatedDeclaration = true;
-                  if (ourAddedComponent.getTextOffset() > currentComponent.getTextOffset()) {
-                    it.remove(); //not called
-                    duplicatedDeclarationRemoved = true;
-                  } //remove if currentComponent declared earlier, will add it later
-                }
-              }
-              if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
-                result.add(currentComponent);
-              }
-            }
-          }
-        }
-//                }
+        addFromAssignmentStatement(result, (AppleScriptAssignmentStatement) child);
       } else if (recursively && child instanceof AppleScriptBlockBody && !(context instanceof
               AppleScriptIfCompoundStatement)) { // do not scan other inner blocks of if statement
         processTopDeclarations(child, result, true);
@@ -128,7 +58,6 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         result.add((AppleScriptComponent) child);
       }
     }
-
   }
 
   public static boolean processDeclarationsImpl(@Nullable PsiElement context, PsiScopeProcessor processor,
@@ -144,101 +73,37 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       // todo simplify: and handle other elements which are not components but which contain components (assignment
       // statement etc)
       if (child != lastParent) {
-
-        if (child instanceof AppleScriptPropertyDeclaration) {
-          result.add((AppleScriptPropertyDeclaration) child);
-        } else if (child instanceof AppleScriptVarDeclarationList) {
+        //not components first
+        if (child instanceof AppleScriptVarDeclarationList) { //+
           AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
           result.add(varList.getVarAccessDeclaration());
           result.addAll(varList.getVarDeclarationListPartList());
-        } else if (child instanceof AppleScriptHandlerPositionalParametersDefinition) {
-          result.add((AppleScriptHandlerPositionalParametersDefinition) child);
-        } else if (child instanceof AppleScriptHandlerLabeledParametersDefinition) {
-          result.add((AppleScriptHandlerLabeledParametersDefinition) child);
-        } else if (child instanceof AppleScriptHandlerInterleavedParametersDefinition) {
-          result.add((AppleScriptHandlerInterleavedParametersDefinition) child);
-        } else if (child instanceof AppleScriptFormalParameterList) {
+        }else if (child instanceof AppleScriptFormalParameterList) {//+
           AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
           List<AppleScriptComponent> cmList = parameterList.getTargetVariableComponentListRecursive();
           if (!cmList.isEmpty()) {
             result.addAll(cmList);
           }
-        } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {
+        } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {//+
           AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
           result.addAll(params.getComponentList());
         } else if (child instanceof AppleScriptObjectPropertyTargetDeclaration
-                && child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition) {
+                && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition//+ but why only
+                // labeled params??
+                || child.getContext() instanceof AppleScriptHandler)) {
+          //this is in target list/record literals
           AppleScriptObjectPropertyTargetDeclaration prop = (AppleScriptObjectPropertyTargetDeclaration) child;
           AppleScriptTargetVariable var = prop.getTargetVariable();
           if (var != null) {
             result.add(var);
           }
-        } else if (child instanceof AppleScriptAssignmentStatement) {
-          AppleScriptAssignmentStatement creationStatement = (AppleScriptAssignmentStatement) child;
-          AppleScriptPsiElement assignmentTargetClass = creationStatement.getAssignmentTarget();
-          if (assignmentTargetClass instanceof AppleScriptTargetVariable) {
-            AppleScriptComponent currentComponent = ((AppleScriptTargetVariable) assignmentTargetClass);
-            boolean duplicatedDeclaration = false;
-            boolean duplicatedDeclarationRemoved = false;
-            for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
-              AppleScriptComponent ourAddedComponent = it.next();
-              if (ourAddedComponent.getName() != null && ourAddedComponent.getName().equals(currentComponent.getName
-                      ())) {
-                duplicatedDeclaration = true;
-                if (ourAddedComponent.getTextOffset() > currentComponent.getTextOffset()) {
-                  it.remove(); //not called
-                  duplicatedDeclarationRemoved = true;
-                } //remove if currentComponent declared earlier, will add it later
-              }
-            }
-            if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
-              result.add(currentComponent);
-            }
-          } else {
-            List<AppleScriptComponent> currentTargetComponentList = new ArrayList<AppleScriptComponent>();
-            if (assignmentTargetClass instanceof AppleScriptTargetListLiteral) {
-              AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) assignmentTargetClass;
-              for (AppleScriptTargetVariable targetVariable : targetList.getTargetVariableListRecursive()) {
-                currentTargetComponentList.add(targetVariable);
-              }
-            } else if (assignmentTargetClass instanceof AppleScriptTargetRecordLiteral) {
-              AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) assignmentTargetClass;
-              for (AppleScriptTargetVariable targetVariable : targetRecord.getTargetVariableListRecursive()) {
-                currentTargetComponentList.add(targetVariable);
-              }
-            }
-            if (!currentTargetComponentList.isEmpty()) {
-              for (AppleScriptComponent currentComponent : currentTargetComponentList) {
-                boolean duplicatedDeclaration = false;
-                boolean duplicatedDeclarationRemoved = false;
-                for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
-                  AppleScriptComponent ourAddedComponent = it.next();
-                  if (ourAddedComponent.getName() != null && ourAddedComponent.getName().equals(currentComponent
-                          .getName())) {
-                    duplicatedDeclaration = true;
-                    if (ourAddedComponent.getTextOffset() > currentComponent.getTextOffset()) {
-                      it.remove(); //not called
-                      duplicatedDeclarationRemoved = true;
-                    } //remove if currentComponent declared earlier, will add it later
-                  }
-                }
-                if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
-                  result.add(currentComponent);
-                }
-              }
-            }
-          }
-        } else if (child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) //
+        } else if (child instanceof AppleScriptAssignmentStatement) {//+
+          addFromAssignmentStatement(result, (AppleScriptAssignmentStatement) child);
+        } else if (child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) //???
         // do not scan other inner blocks of if statement
         {
           processTopDeclarations(child, result, false);//we do not need a recursion
-        } else if (child instanceof AppleScriptObject) {
-          result.add(((AppleScriptObject) child));
-//          processTopDeclarations(child, result, false);
-        } else if (child instanceof AppleScriptHandler) {
-          AppleScriptHandler handler = (AppleScriptHandler) child;
-
-        } else if (child instanceof AppleScriptComponent) {
+        } else if (child instanceof AppleScriptComponent) {//+
           result.add((AppleScriptComponent) child);
         }
 
@@ -250,6 +115,64 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       }
     }
     return true;
+  }
+
+  private static void addFromAssignmentStatement(Set<AppleScriptComponent> result, AppleScriptAssignmentStatement
+          creationStatement) {
+    AppleScriptPsiElement assignmentTargetClass = creationStatement.getAssignmentTarget();
+    if (assignmentTargetClass instanceof AppleScriptTargetVariable) {
+      AppleScriptComponent currentComponent = ((AppleScriptTargetVariable) assignmentTargetClass);
+      boolean duplicatedDeclaration = false;
+      boolean duplicatedDeclarationRemoved = false;
+      for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
+        AppleScriptComponent ourAddedComponent = it.next();
+        if (ourAddedComponent.getName() != null && ourAddedComponent.getName().equals(currentComponent.getName
+                ())) {
+          duplicatedDeclaration = true;
+          if (ourAddedComponent.getTextOffset() > currentComponent.getTextOffset()) {
+            it.remove(); //not called
+            duplicatedDeclarationRemoved = true;
+          } //remove if currentComponent declared earlier, will add it later
+        }
+      }
+      if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
+        result.add(currentComponent);
+      }
+    } else {
+      List<AppleScriptComponent> currentTargetComponentList = new ArrayList<AppleScriptComponent>();
+      if (assignmentTargetClass instanceof AppleScriptTargetListLiteral) {
+        AppleScriptTargetListLiteral targetList = (AppleScriptTargetListLiteral) assignmentTargetClass;
+        for (AppleScriptTargetVariable targetVariable : targetList.getTargetVariableListRecursive()) {
+          currentTargetComponentList.add(targetVariable);
+        }
+      } else if (assignmentTargetClass instanceof AppleScriptTargetRecordLiteral) {
+        AppleScriptTargetRecordLiteral targetRecord = (AppleScriptTargetRecordLiteral) assignmentTargetClass;
+        for (AppleScriptTargetVariable targetVariable : targetRecord.getTargetVariableListRecursive()) {
+          currentTargetComponentList.add(targetVariable);
+        }
+      }
+      if (!currentTargetComponentList.isEmpty()) {
+        //check for duplicates
+        for (AppleScriptComponent currentComponent : currentTargetComponentList) {
+          boolean duplicatedDeclaration = false;
+          boolean duplicatedDeclarationRemoved = false;
+          for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
+            AppleScriptComponent ourAddedComponent = it.next();
+            if (ourAddedComponent.getName() != null && ourAddedComponent.getName().equals(currentComponent
+                    .getName())) {
+              duplicatedDeclaration = true;
+              if (ourAddedComponent.getTextOffset() > currentComponent.getTextOffset()) {
+                it.remove(); //not called
+                duplicatedDeclarationRemoved = true;
+              } //remove if currentComponent declared earlier, will add it later
+            }
+          }
+          if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
+            result.add(currentComponent);
+          }
+        }
+      }
+    }
   }
 
   @Override
