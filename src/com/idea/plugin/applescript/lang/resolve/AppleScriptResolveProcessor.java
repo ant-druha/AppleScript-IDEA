@@ -1,23 +1,39 @@
 package com.idea.plugin.applescript.lang.resolve;
 
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
+import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
 import com.intellij.openapi.util.Key;
+import com.intellij.psi.PsiElement;
+import com.intellij.util.containers.SortedList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Comparator;
 
 /**
  * Created by Andrey on 15.04.2015.
  */
 public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
-  private final List<AppleScriptComponent> myResult;
-  private final String myName;
 
-  public AppleScriptResolveProcessor(List<AppleScriptComponent> result, String name) {
-    myResult = result;
-    myName = name;
+  private AppleScriptComponent myResult;
+  @NotNull private final String myName;
+  @NotNull private SortedList<AppleScriptTargetVariable> myTargets =
+          new SortedList<AppleScriptTargetVariable>(new Comparator<AppleScriptTargetVariable>() {
+            @Override
+            public int compare(AppleScriptTargetVariable o1, AppleScriptTargetVariable o2) {
+              return -(o1.getTextOffset() - o2.getTextOffset());
+            }
+          });
+
+
+  public PsiElement getResult() {
+    return myResult;
   }
+
+  public AppleScriptResolveProcessor(@NotNull String myName) {
+    this.myName = myName;
+  }
+
 
   @Nullable
   @Override
@@ -30,11 +46,16 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 
   }
 
-
   @Override
   protected boolean doExecute(@NotNull AppleScriptComponent element) {
     if (this.myName.equals(element.getName())) {
-      myResult.add(element);
+      if (element instanceof AppleScriptTargetVariable) {
+        //set the closest from added before definition and continue the search
+        myTargets.add((AppleScriptTargetVariable) element);
+        myResult = myTargets.get(0);
+        return true;
+      }
+      myResult = element;
       return false;
     }
     return true;

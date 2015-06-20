@@ -57,6 +57,8 @@
         <!-- find usages-->
         <lang.findUsagesProvider language="AppleScript"
                                  implementationClass="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptFindUsagesProvider"/>
+        <readWriteAccessDetector
+                implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptReadWriteAccessDetector"/>
         <pom.declarationSearcher
                 implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerDeclarationSearcher"/>
         <referencesSearch

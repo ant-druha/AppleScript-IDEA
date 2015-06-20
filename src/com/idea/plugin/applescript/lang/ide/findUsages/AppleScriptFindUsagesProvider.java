@@ -2,6 +2,7 @@ package com.idea.plugin.applescript.lang.ide.findUsages;
 
 import com.idea.plugin.applescript.AppleScriptLexerAdapter;
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
+import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.idea.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.lang.cacheBuilder.DefaultWordsScanner;
 import com.intellij.lang.cacheBuilder.WordsScanner;
@@ -31,7 +32,7 @@ public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
 
   @Override
   public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
-    return psiElement instanceof PsiNamedElement;
+    return psiElement instanceof PsiNamedElement || psiElement instanceof AppleScriptReferenceElement;
   }
 
   @Nullable

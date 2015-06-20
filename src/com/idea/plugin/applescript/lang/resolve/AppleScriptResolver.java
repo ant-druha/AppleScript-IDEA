@@ -1,6 +1,5 @@
 package com.idea.plugin.applescript.lang.resolve;
 
-import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveState;
@@ -20,11 +19,11 @@ public class AppleScriptResolver implements ResolveCache.AbstractResolver<AppleS
 
   protected List<? extends PsiElement> resolveSimpleReference(@NotNull final PsiElement scopeElement, @NotNull final
   String name) {
-    final List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    final List<PsiElement> result = new ArrayList<PsiElement>();
 
-    // local
-    final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(result, name);
+    final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(name);
     PsiTreeUtil.treeWalkUp(resolveProcessor, scopeElement, null, ResolveState.initial());
+    result.add(resolveProcessor.getResult());
     return result;
   }
 

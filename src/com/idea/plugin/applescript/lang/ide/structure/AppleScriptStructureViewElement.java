@@ -49,9 +49,9 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
 
       //todo AppleScriptComponentScopeProcessor takes only direct parent of component name -> takes selectorPart
       //todo need to change to handler
-      AppleScriptPsiElementImpl.processDeclarationsImpl(element, new AppleScriptComponentScopeProcessor
-                      (myScriptComponents),
-              ResolveState.initial(), null);
+      AppleScriptPsiElementImpl.processDeclarationsImpl(element,
+              new AppleScriptComponentScopeProcessor(myScriptComponents),
+              ResolveState.initial(), null, null);
       for (AppleScriptComponent component : myScriptComponents) {
         if (component instanceof AppleScriptHandlerPositionalParametersDefinition) {
           result.add(new AppleScriptStructureViewElement(component));

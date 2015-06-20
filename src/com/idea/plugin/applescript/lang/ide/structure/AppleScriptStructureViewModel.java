@@ -3,6 +3,7 @@ package com.idea.plugin.applescript.lang.ide.structure;
 import com.idea.plugin.applescript.AppleScriptFile;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptHandlerLabeledParametersDefinition;
+import com.idea.plugin.applescript.psi.AppleScriptObject;
 import com.intellij.ide.structureView.StructureViewModel;
 import com.intellij.ide.structureView.StructureViewModelBase;
 import com.intellij.ide.structureView.StructureViewTreeElement;
@@ -23,6 +24,7 @@ public class AppleScriptStructureViewModel extends StructureViewModelBase implem
   public AppleScriptStructureViewModel(@NotNull PsiFile psiFile, @Nullable Editor editor) {
     super(psiFile, editor, new AppleScriptStructureViewElement(psiFile));
     withSorters(Sorter.ALPHA_SORTER);
+    withSuitableClasses(AppleScriptObject.class);
   }
 
 

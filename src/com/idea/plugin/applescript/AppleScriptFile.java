@@ -1,6 +1,5 @@
 package com.idea.plugin.applescript;
 
-import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
 import com.idea.plugin.applescript.psi.impl.AppleScriptElementPresentation;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
@@ -15,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Set;
 
 /**
  * Created by Andrey on 22.02.2015.
@@ -30,13 +28,8 @@ public class AppleScriptFile extends PsiFileBase implements AppleScriptPsiElemen
                                      @NotNull ResolveState state,
                                      PsiElement lastParent,
                                      @NotNull PsiElement place) {
-    return AppleScriptPsiElementImpl.processDeclarationsImpl(this, processor, state, lastParent) &&
+    return AppleScriptPsiElementImpl.processDeclarationsImpl(this, processor, state, lastParent, place) &&
             super.processDeclarations(processor, state, lastParent, place);
-  }
-
-  public boolean processTopDeclarationsImpl(final Set<AppleScriptComponent> result) {
-    AppleScriptPsiElementImpl.processTopDeclarations(this, result, true);
-    return !result.isEmpty();
   }
 
   @NotNull

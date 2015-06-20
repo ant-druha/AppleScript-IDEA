@@ -390,7 +390,7 @@ private recordLiteral ::= LCURLY[objectPropertyDeclaration] (COMMA objectPropert
 //todo create RecordLiteralExpression class for usual list, then create TargetList class extends
 // todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
 targetRecordLiteral ::= LCURLY[objectPropertyTargetDeclaration] (COMMA objectPropertyTargetDeclaration)* RCURLY
-{ methods=[getTargetVariableListRecursive] }
+{ methods=[getTargets] }
 //todo inspection for only unique property label names
 
 //>>String class<<
@@ -410,7 +410,7 @@ private listLiteral ::= LCURLY [expression|referenceIdentifier] (COMMA(expressio
 //todo create ListLiteralExpression class for usual list, then create TargetList class extends
 // todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
 targetListLiteral ::= LCURLY [targetVariablePattern|expression] (COMMA targetVariablePattern|expression)* RCURLY //{pin=4}
-{methods = [getTargetVariableListRecursive] }
+{methods = [getTargets] }
 //The class identifier Styled Text is a synonym for a string that includes style and font information.
 //>>Styled Text class<<
 private styledTextLiteralExpression ::= STRING_LITERAL
@@ -831,7 +831,7 @@ handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
  //todo not generate by grammar method getComponentName() ?? (need to try to return null here?)
  //todo or remove component name from here at all, or other things to try (several componentNames etc)?
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
-implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"} //todo add this to a class
+implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
 
 //this is needed so to redefine getIdentifier for handlerInterleavedParametersSelectorPart
 //not necessary should it be named element
@@ -937,7 +937,7 @@ private script_object_variable ::= referenceIdentifier
 //todo ???may be creat new class for targetVariable ? which will extend component and implement namedElement in one class???
 //todo then hierarchy could be broken...?
 assignmentStatement ::= setCommandAppleScript|setCommandApplication|copyCommandStatement
-{methods=[getAssignmentTarget getTargetVariableListRecursive getTargetsToValuesMapping]}
+{methods=[getAssignmentTarget getTargets getTargetsToValuesMapping]}
 
 //set AppleScript command
 private setCommandAppleScript ::= setCommandAppleScriptSetSyntax|setCommandAppleScriptReturningSyntax

@@ -3,9 +3,11 @@ package com.idea.plugin.applescript.psi.impl;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptComponentScopeResolver;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
+import com.idea.plugin.applescript.lang.util.ScopeUtil;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElementFactory;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
+import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
@@ -37,6 +39,11 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   @NotNull
   @Override
   public ResolveResult[] multiResolve(boolean incompleteCode) {
+    ResolveResult[] results = multiResolveInner(incompleteCode);
+    return results.length > 1 ? new ResolveResult[]{results[0]} : results;
+  }
+
+  protected ResolveResult[] multiResolveInner(boolean incompleteCode) {
     final List<? extends PsiElement> elements =
             ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptResolver.INSTANCE,
                     true, incompleteCode);
@@ -74,8 +81,7 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   public PsiElement resolve() {
     final ResolveResult[] resolveResults = multiResolve(true);
 
-    return resolveResults.length == 0 ||
-            resolveResults.length > 1 ||
+    return resolveResults.length == 0 || resolveResults.length > 0 &&
             !resolveResults[0].isValidResult() ? null : resolveResults[0].getElement();
   }
 
@@ -105,7 +111,23 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   @Override
   public boolean isReferenceTo(PsiElement element) {
     PsiElement target = resolve();
+    if (target instanceof AppleScriptTargetVariable) {//could be defined more than once
+      String theirName = ((AppleScriptTargetVariable) target).getName();
+      String ourName = getCanonicalText();
+      if (ourName.equals(theirName)) {
+        PsiElement ourScopeOwner = ScopeUtil.getMaxLocalScopeForTargetOrReference(getElement());
+        PsiElement theirScopeOwner = ScopeUtil.getMaxLocalScopeForTargetOrReference(element);
+        if (resolvesToSameLocal(element, theirName, ourScopeOwner, theirScopeOwner)) {
+          return true;
+        }
+      }
+    }
     return target == element;
+  }
+
+  private boolean resolvesToSameLocal(PsiElement element, String name, PsiElement ourScopeOwner, PsiElement
+          theirScopeOwner) {
+    return ourScopeOwner == theirScopeOwner;
   }
 
   @NotNull
@@ -121,4 +143,4 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   public boolean isSoft() {
     return false;
   }
-}
+  }

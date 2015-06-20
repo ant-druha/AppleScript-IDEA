@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.psi.impl;
 
-import com.idea.plugin.applescript.lang.resolve.AppleScriptHandlerScopeProcessor;
+import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveProcessor;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
@@ -72,13 +72,12 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
     @NotNull
     @Override
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-      final List<AppleScriptHandler> result = new ArrayList<AppleScriptHandler>();
-      // local
-      final AppleScriptHandlerScopeProcessor resolveProcessor = new AppleScriptHandlerScopeProcessor
-              (getHandlerSelector());
+      final List<AppleScriptComponent> results = new ArrayList<AppleScriptComponent>();
+      final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(getHandlerSelector());
       PsiTreeUtil.treeWalkUp(resolveProcessor, AbstractAppleScriptHandlerCall.this, null, ResolveState.initial());
-      result.add(resolveProcessor.getMyResult());
-      return AppleScriptResolveUtil.toCandidateInfoArray(result);
+      final List<PsiElement> results2 = new ArrayList<PsiElement>();
+      results2.add(resolveProcessor.getResult());
+      return AppleScriptResolveUtil.toCandidateInfoArray(results2);
     }
 
     @Override

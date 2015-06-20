@@ -1,6 +1,5 @@
 package com.idea.plugin.applescript.psi.impl;
 
-import com.idea.plugin.applescript.AppleScriptFile;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptTargetReference;
 import com.intellij.lang.ASTNode;
@@ -9,9 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Created by Andrey on 22.04.2015.
@@ -47,27 +44,20 @@ public class AppleScriptTargetReferenceImpl extends AppleScriptReferenceElementI
     return myElement.getTextOffset();
   }
 
+  @Nullable
+  @Override
+  public PsiElement resolve() {
+    final ResolveResult[] resolveResults = multiResolve(true);
+    return resolveResults.length == 0 || resolveResults.length > 0 &&
+            !resolveResults[0].isValidResult() ? null : resolveResults[0].getElement();
+  }
+
   @NotNull
   @Override
   public ResolveResult[] multiResolve(boolean incompleteCode) {
-    AppleScriptFile psiFile = (AppleScriptFile) getContainingFile();//todo need a check, ugly
-    Set<AppleScriptComponent> allComponents = new HashSet<AppleScriptComponent>();
-    psiFile.processTopDeclarationsImpl(allComponents);
     final ResolveResult[] results = super.multiResolve(incompleteCode);//todo this could return multiply results (for
     // todo target variables )
-
-    if (!allComponents.isEmpty()) {
-      int offset = Integer.MAX_VALUE;
-      PsiElement firstDeclaration = null;
-      for (AppleScriptComponent component : allComponents) {
-        if (myName.equals(component.getName()) && component.getTextOffset() < offset) {
-          firstDeclaration = component;
-          offset = component.getTextOffset();
-        }
-      }
-      return firstDeclaration != null ? new ResolveResult[]{new PsiElementResolveResult(firstDeclaration)} : results;
-    }
-    return new ResolveResult[]{new PsiElementResolveResult(myElement)};
+    return results.length != 0 ? results : new ResolveResult[]{new PsiElementResolveResult(myElement)};
   }
 
   @Override

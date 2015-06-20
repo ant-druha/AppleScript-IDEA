@@ -19,8 +19,8 @@ public class AppleScriptPsiImplUtil {
 
 
   @NotNull
-  public static List<AppleScriptTargetVariable> getTargetVariableListRecursive(@NotNull AppleScriptTargetListLiteral
-                                                                                       targetList) {
+  public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptTargetListLiteral
+                                                                   targetList) {
     final List<AppleScriptTargetVariable> components = new ArrayList<AppleScriptTargetVariable>();
     for (AppleScriptTargetVariable targetComponent : targetList.getTargetVariableList()) {
       components.add(targetComponent);
@@ -113,9 +113,9 @@ public class AppleScriptPsiImplUtil {
   }
 
   @NotNull
-  public static List<AppleScriptTargetVariable> getTargetVariableListRecursive(@NotNull
-                                                                               AppleScriptTargetRecordLiteral
-                                                                                       targetRecord) {
+  public static List<AppleScriptTargetVariable> getTargets(@NotNull
+                                                           AppleScriptTargetRecordLiteral
+                                                                   targetRecord) {
     final List<AppleScriptTargetVariable> targetVariables = new ArrayList<AppleScriptTargetVariable>();
     addRecordTargetVariablesRecursive(targetRecord, targetVariables);
     return targetVariables;
@@ -141,9 +141,9 @@ public class AppleScriptPsiImplUtil {
   }
 
   @NotNull
-  public static List<AppleScriptComponent> getTargetVariableListRecursive(@NotNull AppleScriptAssignmentStatement
-                                                                                  assignmentStatement) {
-    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+  public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptAssignmentStatement
+                                                                   assignmentStatement) {
+    List<AppleScriptTargetVariable> result = new ArrayList<AppleScriptTargetVariable>();
     AppleScriptTargetVariable targetComponent = assignmentStatement.getTargetVariable();
     if (targetComponent != null) {
       result.add(targetComponent);
@@ -186,4 +186,5 @@ public class AppleScriptPsiImplUtil {
   public static boolean isWhiteSpaceOrNls(ASTNode node) {
     return node != null && AppleScriptTokenTypesSets.WHITE_SPACES_SET.contains(node.getElementType());
   }
+
 }

@@ -15,16 +15,16 @@ import java.util.List;
  */
 public class AppleScriptResolveUtil {
 
-    @NotNull
+  @NotNull
   public static ResolveResult[] toCandidateInfoArray(@Nullable List<? extends PsiElement> elements) {
     if (elements == null) {
       return ResolveResult.EMPTY_ARRAY;
     }
     elements = ContainerUtil.filter(elements, new Condition<PsiElement>() {
-        @Override
-        public boolean value(PsiElement element) {
-            return element != null;
-        }
+      @Override
+      public boolean value(PsiElement element) {
+        return element != null;
+      }
     });
     final ResolveResult[] result = new ResolveResult[elements.size()];
     for (int i = 0, size = elements.size(); i < size; i++) {
