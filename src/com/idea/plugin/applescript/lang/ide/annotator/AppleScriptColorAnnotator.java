@@ -45,8 +45,8 @@ public class AppleScriptColorAnnotator implements Annotator {
         if (element instanceof AppleScriptHandlerCall) {
           AppleScriptHandlerCall handlerCall = (AppleScriptHandlerCall) element;
           for (AppleScriptHandlerArgument argument : handlerCall.getArguments()) {
-            createInfoAnnotation(holder, argument.getArgumentSelector(), AppleScriptSyntaxHighlighterColors
-                    .UNRESOLVED_REFERENCE);
+            createInfoAnnotation(holder, argument.getArgumentSelector(),
+                    AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
           }
         } else createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
       }

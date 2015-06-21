@@ -1,8 +1,9 @@
 package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.AppleScriptIcons;
+import com.idea.plugin.applescript.psi.AppleScriptBlockBody;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
-import com.idea.plugin.applescript.psi.AppleScriptObject;
+import com.idea.plugin.applescript.psi.AppleScriptScriptObject;
 import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import org.jetbrains.annotations.NotNull;
@@ -14,9 +15,10 @@ import java.util.List;
 /**
  * Created by Andrey on 16.05.2015.
  */
-public abstract class AbstractAppleScriptObject extends BaseAppleScriptComponent implements AppleScriptObject {
+public abstract class AbstractAppleScriptScriptObject extends BaseAppleScriptComponent implements
+        AppleScriptScriptObject {
 
-  public AbstractAppleScriptObject(@NotNull ASTNode node) {
+  public AbstractAppleScriptScriptObject(@NotNull ASTNode node) {
     super(node);
   }
 
@@ -64,7 +66,7 @@ public abstract class AbstractAppleScriptObject extends BaseAppleScriptComponent
 
   @Nullable
   @Override
-  public AppleScriptObject getParentScriptObject() {
+  public AppleScriptScriptObject getParentScriptObject() {
     return null;
   }
 
@@ -78,5 +80,11 @@ public abstract class AbstractAppleScriptObject extends BaseAppleScriptComponent
   @Override
   public List<AppleScriptComponent> getHandlers() {
     return null;
+  }
+
+  @NotNull
+  @Override
+  public AppleScriptBlockBody getScriptBody() {
+    return findNotNullChildByClass(AppleScriptBlockBody.class);
   }
 }

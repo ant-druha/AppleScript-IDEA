@@ -849,8 +849,8 @@ handlerArgument ::= argumentSelector userParameterVal
 scriptObjectDefinition ::= script scriptObjectName nls
                                   blockBody nls
                            end [script] //{pin=2}
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptObject"
-implements="com.idea.plugin.applescript.psi.AppleScriptObject"}
+{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptScriptObject"
+implements="com.idea.plugin.applescript.psi.AppleScriptScriptObject"}
 
 scriptObjectUnnamedDefinition ::= script nls
                                   blockBody? nls

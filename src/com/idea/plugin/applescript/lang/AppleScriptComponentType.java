@@ -2,7 +2,7 @@ package com.idea.plugin.applescript.lang;
 
 import com.idea.plugin.applescript.AppleScriptIcons;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
-import com.idea.plugin.applescript.psi.AppleScriptObject;
+import com.idea.plugin.applescript.psi.AppleScriptScriptObject;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +52,7 @@ public enum AppleScriptComponentType {
       return VARIABLE;
     } else if (component.isScriptProperty() || component.isObjectProperty()) {
       return PROPERTY;
-    } else if (component instanceof AppleScriptObject) {
+    } else if (component instanceof AppleScriptScriptObject) {
       //todo how better to define this?
       return SCRIPT;
     }

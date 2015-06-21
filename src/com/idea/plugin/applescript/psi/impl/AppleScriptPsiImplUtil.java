@@ -3,6 +3,7 @@ package com.idea.plugin.applescript.psi.impl;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.Pair;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.SmartList;
@@ -185,6 +186,13 @@ public class AppleScriptPsiImplUtil {
 
   public static boolean isWhiteSpaceOrNls(ASTNode node) {
     return node != null && AppleScriptTokenTypesSets.WHITE_SPACES_SET.contains(node.getElementType());
+  }
+
+  public static boolean isBefore(@NotNull final PsiElement e1, @NotNull final PsiElement e2, boolean strict) {
+    if (strict) {
+      return e1.getTextOffset() < e2.getTextOffset();
+    } else
+      return e1.getTextOffset() <= e2.getTextOffset();
   }
 
 }

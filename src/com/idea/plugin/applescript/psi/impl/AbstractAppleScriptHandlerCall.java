@@ -82,9 +82,11 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
 
     @Override
     public boolean isReferenceTo(PsiElement element) {
-      if (element instanceof AppleScriptHandler) {
+      PsiElement target = resolve();
+      if (element instanceof AppleScriptHandler && target != null) {
         AppleScriptHandler thatHandler = (AppleScriptHandler) element;
-        return getHandlerSelector().equals(thatHandler.getSelector());
+//        return getHandlerSelector().equals(thatHandler.getSelector());
+        return target == thatHandler;
       }
       return super.isReferenceTo(element);
     }

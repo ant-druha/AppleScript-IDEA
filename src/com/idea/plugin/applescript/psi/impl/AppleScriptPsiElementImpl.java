@@ -24,103 +24,57 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     super(node);
   }
 
-  public static void processDeclarationsFromTop(@NotNull PsiElement context, final Set<AppleScriptComponent> result,
-                                                boolean recursively) {
-    final PsiElement[] children = context.getChildren();
-
-    for (PsiElement child : children) {
-      if (child instanceof AppleScriptVarDeclarationList) {
-        AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
-        result.add(varList.getVarAccessDeclaration());
-        for (AppleScriptVarDeclarationListPart listPart : varList.getVarDeclarationListPartList()) {
-          result.add(listPart);
-        }
-      } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {
-        AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
-        result.addAll(params.getComponentList());
-      } else if (child instanceof AppleScriptObjectPropertyTargetDeclaration
-              && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition
-              || child.getContext() instanceof AppleScriptHandler)) {
-        AppleScriptObjectPropertyTargetDeclaration prop = (AppleScriptObjectPropertyTargetDeclaration) child;
-        result.add(prop.getTargetVariable());
-      } else if (child instanceof AppleScriptHandlerSelectorPart) {//todo to think is it make sense to make at as
-        // todo component...
-        AppleScriptHandlerSelectorPart parameterSelector = (AppleScriptHandlerSelectorPart) child;
-        result.addAll(parameterSelector.findParameters());
-      } else if (child instanceof AppleScriptAssignmentStatement) {
-        result.addAll(((AppleScriptAssignmentStatement) child).getTargets());
-      } else if (recursively && child instanceof AppleScriptBlockBody && !(context instanceof
-              AppleScriptIfCompoundStatement)) { // do not scan other inner blocks of if statement
-        processDeclarationsFromTop(child, result, true);
-      } else if (child instanceof AppleScriptObject) {
-        result.add(((AppleScriptObject) child));
-        if (recursively) {
-          processDeclarationsFromTop(child, result, true);
-        }
-      } else if (child instanceof AppleScriptComponent) {
-        result.add((AppleScriptComponent) child);
-      }
-    }
-  }
-
   public static boolean processDeclarationsImpl(@Nullable PsiElement context, PsiScopeProcessor processor,
                                                 ResolveState state, @Nullable
-                                                PsiElement lastParent, @Nullable PsiElement referencingElement) {
+                                                PsiElement lastParent, @Nullable final PsiElement referencingElement) {
     if (context == null) {
       return true;
     }
     final PsiElement[] children = context.getChildren();
     final Set<AppleScriptComponent> result = new THashSet<AppleScriptComponent>();
     for (PsiElement child : children) {
-      // todo simplify: if element is a component -> add it (just check is it is not a handlerSelectorIdentifier)
-      // todo simplify: and handle other elements which are not components but which contain components (assignment
-      // statement etc)
-      if (child != lastParent) {
-        //not components first
-        if (child instanceof AppleScriptVarDeclarationList) { //+
-          AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
-          result.add(varList.getVarAccessDeclaration());
-          result.addAll(varList.getVarDeclarationListPartList());
-        } else if (child instanceof AppleScriptFormalParameterList) {//+
-          AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
-          List<AppleScriptComponent> cmList = parameterList.getTargetVariableComponentListRecursive();
-          if (!cmList.isEmpty()) {
-            result.addAll(cmList);
-          }
-        } else if (child instanceof AppleScriptHandlerSelectorPart) {//todo to think is it make sense to make at as
-          // todo component...
-          AppleScriptHandlerSelectorPart parameterSelector = (AppleScriptHandlerSelectorPart) child;
-          result.addAll(parameterSelector.findParameters());
-        } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {//+
-          AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
-          result.addAll(params.getComponentList());
-        } else if (child instanceof AppleScriptObjectPropertyTargetDeclaration
-                && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition//+ but why only
-                // labeled params??
-                || child.getContext() instanceof AppleScriptHandler)) {
-          //this is in target list/record literals
-          AppleScriptObjectPropertyTargetDeclaration prop = (AppleScriptObjectPropertyTargetDeclaration) child;
-          AppleScriptTargetVariable var = prop.getTargetVariable();
-          if (var != null) {
-            result.add(var);
-          }
-        } else if (child instanceof AppleScriptAssignmentStatement) {//+
-          AppleScriptAssignmentStatement assignmentStmt = (AppleScriptAssignmentStatement) child;
-          result.addAll(assignmentStmt.getTargets());
-//          addFromAssignmentStatementWithFilter(result, assignmentStmt, referencingElement);
-        } else if (child instanceof AppleScriptBlockBody && !(context instanceof AppleScriptIfCompoundStatement)) //???
-        // do not scan other inner blocks of if statement
-        {
-          processDeclarationsFromTop(child, result, false);//we do not need a recursion
-        } else if (child instanceof AppleScriptComponent) {//+
-          result.add((AppleScriptComponent) child);
-        }
+      if (child == lastParent && child instanceof AppleScriptBlockBody)//todo extract condition=>"stop at last parent"
+        continue;
 
+      //not components first
+      if (child instanceof AppleScriptVarDeclarationList) {
+        AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
+        result.add(varList.getVarAccessDeclaration());
+        result.addAll(varList.getVarDeclarationListPartList());
+      } else if (child instanceof AppleScriptFormalParameterList) {
+        AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
+        List<AppleScriptComponent> cmList = parameterList.getTargetVariableComponentListRecursive();
+        if (!cmList.isEmpty()) {
+          result.addAll(cmList);
+        }
+      } else if (child instanceof AppleScriptHandlerSelectorPart) {//todo to think if it make sense to make at as
+        // todo component...
+        AppleScriptHandlerSelectorPart parameterSelector = (AppleScriptHandlerSelectorPart) child;
+        result.addAll(parameterSelector.findParameters());
+      } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {
+        AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
+        result.addAll(params.getComponentList());
+      } else if (child instanceof AppleScriptObjectPropertyTargetDeclaration
+              && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition//+ why not in handlers??
+              || child.getContext() instanceof AppleScriptHandler)) {
+        //this is in target list/record literals
+        AppleScriptObjectPropertyTargetDeclaration prop = (AppleScriptObjectPropertyTargetDeclaration) child;
+        AppleScriptTargetVariable var = prop.getTargetVariable();
+        if (var != null) {
+          result.add(var);
+        }
+      } else if (child instanceof AppleScriptAssignmentStatement) {
+        AppleScriptAssignmentStatement assignmentStmt = (AppleScriptAssignmentStatement) child;
+        result.addAll(assignmentStmt.getTargets());
+//          addFromAssignmentStatementWithFilter(result, assignmentStmt, referencingElement);
+      } else if (child instanceof AppleScriptComponent) {
+        result.add((AppleScriptComponent) child);
       }
     }
+
     for (AppleScriptComponent component : result) {
-      if (referencingElement != null
-              && referencingElement.getTextOffset() > component.getTextOffset()) {//do not process declarations below
+      if (referencingElement != null && isCanBeReferenced(referencingElement, component)) {//do not process
+        // declarations below
         if (!processor.execute(component, state)) {
           return false;
         }
@@ -131,6 +85,13 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       }
     }
     return true;
+  }
+
+  private static boolean isCanBeReferenced(@NotNull PsiElement referencingElement,
+                                           @NotNull AppleScriptComponent component) {
+    //todo handle other declarations besides simple reference elements (inside object references etc)
+    return referencingElement instanceof AppleScriptObjectPropertyDeclaration
+            || AppleScriptPsiImplUtil.isBefore(component, referencingElement, true);
   }
 
   private static void addFromAssignmentStatementWithFilter(Set<AppleScriptComponent> result,

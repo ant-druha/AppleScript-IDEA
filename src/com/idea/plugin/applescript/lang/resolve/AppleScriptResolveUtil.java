@@ -1,13 +1,17 @@
 package com.idea.plugin.applescript.lang.resolve;
 
+import com.idea.plugin.applescript.psi.*;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,6 +33,36 @@ public class AppleScriptResolveUtil {
     final ResolveResult[] result = new ResolveResult[elements.size()];
     for (int i = 0, size = elements.size(); i < size; i++) {
       result[i] = new PsiElementResolveResult(elements.get(i));
+    }
+    return result;
+  }
+
+  //todo move to ScriptObject and simplify variables extraction
+  @NotNull
+  public static List<AppleScriptComponent> getNamedSubComponentsFor(@NotNull AppleScriptScriptObject script) {
+    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    AppleScriptBlockBody scriptBody = script.getScriptBody();
+    AppleScriptComponent[] namedComponents = PsiTreeUtil.getChildrenOfType(scriptBody, AppleScriptComponent.class);
+    AppleScriptAssignmentStatement[] varsCreations = PsiTreeUtil.getChildrenOfType(scriptBody,
+            AppleScriptAssignmentStatement.class);
+    AppleScriptVarDeclarationList[] varsDeclarations = PsiTreeUtil.getChildrenOfType(scriptBody,
+            AppleScriptVarDeclarationList.class);
+
+    if (namedComponents != null) {
+      result.addAll(Arrays.asList(namedComponents));
+    }
+    if (varsCreations != null) {
+      for (AppleScriptAssignmentStatement variable : varsCreations) {
+        result.addAll(variable.getTargets());
+      }
+    }
+    if (varsDeclarations != null) {
+      for (AppleScriptVarDeclarationList declarationList : varsDeclarations) {
+        AppleScriptComponent[] vars = PsiTreeUtil.getChildrenOfType(declarationList, AppleScriptComponent.class);
+        if (vars != null) {
+          result.addAll(Arrays.asList(vars));
+        }
+      }
     }
     return result;
   }
