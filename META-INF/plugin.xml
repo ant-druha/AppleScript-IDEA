@@ -59,6 +59,8 @@
                                  implementationClass="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptFindUsagesProvider"/>
         <readWriteAccessDetector
                 implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptReadWriteAccessDetector"/>
+        <usageTypeProvider
+                implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptUsageTypeProvider"/>
         <pom.declarationSearcher
                 implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerDeclarationSearcher"/>
         <referencesSearch

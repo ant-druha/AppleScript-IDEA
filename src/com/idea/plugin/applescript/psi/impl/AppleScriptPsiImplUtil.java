@@ -58,7 +58,7 @@ public class AppleScriptPsiImplUtil {
   private static void addRecordTargetVariablesRecursive(@NotNull AppleScriptTargetRecordLiteral targetRecord, @NotNull
   List<AppleScriptTargetVariable> targetVariables) {
 
-    for (AppleScriptObjectPropertyTargetDeclaration property : targetRecord.getObjectPropertyTargetDeclarationList()) {
+    for (AppleScriptObjectTargetPropertyDeclaration property : targetRecord.getObjectPropertyTargetDeclarationList()) {
       AppleScriptTargetVariable innerVariable = property.getTargetVariable();
       AppleScriptTargetListLiteral innerList = property.getTargetListLiteral();
       AppleScriptTargetRecordLiteral innerRecord = property.getTargetRecordLiteral();
@@ -81,7 +81,7 @@ public class AppleScriptPsiImplUtil {
                                                                              handler) {
     List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
     AppleScriptLabeledParameterDeclarationList parameterList = handler.getLabeledParameterDeclarationList();
-    List<AppleScriptObjectPropertyTargetDeclaration> givenProperties = handler.getObjectPropertyTargetDeclarationList();
+    List<AppleScriptObjectTargetPropertyDeclaration> givenProperties = handler.getObjectPropertyTargetDeclarationList();
     AppleScriptDirectParameterDeclaration directParameter = parameterList.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parameterList
             .getLabeledParameterDeclarationPartList();
@@ -91,7 +91,7 @@ public class AppleScriptPsiImplUtil {
     for (AppleScriptLabeledParameterDeclarationPart labeledParameter : labeledParameters) {
       result.add(labeledParameter);
     }
-    for (AppleScriptObjectPropertyTargetDeclaration property : givenProperties) {
+    for (AppleScriptObjectTargetPropertyDeclaration property : givenProperties) {
       result.add(property);
     }
     return result;
@@ -189,10 +189,7 @@ public class AppleScriptPsiImplUtil {
   }
 
   public static boolean isBefore(@NotNull final PsiElement e1, @NotNull final PsiElement e2, boolean strict) {
-    if (strict) {
-      return e1.getTextOffset() < e2.getTextOffset();
-    } else
-      return e1.getTextOffset() <= e2.getTextOffset();
+    return strict ? e1.getTextOffset() < e2.getTextOffset() : e1.getTextOffset() <= e2.getTextOffset();
   }
 
 }

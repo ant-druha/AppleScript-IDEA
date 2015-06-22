@@ -54,11 +54,11 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       } else if (child instanceof AppleScriptLabeledParameterDeclarationList) {
         AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
         result.addAll(params.getComponentList());
-      } else if (child instanceof AppleScriptObjectPropertyTargetDeclaration
+      } else if (child instanceof AppleScriptObjectTargetPropertyDeclaration
               && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition//+ why not in handlers??
               || child.getContext() instanceof AppleScriptHandler)) {
         //this is in target list/record literals
-        AppleScriptObjectPropertyTargetDeclaration prop = (AppleScriptObjectPropertyTargetDeclaration) child;
+        AppleScriptObjectTargetPropertyDeclaration prop = (AppleScriptObjectTargetPropertyDeclaration) child;
         AppleScriptTargetVariable var = prop.getTargetVariable();
         if (var != null) {
           result.add(var);

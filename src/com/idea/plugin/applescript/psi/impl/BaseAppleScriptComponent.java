@@ -110,14 +110,18 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Override
   public PsiReference getReference() {
     final String targetName = getName() != null ? getName() : getNode().getText();
-    //todo to think how to better simplify
-    if (this instanceof AppleScriptHandlerPositionalParametersDefinition || this instanceof AppleScriptHandler
-            || this instanceof AppleScriptVarDeclarationListPart || this instanceof AppleScriptVarAccessDeclaration
-            || findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null
-            ) {
-      return null;
+    if (this instanceof AppleScriptTargetVariable) {
+      return new AppleScriptTargetReferenceImpl(this, targetName);
     }
-    return new AppleScriptTargetReferenceImpl(this, targetName);
+    return null;
+    //todo to think how to better simplify
+//    if (this instanceof AppleScriptHandlerPositionalParametersDefinition || this instanceof AppleScriptHandler
+//            || this instanceof AppleScriptVarDeclarationListPart || this instanceof AppleScriptVarAccessDeclaration
+//            || findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null
+//            ) {
+//      return null;
+//    }
+//    return new AppleScriptTargetReferenceImpl(this, targetName);
   }
 
   @NotNull

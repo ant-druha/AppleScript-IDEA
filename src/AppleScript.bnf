@@ -303,11 +303,9 @@ usingTermsFromStatement ::= using terms from (application_reference|(script data
                                blockBody? nls
                             end !(considering|ignoring|error|try|repeat|tell|timeout)[using terms from] {pin=3}
 
-//todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
 //todo to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
-//todo see com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
-//todo ???may be creat new class for targetVariable ? which will extend component and implement namedElement in one class???
-//todo then hierarchy could be broken...?
+//todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
+//todo see also com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
 targetVariable ::= identifier
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
@@ -389,7 +387,7 @@ private recordLiteral ::= LCURLY[objectPropertyDeclaration] (COMMA objectPropert
 //todo the same as for the list:
 //todo create RecordLiteralExpression class for usual list, then create TargetList class extends
 // todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
-targetRecordLiteral ::= LCURLY[objectPropertyTargetDeclaration] (COMMA objectPropertyTargetDeclaration)* RCURLY
+targetRecordLiteral ::= LCURLY[objectTargetPropertyDeclaration] (COMMA objectTargetPropertyDeclaration)* RCURLY
 { methods=[getTargets] }
 //todo inspection for only unique property label names
 
@@ -422,7 +420,7 @@ private styledTextLiteralExpression ::= STRING_LITERAL
 // >>Boolean class<<
 private boolean_constant ::= true|false
 
-// !!! COMMANDS !!!
+// COMMANDS
 // commands  is a word or a series of words used in AppleScript statements to request an action.
 // we need to parse xml files -> index command names and signatures they have -> after user inters some command
 
@@ -571,7 +569,7 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 //todo only here the recursion is not really needed.
 //todo And override getComponentName method, which will return needed componentName (label name)
 //fallback to expression - it is also valid construct
-objectPropertyTargetDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializer)
+objectTargetPropertyDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializer)
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
@@ -686,7 +684,7 @@ private userLabelReference ::= THE_KW? referenceIdentifier
 //                                      interleaved_param_handler_declaration
 
 handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
-                                         [given THE_KW? objectPropertyTargetDeclaration (COMMA THE_KW? objectPropertyTargetDeclaration)*] //nls //should be sep here
+                                         [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
                                          [varDeclarationList] nls
                                            blockBody? nls
                                         end [handlerNameStrict] //!expression// sep or EOF here todo think: sep is needed for validation but could be issues with not included handlerNameStrict
@@ -699,10 +697,12 @@ labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeled
 {methods=[getComponentList]}
 //directParameterDeclaration ::= directParameterVar
 directParameterDeclaration ::= THE_KW? identifier
-{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? identifier //userParameterVar //todo implement targetVariablePattern here !!!
-{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent" implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
 //handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
@@ -781,11 +781,29 @@ formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)*
 //todo change implementation (nor a targetNamedComponent)
 //todo впринципе можно тоже сделать это namedElement чтобы проще отображать в structureView
 private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
+//private formalParameterListPart ::= formalParameterListPartPattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
 private argument_list_recover ::= !(RPAREN)
 private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"}
 private argument_list_part_recover ::= !(RPAREN|COMMA)
 
+private formalParameterListPartPattern ::= simpleFormalParameter|listFormalParameter|recordFormalParameter
+listFormalParameter ::= LCURLY [formalParameterListPartPattern|expression] (COMMA formalParameterListPartPattern|expression)* RCURLY //{pin=4}
+{methods = [getSimpleFormalParameters] }
+
+recordFormalParameter ::= LCURLY[objectNamedPropertyDeclaration] (COMMA objectNamedPropertyDeclaration)* RCURLY
+{methods = [getSimpleFormalParameters] }
+
+objectNamedPropertyDeclaration ::= propertyLabelIdentifier COLON (formalParameterListPartPattern|propertyInitializer)
+//objectPropertyTargetDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializer)
+//{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+//implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+simpleFormalParameter ::= THE_KW? identifier
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+
+////todo inspection for only unique property label names
 //handlerRunDefinition ::= on run nls
 //                            blockBody? nls
 //                          end run {pin=2}

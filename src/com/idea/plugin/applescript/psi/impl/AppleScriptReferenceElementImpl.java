@@ -40,7 +40,7 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   @Override
   public ResolveResult[] multiResolve(boolean incompleteCode) {
     ResolveResult[] results = multiResolveInner(incompleteCode);
-    return results.length > 1 ? new ResolveResult[]{results[0]} : results;
+    return results;//.length > 1 ? new ResolveResult[]{results[0]} : results;
   }
 
   protected ResolveResult[] multiResolveInner(boolean incompleteCode) {
