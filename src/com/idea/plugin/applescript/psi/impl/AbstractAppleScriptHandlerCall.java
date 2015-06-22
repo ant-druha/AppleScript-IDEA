@@ -30,7 +30,7 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
   @NotNull
   @Override
   public String getHandlerSelector() {
-    StringBuilder result = new StringBuilder();
+    final StringBuilder result = new StringBuilder();
     for (AppleScriptHandlerArgument argument : getArguments()) {
       result.append(argument.getArgumentSelector().getSelectorName());
     }
@@ -72,12 +72,11 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
     @NotNull
     @Override
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-      final List<AppleScriptComponent> results = new ArrayList<AppleScriptComponent>();
       final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(getHandlerSelector());
       PsiTreeUtil.treeWalkUp(resolveProcessor, AbstractAppleScriptHandlerCall.this, null, ResolveState.initial());
-      final List<PsiElement> results2 = new ArrayList<PsiElement>();
-      results2.add(resolveProcessor.getResult());
-      return AppleScriptResolveUtil.toCandidateInfoArray(results2);
+      final List<PsiElement> results = new ArrayList<PsiElement>();
+      results.add(resolveProcessor.getResult());
+      return AppleScriptResolveUtil.toCandidateInfoArray(results);
     }
 
     @Override
@@ -110,15 +109,15 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
     @Override
     public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
       //todo implement this via rename refactor: RenamePsiElementProcessor & RenameHandler for each distinct selector
-      final int selectors = getArguments().size();
-      final String[] selectorNames = newElementName.split(":");
-      if (selectorNames.length == selectors) {
-        for (int index = 0; index < selectors; index++) {
-          AppleScriptIdentifier myId = getArguments().get(index).getArgumentSelector().getSelectorIdentifier();
-          final AppleScriptIdentifier idNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
-                  selectorNames[index]);
-          if (idNew != null && myId != null) {
-            myId.replace(idNew);
+      final int mySelectorParts = getArguments().size();
+      final String[] newSelectorParts = newElementName.split(":");
+      if (newSelectorParts.length == mySelectorParts) {
+        for (int index = 0; index < mySelectorParts; index++) {
+          final AppleScriptIdentifier myId = getArguments().get(index).getArgumentSelector().getSelectorIdentifier();
+          final AppleScriptIdentifier newId = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
+                  newSelectorParts[index]);
+          if (newId != null && myId != null) {
+            myId.replace(newId);
           }
         }
       } else {

@@ -17,7 +17,7 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 
   private AppleScriptComponent myResult;
   @NotNull private final String myName;
-  @NotNull private SortedList<AppleScriptTargetVariable> myTargets =
+  @NotNull private final SortedList<AppleScriptTargetVariable> myTargets =
           new SortedList<AppleScriptTargetVariable>(new Comparator<AppleScriptTargetVariable>() {
             @Override
             public int compare(AppleScriptTargetVariable o1, AppleScriptTargetVariable o2) {
@@ -50,8 +50,8 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
   protected boolean doExecute(@NotNull AppleScriptComponent element) {
     if (this.myName.equals(element.getName())) {
       if (element instanceof AppleScriptTargetVariable) {
-        //set the closest from added before definition and continue the search
         myTargets.add((AppleScriptTargetVariable) element);
+        //set the closest from added before definition and continue the search
         myResult = myTargets.get(0);
         return true;
       }

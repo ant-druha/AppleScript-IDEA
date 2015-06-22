@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.psi.impl;
 
+import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.ASTNode;
@@ -9,7 +10,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
-import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +59,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
     PsiReference myReference = getReference();
     if (myReference != null) {
       PsiElement myTarget = myReference.resolve();
-      return myTarget != null ? myTarget.getContext() : null;
+      return myTarget != null ? myTarget : null;
     }
     return null;
   }
@@ -148,25 +148,18 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Nullable
   @Override
   public PsiElement getNameIdentifier() {
-    //returning this in case of property statement makes IDEA to highlight the whole statement
     return getIdentifier();
   }
 
-  @NotNull
+  @NotNull //todo check all identifiers
   @Override
   public abstract AppleScriptIdentifier getIdentifier();
 
   @Nullable
   @Override
   public Icon getIcon(int flags) {
-    if (isScriptProperty()) {
-      return PlatformIcons.PROPERTY_ICON;
-    } else if (isVariable()) { // only if single local/global variable or single variable in creation statement
-      return PlatformIcons.VARIABLE_ICON;
-    } else if (isHandler()) {
-      return PlatformIcons.FUNCTION_ICON;
-    }
-    return AllIcons.General.Ellipsis;
+    AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
+    return componentType != null ? componentType.getIcon() : AllIcons.General.Ellipsis;
   }
 
   @Override
@@ -176,8 +169,8 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
       @Nullable
       @Override
       public String getPresentableText() {
-        StringBuilder result = new StringBuilder();
-        AppleScriptComponent thisComponent = (AppleScriptComponent) getElement();
+        final StringBuilder result = new StringBuilder();
+        final AppleScriptComponent thisComponent = (AppleScriptComponent) getElement();
 
         if (isScriptProperty()) {
           AppleScriptExpression myValExpression = findAssignedValue();

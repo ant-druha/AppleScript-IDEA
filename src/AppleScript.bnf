@@ -468,7 +468,7 @@ propertyReference ::=  propertyLabelReference
 
 
 private propertyLabelReference ::= builtInClassName|referenceIdentifier|literalExpression//|appleScriptProperty
-private propertyLabelIdentifier ::= builtInClassName|identifier//|appleScriptProperty|componentName
+private propertyLabelIdentifier ::= builtInClassName|identifier//todo fix all such declared identifiers
 //private propertyLabelTargetComponent ::= builtInClassName|targetVariable//|appleScriptProperty|componentName
 
 //todo can be any valueExpression here !?!?

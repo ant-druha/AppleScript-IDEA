@@ -43,6 +43,7 @@ public interface AppleScriptComponent extends AppleScriptPsiElement, AppleScript
     /**
      * @return original declaration of this element. For example variable which was declared as a property but later
      * used in a set statement
+     * todo check NameDefiner interface in python plugin - looks like similar thing
      */
     @Nullable
     PsiElement getOriginalDeclaration();

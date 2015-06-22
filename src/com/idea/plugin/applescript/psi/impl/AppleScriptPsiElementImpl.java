@@ -38,7 +38,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
 
       //not components first
       if (child instanceof AppleScriptVarDeclarationList) {
-        AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
+        final AppleScriptVarDeclarationList varList = (AppleScriptVarDeclarationList) child;
         result.add(varList.getVarAccessDeclaration());
         result.addAll(varList.getVarDeclarationListPartList());
       } else if (child instanceof AppleScriptFormalParameterList) {
@@ -74,7 +74,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
 
     for (AppleScriptComponent component : result) {
       if (referencingElement != null && isCanBeReferenced(referencingElement, component)) {//do not process
-        // declarations below
+        // declarations below todo move condition to ResolveProcessor ?
         if (!processor.execute(component, state)) {
           return false;
         }

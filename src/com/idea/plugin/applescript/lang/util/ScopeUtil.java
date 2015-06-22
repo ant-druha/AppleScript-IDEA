@@ -6,6 +6,7 @@ import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
 import com.idea.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
+import org.jetbrains.annotations.Nullable;
 
 import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.HANDLER_DEFINITIONS;
 
@@ -13,6 +14,7 @@ import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.HANDLER_
  * Created by Andrey on 20.06.2015.
  */
 public class ScopeUtil {
+  @Nullable
   public static PsiElement getMaxLocalScopeForTargetOrReference(PsiElement element) {
     if (element == null) {
       return null;

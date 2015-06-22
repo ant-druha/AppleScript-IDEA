@@ -110,7 +110,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptComponent> getParameterComponentList(@NotNull
                                                                      AppleScriptHandlerLabeledParametersDefinition
                                                                              handler) {
-    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    final List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
     AppleScriptLabeledParameterDeclarationList parameterList = handler.getLabeledParameterDeclarationList();
     List<AppleScriptObjectTargetPropertyDeclaration> givenProperties = handler.getObjectTargetPropertyDeclarationList();
     AppleScriptDirectParameterDeclaration directParameter = parameterList.getDirectParameterDeclaration();
@@ -131,7 +131,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptComponent> getComponentList(@NotNull
                                                             AppleScriptLabeledParameterDeclarationList
                                                                     parametersDeclaration) {
-    List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    final List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
     AppleScriptDirectParameterDeclaration directParameter = parametersDeclaration.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parametersDeclaration
             .getLabeledParameterDeclarationPartList();
@@ -175,7 +175,7 @@ public class AppleScriptPsiImplUtil {
   @NotNull
   public static List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping(@NotNull
                                                                                                    AppleScriptAssignmentStatement assignmentStatement) {
-    List<Pair<AppleScriptPsiElement, AppleScriptExpression>> result = new SmartList<Pair<AppleScriptPsiElement,
+    final List<Pair<AppleScriptPsiElement, AppleScriptExpression>> result = new SmartList<Pair<AppleScriptPsiElement,
             AppleScriptExpression>>();
 
     return result;
@@ -184,7 +184,7 @@ public class AppleScriptPsiImplUtil {
   @NotNull
   public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptAssignmentStatement
                                                                    assignmentStatement) {
-    List<AppleScriptTargetVariable> result = new ArrayList<AppleScriptTargetVariable>();
+    final List<AppleScriptTargetVariable> result = new ArrayList<AppleScriptTargetVariable>();
     AppleScriptTargetVariable targetComponent = assignmentStatement.getTargetVariable();
     if (targetComponent != null) {
       result.add(targetComponent);
@@ -212,7 +212,7 @@ public class AppleScriptPsiImplUtil {
   }
 
   public static String getSelectorName(AppleScriptArgumentSelector argumentSelector) {
-    StringBuilder result = new StringBuilder();
+    final StringBuilder result = new StringBuilder();
     ASTNode child = argumentSelector.getNode().getFirstChildNode();
     while (child != null) {
       final IElementType tt = child.getElementType();

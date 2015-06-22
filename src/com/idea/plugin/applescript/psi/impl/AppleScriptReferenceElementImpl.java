@@ -112,11 +112,11 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   public boolean isReferenceTo(PsiElement element) {
     PsiElement target = resolve();
     if (target instanceof AppleScriptTargetVariable) {//could be defined more than once
-      String theirName = ((AppleScriptTargetVariable) target).getName();
+      final String theirName = ((AppleScriptTargetVariable) target).getName();
       String ourName = getCanonicalText();
       if (ourName.equals(theirName)) {
-        PsiElement ourScopeOwner = ScopeUtil.getMaxLocalScopeForTargetOrReference(getElement());
-        PsiElement theirScopeOwner = ScopeUtil.getMaxLocalScopeForTargetOrReference(element);
+        final PsiElement ourScopeOwner = ScopeUtil.getMaxLocalScopeForTargetOrReference(getElement());
+        final PsiElement theirScopeOwner = ScopeUtil.getMaxLocalScopeForTargetOrReference(element);
         if (resolvesToSameLocal(element, theirName, ourScopeOwner, theirScopeOwner)) {
           return true;
         }
