@@ -386,7 +386,7 @@ private recordLiteral ::= LCURLY[objectPropertyDeclaration] (COMMA objectPropert
 
 //todo the same as for the list:
 //todo create RecordLiteralExpression class for usual list, then create TargetList class extends
-// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
+// todo ListLiteral, implements AppleScriptCompositeComponent and implement getFormalParameters method
 targetRecordLiteral ::= LCURLY[objectTargetPropertyDeclaration] (COMMA objectTargetPropertyDeclaration)* RCURLY
 { methods=[getTargets] }
 //todo inspection for only unique property label names
@@ -406,7 +406,7 @@ private listLiteral ::= LCURLY [expression|referenceIdentifier] (COMMA(expressio
 //((targetListLiteral|parenthesizedExpression|targetComponentName)
 //(BAND nls primaryExpression)+)//any other(than string or record) class converted to a list
 //todo create ListLiteralExpression class for usual list, then create TargetList class extends
-// todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
+// todo ListLiteral, implements AppleScriptCompositeComponent and implement getFormalParameters method
 targetListLiteral ::= LCURLY [targetVariablePattern|expression] (COMMA targetVariablePattern|expression)* RCURLY //{pin=4}
 {methods = [getTargets] }
 //The class identifier Styled Text is a synonym for a string that includes style and font information.
@@ -565,7 +565,7 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 //
 //todo MAY BE THE SAME as for the list or record ????
 //todo create ListLiteralExpression class for usual list, then create TargetList class extends
-//todo ListLiteral, implements AppleScriptCompositeComponent and implement getTargetVariableComponentListRecursive method
+//todo ListLiteral, implements AppleScriptCompositeComponent and implement getFormalParameters method
 //todo only here the recursion is not really needed.
 //todo And override getComponentName method, which will return needed componentName (label name)
 //fallback to expression - it is also valid construct
@@ -776,12 +776,12 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
-{ methods = [getTargetVariableComponentListRecursive] }
+{ methods = [getFormalParameters] }
 
 //todo change implementation (nor a targetNamedComponent)
 //todo впринципе можно тоже сделать это namedElement чтобы проще отображать в structureView
-private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
-//private formalParameterListPart ::= formalParameterListPartPattern {recoverWhile="argument_list_part_recover"}
+private formalParameterListPart ::= formalParameterListPartPattern {recoverWhile="argument_list_part_recover"}
+//private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argument_list_recover"}
 private argument_list_recover ::= !(RPAREN)
 private argumentListPart ::= expression {recoverWhile="argument_list_part_recover"}
@@ -789,21 +789,19 @@ private argument_list_part_recover ::= !(RPAREN|COMMA)
 
 private formalParameterListPartPattern ::= simpleFormalParameter|listFormalParameter|recordFormalParameter
 listFormalParameter ::= LCURLY [formalParameterListPartPattern|expression] (COMMA formalParameterListPartPattern|expression)* RCURLY //{pin=4}
-{methods = [getSimpleFormalParameters] }
+{methods = [getParameters] }
 
 recordFormalParameter ::= LCURLY[objectNamedPropertyDeclaration] (COMMA objectNamedPropertyDeclaration)* RCURLY
-{methods = [getSimpleFormalParameters] }
+{methods = [getParameters] }
 
 objectNamedPropertyDeclaration ::= propertyLabelIdentifier COLON (formalParameterListPartPattern|propertyInitializer)
-//objectPropertyTargetDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializer)
-//{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
-//implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
+implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 simpleFormalParameter ::= THE_KW? identifier
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-////todo inspection for only unique property label names
 //handlerRunDefinition ::= on run nls
 //                            blockBody? nls
 //                          end run {pin=2}

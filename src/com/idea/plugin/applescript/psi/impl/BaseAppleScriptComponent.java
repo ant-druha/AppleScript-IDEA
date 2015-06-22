@@ -192,7 +192,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
                     (AppleScriptHandlerPositionalParametersDefinition) thisComponent;
             AppleScriptFormalParameterList parameterList = handler.getFormalParameterList();
             if (parameterList != null) {
-              List<AppleScriptComponent> myParameters = parameterList.getTargetVariableComponentListRecursive();
+              List<AppleScriptComponent> myParameters = parameterList.getFormalParameters();
               result.append("(");
               String prefix = "";
               for (AppleScriptComponent paramName : myParameters) {

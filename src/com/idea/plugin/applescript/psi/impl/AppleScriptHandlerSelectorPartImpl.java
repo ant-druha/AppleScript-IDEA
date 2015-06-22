@@ -31,10 +31,10 @@ public class AppleScriptHandlerSelectorPartImpl extends AppleScriptNamedElementI
       components.add((AppleScriptTargetVariable) parameter);
     } else if (parameter instanceof AppleScriptTargetListLiteral) {
       AppleScriptTargetListLiteral list = (AppleScriptTargetListLiteral) parameter;
-      components.addAll(list.getTargetVariableListRecursive());
+      components.addAll(list.getTargets());
     } else if (parameter instanceof AppleScriptTargetRecordLiteral) {
       AppleScriptTargetRecordLiteral record = (AppleScriptTargetRecordLiteral) parameter;
-      components.addAll(record.getTargetVariableListRecursive());
+      components.addAll(record.getTargets());
     }
     return components;
   }

@@ -43,7 +43,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         result.addAll(varList.getVarDeclarationListPartList());
       } else if (child instanceof AppleScriptFormalParameterList) {
         AppleScriptFormalParameterList parameterList = (AppleScriptFormalParameterList) child;
-        List<AppleScriptComponent> cmList = parameterList.getTargetVariableComponentListRecursive();
+        List<AppleScriptComponent> cmList = parameterList.getFormalParameters();
         if (!cmList.isEmpty()) {
           result.addAll(cmList);
         }

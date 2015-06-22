@@ -27,7 +27,7 @@ public class ScopeUtil {
         IElementType elementType = currentScope.getNode().getElementType();
         roofReached = HANDLER_DEFINITIONS.contains(elementType)
                 || elementType == AppleScriptParserDefinition.FILE
-                || element == AppleScriptTypes.OBJECT_PROPERTY_TARGET_DECLARATION;//todo to check this
+                || element == AppleScriptTypes.OBJECT_TARGET_PROPERTY_DECLARATION;//todo to check this
         currentScope = roofReached ? currentScope : currentScope.getContext();
       }
       return currentScope;
