@@ -17,30 +17,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.*;
-import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
+import static com.idea.plugin.applescript.psi.AppleScriptTypes.COMMENT;
 
 public class AppleScriptSyntaxHighlighter extends SyntaxHighlighterBase {
 
-    private static final Map<IElementType, TextAttributesKey> ATTRIBUTES = new HashMap<IElementType, TextAttributesKey>();
+  private static final Map<IElementType, TextAttributesKey> ATTRIBUTES = new HashMap<IElementType, TextAttributesKey>();
 
-    static {
-        fillMap(ATTRIBUTES, OPERATORS, AppleScriptSyntaxHighlighterColors.OPERATION_SIGN);
-        fillMap(ATTRIBUTES, KEYWORDS, AppleScriptSyntaxHighlighterColors.KEYWORD);
-        fillMap(ATTRIBUTES, STRINGS, AppleScriptSyntaxHighlighterColors.STRING);
-        fillMap(ATTRIBUTES, NUMBERS, AppleScriptSyntaxHighlighterColors.NUMBER);
-        ATTRIBUTES.put(COMMENT, AppleScriptSyntaxHighlighterColors.COMMENT);
-    }
+  static {
+    fillMap(ATTRIBUTES, OPERATORS, AppleScriptSyntaxHighlighterColors.OPERATION_SIGN);
+    fillMap(ATTRIBUTES, KEYWORDS, AppleScriptSyntaxHighlighterColors.KEYWORD);
+    fillMap(ATTRIBUTES, STRINGS, AppleScriptSyntaxHighlighterColors.STRING);
+    fillMap(ATTRIBUTES, NUMBERS, AppleScriptSyntaxHighlighterColors.NUMBER);
+    ATTRIBUTES.put(COMMENT, AppleScriptSyntaxHighlighterColors.COMMENT);
+  }
 
 
-    @NotNull
-    @Override
-    public Lexer getHighlightingLexer() {
-        return new FlexAdapter(new _AppleScriptLexer((Reader) null));
-    }
+  @NotNull
+  @Override
+  public Lexer getHighlightingLexer() {
+    return new FlexAdapter(new _AppleScriptLexer((Reader) null));
+  }
 
-    @NotNull
-    @Override
-    public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
-        return pack(ATTRIBUTES.get(tokenType));
-    }
+  @NotNull
+  @Override
+  public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
+    return pack(ATTRIBUTES.get(tokenType));
+  }
 }

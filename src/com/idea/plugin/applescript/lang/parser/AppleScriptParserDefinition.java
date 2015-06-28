@@ -25,53 +25,54 @@ import java.io.Reader;
 /**
  * Created by Andrey on 22.02.2015.
  */
-public class AppleScriptParserDefinition implements ParserDefinition{
-    public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-    public static final TokenSet COMMENTS = TokenSet.create(AppleScriptTypes.COMMENT);
+public class AppleScriptParserDefinition implements ParserDefinition {
+  public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
+  public static final TokenSet COMMENTS = TokenSet.create(AppleScriptTypes.COMMENT);
 
-    public static final IFileElementType FILE = new IFileElementType(Language.<AppleScriptLanguage>findInstance(AppleScriptLanguage.class));
+  public static final IFileElementType FILE = new IFileElementType(Language.findInstance
+          (AppleScriptLanguage.class));
 
-    @NotNull
-    @Override
-    public Lexer createLexer(Project project) {
-        return new FlexAdapter(new _AppleScriptLexer((Reader) null));
-    }
+  @NotNull
+  @Override
+  public Lexer createLexer(Project project) {
+    return new FlexAdapter(new _AppleScriptLexer((Reader) null));
+  }
 
-    @NotNull
-    public TokenSet getWhitespaceTokens() {
-        return WHITE_SPACES;
-    }
+  @NotNull
+  public TokenSet getWhitespaceTokens() {
+    return WHITE_SPACES;
+  }
 
-    @NotNull
-    public TokenSet getCommentTokens() {
-        return COMMENTS;
-    }
+  @NotNull
+  public TokenSet getCommentTokens() {
+    return COMMENTS;
+  }
 
-    @NotNull
-    public TokenSet getStringLiteralElements() {
-        return TokenSet.EMPTY;
-    }
+  @NotNull
+  public TokenSet getStringLiteralElements() {
+    return TokenSet.EMPTY;
+  }
 
-    @NotNull
-    public PsiParser createParser(final Project project) {
-        return new AppleScriptParser();
-    }
+  @NotNull
+  public PsiParser createParser(final Project project) {
+    return new AppleScriptParser();
+  }
 
-    @Override
-    public IFileElementType getFileNodeType() {
-        return FILE;
-    }
+  @Override
+  public IFileElementType getFileNodeType() {
+    return FILE;
+  }
 
-    public PsiFile createFile(FileViewProvider viewProvider) {
-        return new AppleScriptFile(viewProvider);
-    }
+  public PsiFile createFile(FileViewProvider viewProvider) {
+    return new AppleScriptFile(viewProvider);
+  }
 
-    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
-        return SpaceRequirements.MAY;
-    }
+  public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
+    return SpaceRequirements.MAY;
+  }
 
-    @NotNull
-    public PsiElement createElement(ASTNode node) {
-        return AppleScriptTypes.Factory.createElement(node);
-    }
+  @NotNull
+  public PsiElement createElement(ASTNode node) {
+    return AppleScriptTypes.Factory.createElement(node);
+  }
 }

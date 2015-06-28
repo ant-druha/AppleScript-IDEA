@@ -45,7 +45,7 @@ public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
   @Override
   public String getType(@NotNull PsiElement element) {
     AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(element);
-    return componentType!=null ? componentType.toString().toLowerCase() : "reference";
+    return componentType != null ? componentType.toString().toLowerCase() : "reference";
   }
 
   @NotNull

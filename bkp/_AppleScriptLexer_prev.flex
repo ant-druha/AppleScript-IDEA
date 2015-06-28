@@ -41,23 +41,13 @@ EQ=("="|"is equal to"|"equal to"|"is"|"equal"|"equals")
 REF_OP=("a reference to"|"a ref to"|"a ref"|"reference to"|"ref")
 
 DIV=("/"|"?")
-BUILT_IN_TYPE=("string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"styled text"|"text item"|"text"|"item")
-BUILT_IN_TYPE_S=("string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"styled text"|"text item"|"text"|"item")"s"
-
-//built in classes properties
-QUOTED_FORM="quoted"{WHITE_SPACE}+"form"
-
-////some standard commands
-//MAKE="make"{WHITE_SPACE}("new")?
-//DO_SHELL_SCRIPT="do"{WHITE_SPACE}"shell"{WHITE_SPACE}"script"
-//DISPLAY_DIALOG="display"{WHITE_SPACE}"dialog"
-
+BUILT_IN_TYPE=("string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"styled text"|"text")
 APP_RESPONSES=("application responses"|"app responses")
 C_WHITE_SPACE=("white space")
 STRING_LITERAL=\"([^\"\\]|\\.)*\"
 DIGITS=[0-9]+
-DEC_EXPONENT=[Ee][+-]?[0-9]+
-VAR_IDENTIFIER=([_a-zA-Z][a-zA-Z0-9_]*)|(\|(([^\|])|(\\\|))*[^\\]\|)
+DEC_EXPONENT=[Ee][+-]?[_0-9]*
+VAR_IDENTIFIER=([a-zA-Z][a-zA-Z0-9_]*)|(\|(([^\|])|(\\\|))*[^\\]\|)
 COMMENT=(("#".*)|("--".*)|(("(*"[^"*"](([^"*"]*("*"+[^"*"")"])?)*("*"+")")?))|"(*"))
 RAW_CODE=("<<"[^">>"]*">>")
 
@@ -89,10 +79,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "reference"                 { return REFERENCE; }
   "scripting additions"       { return SCRIPTING_ADDITIONS; }
   "current date"              { return CURRENT_DATE; }
-  "current application"       { return CURRENT_APPLICATION; }
-  "current app"               { return CURRENT_APP; }
-  "current"                   { return CURRENT; }
-  "application"               { return APPLICATION; }
   "text item delimiters"      { return TEXT_ITEM_DELIMETERS; }
   "missing value"             { return MISSING_VALUE; }
   "pi"                        { return PI_CONSTANT; }
@@ -106,10 +92,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "{"                         { return LCURLY; }
   "}"                         { return RCURLY; }
   ":"                         { return COLON; }
-  "set"                       { return SET; }
-  "returning"                 { return RETURNING; }
-  "copy"                      { return COPY; }
-  "put"                       { return PUT; }
   "return"                    { return RETURN; }
   "exit"                      { return EXIT; }
   "repeat"                    { return REPEAT; }
@@ -133,6 +115,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "partial"                   { return PARTIAL; }
   "result"                    { return RESULT; }
   "on"                        { return ON; }
+  "application"               { return APPLICATION; }
   "app"                       { return APP; }
   "but"                       { return BUT; }
   "case"                      { return CASE; }
@@ -192,6 +175,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "prop"                      { return PROP; }
   "global"                    { return GLOBAL; }
   "local"                     { return LOCAL; }
+  "current"                   { return CURRENT; }
   "anything"                  { return ANYTHING; }
   "parent"                    { return PARENT; }
   "yes"                       { return YES; }
@@ -222,10 +206,14 @@ RAW_CODE=("<<"[^">>"]*">>")
   "since"                     { return SINCE; }
   "under"                     { return UNDER; }
   "continue"                  { return CONTINUE; }
+  "copy"                      { return COPY; }
+  "put"                       { return PUT; }
   "count"                     { return COUNT; }
   "each"                      { return EACH; }
   "get"                       { return GET; }
   "run"                       { return RUN; }
+  "set"                       { return SET; }
+  "returning"                 { return RETURNING; }
 
   {NLS}                       { return NLS; }
   {STARTS_BEGINS_WITH}        { return STARTS_BEGINS_WITH; }
@@ -242,9 +230,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   {EQ}                        { return EQ; }
   {REF_OP}                    { return REF_OP; }
   {DIV}                       { return DIV; }
-  {BUILT_IN_TYPE_S}           { return BUILT_IN_TYPE_S; }
   {BUILT_IN_TYPE}             { return BUILT_IN_TYPE; }
-  {QUOTED_FORM}               { return QUOTED_FORM; }
   {C_WHITE_SPACE}             { return C_WHITE_SPACE; }
   {APP_RESPONSES}             { return APP_RESPONSES; }
   {STRING_LITERAL}            { return STRING_LITERAL; }

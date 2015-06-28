@@ -88,7 +88,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Nullable
   @Override
   public AppleScriptExpression findAssignedValue() {
-    if (isScriptProperty()) {
+    if (isScriptProperty() && this instanceof AppleScriptPropertyDeclaration) { //todo rework detection
       AppleScriptPropertyDeclaration myProperty = (AppleScriptPropertyDeclaration) this;
       return myProperty.getExpression();
     }
