@@ -449,13 +449,11 @@ propertyReference ::=  propertyLabelReference
 private propertyLabelReference ::= builtInClassName|referenceIdentifier|literalExpression|builtInClassNamePlural
 |appleScriptProperty|builtInClassProperty
 private builtInClassProperty ::= stringProperty
+
+//todo may be it is better to add manually in parser and not via token types? or if it is built in properties it is ok?
 stringProperty ::= QUOTED_FORM
+
 private propertyLabelIdentifier ::= builtInClassName|identifier//todo fix all such declared identifiers
-
-//todo can be any valueExpression here !?!?
-//private propertyValueExpression ::= /*applicationStandardCommandNames|*/referenceIdentifier
-//|literalExpression //todo may be better not to include here? (need only for list/record/string references?)
-
 
 
 arbitraryReference ::= some classTypeName {pin=1}
@@ -583,11 +581,7 @@ private missing_value_constant ::= MISSING_VALUE
 private resultProperty ::= result
 private parentProperty ::= parent
 private save_opt_constant ::= yes|no|ask
-//include some standard tokens used in applescript but also used in standard additional
-// todo so for example eliminate 'on error' handler in try_statement
-//todo !!!to think how is better handle situations with keywords used in not defined here commands!!!
-//todo perhaps need to separate other keywords from as_label
-//without with handler call names like 'on perform mail action with messages theMessages for rule theRule' are not detected
+
  reservedWordsNotParameterLabel::=ref|THE_KW//|with//todo with not a label???//file //can be used for identifiers for labeled handlers for ex.
 //todo move some (like run,open,quit,idle)
 private applicationStandardCommandNames ::= close|launch//|run|quit|open//|set//copy //todo on run ... command handler run is not detected as identifier ->need to add run handler
@@ -597,18 +591,12 @@ private applicationStandardCommands ::= close|launch|DO_SHELL_SCRIPT|MAKE|DISPLA
 private parameterLabelSafeInclude ::= !(handlerParameterLabel (error|literalExpression|refForm))handlerParameterLabel
 private reservedWords ::= reservedWordsNotParameterLabel|parameterLabelSafeInclude/*|applicationStandardCommandNames*/
 
-//appleScriptStandardNamesAndCommands ::=
-//!((reservedWords error|literal_expression|reference_form))
-//(reservedWords)
-// commands which are not parsed (so it should be parsed as usual reference(or as constant?) expressions
 //todo ?? how to handle it? probably include for the script to contain any standard (except reserved keywords
 // todo as expressions) keywords from native appliscript commands
 private text_constant ::=  return|space|tab|linefeed|quote
 private versionProperty ::= version
 
-//todo this should be detected as a property class ! (not a targetComponent) make a separate property class?
-//todo actually this is also a target since it can hold a value -> make a property class and extend with target??
-//todo and redefine necessary methods (is property, getName etc.)
+//todo redefine necessary methods (is property, getName etc.)
 appleScriptProperty ::= resultProperty|versionProperty|missing_value_constant/*??*/|anythingProperty
 |textItemDelimitersProperty|parentProperty//|itMeProperty//|text_constant /*?? */
 
@@ -621,28 +609,18 @@ handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|a
 //The Move command has a direct parameter (referenceToObject) that specifies the object to move and a
 // labeled parameter (whose label is to) that specifies where to move the object.
 
-
-//private handlerNameNonStrictDeclaration ::= componentName//|reservedWordsNotParameterLabel/*|with*/ //reference_expression could be for example: 'perform mail action with messages' impossible to
- // match such names...
-
-argumentSelector ::= identifierOrStandardCommands COLON //|propertyLabelComponent
+argumentSelector ::= identifierOrStandardCommands COLON
 {methods=[getSelectorIdentifier getSelectorName]}
 
 //private handlerNamePartReference ::= referenceIdentifier //|propertyLabelComponent
 //An identifier for the direct parameter variable. If it is included, directParamName must be listed immediately
 // after the command name. The word of or in before directParamName is required in user-defined handlers,
 // but is optional in terminology-defined handlers (for example, those defined by applications).
-//private  directParameterVar ::= THE_KW?componentName
-//private  directParameterVar ::= THE_KW? identifier
 private userParameterVar ::= THE_KW? targetVariablePattern /// instead of componentName
 private userLabelReference ::= THE_KW? referenceIdentifier
-//private userLabelComponent ::= THE_KW? componentName
-//private parentSpecifier ::= referenceIdentifier|expression
 
 //===HANDLERS===
 // handler is a collection of statements which can be invoked by name
-//private handler_declaration_block ::= lbl_param_handler_declaration | pos_param_handler_declaration |
-//                                      interleaved_param_handler_declaration
 
 handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
                                          [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
@@ -666,20 +644,12 @@ labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? identifier //u
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
-//handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
-//handlerNameStrictDeclaration ::=((componentName|reservedWordsNotParameterLabel) )*
-//{recoverWhile="handlernameRecover"}
-//handlernameRecover::= !(handlerParameterLabel|of|in)
-//handlerNameStrict ::=((referenceIdentifier|reservedWordsNotParameterLabel) !handlerParameterLabel)*
 
 //private userParameterVar2 ::= referenceIdentifier
 //private userLabel2 ::=  referenceIdentifier
 
-//todo to think about directParameterVal and that expression will also include reserved keywords now!:(
 //todo may be include these keywords on the top level script only not for the all the expressions...??
-//todo findNumbers of myList above 19 given rounding:false --findNumbers of myList is a name of the func here!!:(
 //todo should we made it left associative with identifier only??
-
 //handlerLabeledParametersCall ::= handlerWithDirectLabeledParametersCall|handlerNoDirectLabeledParametersCall
 left handlerLabeledParametersCall ::=
    (
@@ -751,7 +721,6 @@ left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
 { methods = [getFormalParameters] }
 
-//todo change implementation (nor a targetNamedComponent)
 //todo впринципе можно тоже сделать это namedElement чтобы проще отображать в structureView
 private formalParameterListPart ::= formalParameterListPartPattern {recoverWhile="argument_list_part_recover"}
 //private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
@@ -791,11 +760,6 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 //                            blockBody? nls
 //                           end quit {pin=2}
 
-//todo to think about handlerNamePartDeclaration as reference and componentName in start/ent of this expression
-//handlerInterleavedParametersDefinition ::= (on|to) componentName handlerNameSuffix nls
-//                                               blockBody? nls
-//                                             end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
-//{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponentimplements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersSelectorPart+ nls
                                                blockBody? nls
@@ -803,21 +767,10 @@ handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersS
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
 implements="com.idea.plugin.applescript.psi.AppleScriptHandler"}
 
-
-//handlerInterleavedParametersNameSuffixPart ::= componentName //|propertyLabelComponent
-//{mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
-//implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
-
 private handlerNamePartRef ::= referenceIdentifier
 
-//handlerNameSuffix ::=  COLON userParameterVar (handlerInterleavedParametersNameSuffixPart COLON userParameterVar)*
-//{methods=[getHandlerNamePartList getNamedParameterListRecursive]}
-
-//handlerInterleavedParametersSelectorPart ::= componentName COLON userParameterVar
-//handlerInterleavedParametersSelectorPart ::= identifier COLON userParameterVar
 //todo change to a named element (but is named element - it is not selected by resolver...)
 handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
- //todo not generate by grammar method getComponentName() ?? (need to try to return null here?)
  //todo or remove component name from here at all, or other things to try (several componentNames etc)?
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
 implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
@@ -853,11 +806,7 @@ private scriptObjectName ::= identifier
 // Any arguments following the script will be passed as a list of strings
 // to the direct parameter of the ``run'' handler.  For example:
 // http://hints.macworld.com/article.php?story=20050523140439734
-continue_statement ::= continue expression //[handler_generic_parameter_list]
-//wth??? - expression will contain all the structures (including param.list for the handler)
-//private handler_generic_parameter_list ::= ((of|in)? directParameterVar)
-//                                        | (LPAREN parameterVarList RPAREN)
-//                                        | (COLON userParameterVar (handlerNamePart COLON userParameterVar)*)
+continue_statement ::= continue expression
 
 
 
@@ -951,7 +900,6 @@ private referencePattern ::= referenceExpression //variable reference /list of v
 // AppleScript includes operators for performing arithmetic operations(numeric_ex), comparing values(testing_ex),
 // performing Boolean evaluations(logical ex), and coercing values.
 // todo operator precedence (coercion and not order amend) also & insert here
-//todo to think about rational separate expressions for string list and records
 private logicalOrExpressionWrapper ::= logicalAndExpressionWrapper logicalOrExpression*
 left logicalOrExpression ::= LOR nls logicalAndExpressionWrapper
 
@@ -991,7 +939,7 @@ private objectRefWrapper ::= THE_KW? prefixExpression filterReference?
 
 private possessiveFormAndInterleavedCallOrPrimaryWithNoHandlerCall ::=
 APS (handlerInterleavedParametersCall | primaryExpressionNoLabeledHandlerCall)
-private handlerInterleavedCallOrPrefixExpression ::= handlerInterleavedParametersCall | prefixExpression
+//private handlerInterleavedCallOrPrefixExpression ::= handlerInterleavedParametersCall | prefixExpression
 
 left objectRef ::=
 //todo: to workaround problem with such calls:
@@ -1015,6 +963,7 @@ private primaryExpression ::=
 //                             |appleScriptPropertiesConstant
  |reservedWords
 
+//todo need to get rig of this somehow
 primaryExpressionNoLabeledHandlerCall ::=
                              literalExpression
                              |referenceExpression handlerPositionalParametersCall? // only labeled params handler is left out..?
@@ -1022,7 +971,7 @@ primaryExpressionNoLabeledHandlerCall ::=
                              |apple_script_command_expression
                              |reservedWords
 
-private handlerCallExpression ::= handlerLabeledParametersCall|handlerPositionalParametersCall
+//private handlerCallExpression ::= handlerLabeledParametersCall|handlerPositionalParametersCall
 //|handlerInterleavedParametersCall
 
 
@@ -1048,6 +997,6 @@ private containment_any_part_operator ::= IS_CONTAIN|DOES_NOT_CONTAIN|IS_IN|IS_N
 
 private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
 
-private coercionExpression_2 ::= coercionBuiltInExpression|coercionExternalExpression
-left coercionBuiltInExpression ::= AS nls builtInClassName {pin=3}
-left coercionExternalExpression ::= AS nls referenceIdentifier {pin=3}
+//private coercionExpression_2 ::= coercionBuiltInExpression|coercionExternalExpression
+//left coercionBuiltInExpression ::= AS nls builtInClassName {pin=3}
+//left coercionExternalExpression ::= AS nls referenceIdentifier {pin=3}
