@@ -7,6 +7,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNameIdentifierOwner;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
@@ -18,7 +19,8 @@ import org.jetbrains.annotations.Nullable;
  * Created by Andrey on 08.04.2015.
  */
 //todo !!! use it for selectorIdentifier and handlerSelectorPart !!!
-public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementImpl implements AppleScriptNamedElement {
+public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementImpl implements
+        AppleScriptNamedElement, PsiNameIdentifierOwner {
   public AppleScriptNamedElementImpl(@NotNull ASTNode node) {
     super(node);
   }

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by Andrey on 21.06.2015.
  */
-public interface AppleScriptObject extends AppleScriptComponent {
+public interface AppleScriptPsiObject extends AppleScriptComponent {
 
   /**
    * @return list of object properties (@see AppleScriptObjectPropertyDeclaration class)

@@ -2,6 +2,7 @@ package com.idea.plugin.applescript.psi;
 
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiNameIdentifierOwner;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
@@ -12,10 +13,8 @@ import org.jetbrains.annotations.Nullable;
  * Created by Andrey on 21.04.2015. <p/>
  *
  * Represents base interface for the construct which is a target for variable assignment or any component declaration.
- * Can be variable declaration (global/local variable declaration), variable declaration and initialization (variable
- * in creation statement, property declaration), handler parameter declaration, handler declaration
  */
-public interface AppleScriptComponent extends AppleScriptPsiElement, AppleScriptNamedElement {
+public interface AppleScriptComponent extends AppleScriptPsiElement, AppleScriptNamedElement, PsiNameIdentifierOwner {
 
     //todo create AppleScriptComponentType enum and methods to get the component type from class => easier to maintain
     /**
@@ -89,9 +88,9 @@ public interface AppleScriptComponent extends AppleScriptPsiElement, AppleScript
     @Nullable
     AppleScriptExpression findAssignedValue();
 
-    @Nullable
-    @Override
-    PsiElement getNameIdentifier();
+//    @Nullable
+//    @Override
+//    PsiElement getNameIdentifier();
 
   /**
      *

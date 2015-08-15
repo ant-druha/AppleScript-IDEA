@@ -58,7 +58,7 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
     for (AppleScriptComponent component : myComponents) {
       if (component instanceof AppleScriptHandlerPositionalParametersDefinition) {
         result.add(new AppleScriptStructureViewElement(component));
-      } else if (component instanceof AppleScriptPropertyDeclaration) {
+      } else if (component instanceof AppleScriptScriptPropertyDeclaration) {
         result.add(new AppleScriptStructureViewElement(component));
       } else if (component instanceof AppleScriptVarAccessDeclaration || component instanceof
               AppleScriptVarDeclarationListPart) {

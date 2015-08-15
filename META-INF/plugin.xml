@@ -25,7 +25,21 @@
     -->
 
     <extensions defaultExtensionNs="com.intellij">
+        <!--key="Script Suite Registry"-->
+        <!--bundle="messages.LangBundle"-->
+        <projectConfigurable groupId="language"
+                             id="Script Suite Registry"
+                             displayName="AppleScript Suite Registry mappings"
+                             instance="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptSuiteRegistryConfigurable"/>
+
+        <projectService serviceInterface="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings"
+                        serviceImplementation="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings">
+        </projectService>
+
         <!-- Add your extensions here -->
+
+        <library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>
+
         <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
         <lang.parserDefinition language="AppleScript"
                                implementationClass="com.idea.plugin.applescript.lang.parser.AppleScriptParserDefinition"/>
@@ -88,6 +102,10 @@
 
     <application-components>
         <!-- Add your application components here -->
+        <component>
+            <implementation-class>com.idea.plugin.applescript.lang.parser.ApplicationScriptSuiteRegistryComponent
+            </implementation-class>
+        </component>
     </application-components>
 
     <project-components>
@@ -96,6 +114,15 @@
 
     <actions>
         <!-- Add your actions here -->
+        <action id="LoadDictionary" class="com.idea.plugin.applescript.lang.parser.LoadDictionaryAction"
+                text="Load Dictionary" description="testing">
+            <add-to-group group-id="FileMenu" anchor="after" relative-to-action="FileOpenGroup"/>
+        </action>
+        <action id="ChangeScriptSuiteRegistryAction"
+                class="com.idea.plugin.applescript.lang.ide.libraries.ChangeScriptSuiteRegistryAction"
+                text="Change Script Suite Library" description="Choose Dictionaries for the script">
+            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
+        </action>
     </actions>
 
 </idea-plugin>

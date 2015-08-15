@@ -91,6 +91,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
                                            @NotNull AppleScriptComponent component) {
     //todo handle other declarations besides simple reference elements (inside object references etc)
     return referencingElement instanceof AppleScriptObjectPropertyDeclaration
+            || referencingElement instanceof AppleScriptHandlerCall
+            || referencingElement.getParent() instanceof AppleScriptHandlerPositionalParametersCall
             || AppleScriptPsiImplUtil.isBefore(component, referencingElement, true);
   }
 

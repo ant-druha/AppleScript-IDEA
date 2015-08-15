@@ -74,7 +74,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Override
   public boolean isScriptProperty() {
     return findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null ||
-            getOriginalDeclaration() instanceof AppleScriptPropertyDeclaration;
+            getOriginalDeclaration() instanceof AppleScriptScriptPropertyDeclaration;
   }
 
   @Override
@@ -88,9 +88,13 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Nullable
   @Override
   public AppleScriptExpression findAssignedValue() {
-    if (isScriptProperty() && this instanceof AppleScriptPropertyDeclaration) { //todo rework detection
-      AppleScriptPropertyDeclaration myProperty = (AppleScriptPropertyDeclaration) this;
-      return myProperty.getExpression();
+    if (isScriptProperty() && this instanceof AppleScriptScriptPropertyDeclaration) { //todo fix it
+      AppleScriptScriptPropertyDeclaration myProperty = (AppleScriptScriptPropertyDeclaration) this;
+      for (AppleScriptExpression expression : myProperty.getExpressionList()) {
+        if (!(expression instanceof AppleScriptLiteralExpression)) {
+          return expression;
+        }
+      }
     }
     return null;
   }
