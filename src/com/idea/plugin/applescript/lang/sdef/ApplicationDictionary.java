@@ -2,6 +2,9 @@ package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -11,10 +14,9 @@ import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Created by Andrey on 01.07.2015.
@@ -25,6 +27,8 @@ public class ApplicationDictionary extends FakePsiElement {
   @NotNull private Project project;
   @NotNull private VirtualFile applicationFile;
   @NotNull private String name;
+  //todo add sdef file types as xml
+  public static final List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
   private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
   private List<AppleScriptPropertyDefinition> dictionaryPropertyList = new ArrayList<AppleScriptPropertyDefinition>();
   private List<DictionaryRecord> dictionaryRecordList = new ArrayList<DictionaryRecord>();
@@ -63,13 +67,49 @@ public class ApplicationDictionary extends FakePsiElement {
     this.project = project;
     this.applicationFile = applicationBundleFile;
     name = applicationBundleFile.getPath();
-    loadApplicationDictionary();
+    readApplicationDictionary();
+    System.out.println("Dictionary ===" + name + "=== initialized. Commands: " + dictionaryCommandList.size() + "\n");
   }
 
-  private void loadApplicationDictionary() {
-    //only xml so far
-    if ("xml".equals(applicationFile.getExtension())) {
-      loadDictionaryFromXmlFile(applicationFile, project);
+  private void readApplicationDictionary() {
+    String extension = applicationFile.getExtension();
+    if (!extensionSupported(applicationFile.getExtension())) return;
+    if ("xml".equalsIgnoreCase(extension)) {
+      readDictionaryFromXmlFile(applicationFile, project);
+    } else {
+      readDictionaryFromApplicationBundle(applicationFile, project);
+    }
+  }
+
+  private void readDictionaryFromApplicationBundle(@NotNull VirtualFile applicationFile, @NotNull Project project) {
+    if (!SystemInfo.isMac) return;
+    final String pathPrefix = FileUtil.getTempDirectory() + "/"; //FileUtil.getTempDirectory();
+//    final String pathPrefixProject =
+//            "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/sandbox/AppleScriptSampleProject/src/sdefs/";
+
+    final String fileName = applicationFile.getNameWithoutExtension().replace(" ", "_") + System.currentTimeMillis();
+//    final String fileName = applicationFile.getNameWithoutExtension();
+    final String finalFilePath = pathPrefix + fileName + "_gen.xml";
+    final String appFileFinalPath = "\"" + applicationFile.getPath() + "\"";
+//    final String appFileFinalPath = applicationFile.getPath();
+//    todo add detection of .sdef files as xml file types
+    String[] shellCommand = new String[]{"/bin/bash", "-c", " sdef " + appFileFinalPath + " > " +
+            finalFilePath};
+    try {
+      System.out.println("executing command: " + Arrays.toString(shellCommand));
+      long execStart = System.currentTimeMillis();
+      int exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
+      long execEnd = System.currentTimeMillis();
+      System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+      File finalXmlFile = new File(finalFilePath);
+      VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
+      readDictionaryFromXmlFile(virtualXmlFile, project);
+      finalXmlFile.delete();
+//      finalXmlFile.deleteOnExit();
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
   }
 
@@ -129,15 +169,21 @@ public class ApplicationDictionary extends FakePsiElement {
     return null;
   }
 
-  private void loadDictionaryFromXmlFile(VirtualFile virtualFile, Project project) {
+  private void readDictionaryFromXmlFile(VirtualFile virtualFile, Project project) {
     if (project != null && virtualFile != null) {
       PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
       XmlFile xmlFile = (XmlFile) psiFile;
-      if (xmlFile != null) {
+      if (xmlFile != null && xmlFile.isValid()) {
         SDEF_Parser.parse(xmlFile, this);
+        System.out.println("dictionary loaded");
       }
     }
   }
 
 
+  public static boolean extensionSupported(String extension) {
+    if (extension == null) return false;
+    extension = extension.toLowerCase();
+    return SUPPORTED_EXTENSIONS.contains(extension);
+  }
 }

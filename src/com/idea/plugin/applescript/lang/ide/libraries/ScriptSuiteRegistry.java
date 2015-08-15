@@ -3,6 +3,7 @@ package com.idea.plugin.applescript.lang.ide.libraries;
 import com.idea.plugin.applescript.lang.parser.ScriptSuiteRegistryHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Contract;
@@ -23,18 +24,18 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   //todo need to add predefined default library!
   public static final String STD_LIBRARY_NAME = "Standard Additions";
 
+  public static final ScriptSuiteRegistry STD_LIBRARY =
+          new ScriptSuiteRegistry(STD_LIBRARY_NAME, ProjectManager.getInstance().getDefaultProject());
+
   //mush be unique - this is a library name in IDEA UI
   @NotNull private String suiteRegistryName;
   @NotNull private Project project;
   //or only store set of VirtualFiles ? and load Suites
   private Set<ApplicationDictionary> applicationDictionaries = new HashSet<ApplicationDictionary>();
-
   private List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
   private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
   private Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
-
   private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
-
   private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
 
   private Map<String, DictionaryEnumeratorImpl> dictionaryEnumeratorMap =
@@ -54,7 +55,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
       ApplicationDictionary dictionary = new ApplicationDictionary(project, applicationBundle);
       addApplicationDictionary(dictionary);
     }
-
+    addStandardSuite();
   }
 
 
@@ -63,6 +64,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     this.suiteRegistryName = suiteRegistryName;
     this.project = project;
     this.applicationDictionaries = applicationDictionaries;
+    addStandardSuite();
   }
 
   public ScriptSuiteRegistry(@NotNull String libraryName, @NotNull Project project) {
@@ -77,7 +79,6 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
 
   private void addStandardSuite() {
     try {
-
       for (String fName : STANDARD_DEFINITION_FILES) {
         URL url = getClass().getClassLoader().getResource(fName);
         if (url == null) continue;
@@ -171,7 +172,6 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   }
 
   public void addApplicationDictionary(ApplicationDictionary dictionary) {
-
     if (!alreadyContains(dictionary)) {
       applicationDictionaries.add(dictionary);
       for (AppleScriptCommand command : dictionary.getDictionaryCommandList()) {

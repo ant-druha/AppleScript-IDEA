@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
 import com.idea.plugin.applescript.lang.sdef.*;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlFile;
@@ -14,7 +15,7 @@ import java.util.List;
 public class SDEF_Parser {
 
   public static void parse(@NotNull XmlFile file, ApplicationDictionary parsedDictionary) {
-
+    System.out.println("Start parsing xml file --- " + file.toString() + " ---");
     final XmlDocument document = file.getDocument();
     if (document != null) {
       final XmlTag rootTag = document.getRootTag();
@@ -22,7 +23,7 @@ public class SDEF_Parser {
         XmlAttribute attr = rootTag.getAttribute("title");
         if ("dictionary".equals(rootTag.getName()) && attr != null) {
           String dicTitle = attr.getValue();
-          if (dicTitle != null) {
+          if (!StringUtil.isEmpty(dicTitle)) {
             parsedDictionary.setName(dicTitle);
           }
         }
@@ -67,6 +68,7 @@ public class SDEF_Parser {
 
       }
     }
+    System.out.println("parsing completed for file.");
   }
 
   private static Suite parseSuiteTag(XmlTag suiteTag, ApplicationDictionary dictionary) {

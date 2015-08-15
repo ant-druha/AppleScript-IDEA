@@ -38,6 +38,7 @@ public class ChangeScriptSuiteRegistryAction extends AnAction {
       @Override
       public void run() {
         configurable.selectFile(virtualFile);
+        configurable.getNewMapping(virtualFile);
       }
     });
   }

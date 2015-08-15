@@ -26,24 +26,7 @@ public class LoadDictionaryAction extends AnAction {
     PsiDirectory currentDirectory = directories.length > 0 ? directories[0] : null;
     final Project project = e.getData(DataKeys.PROJECT);
     if (project == null) return;
-    String projectPath = project.getBasePath();
-////    String disk = "D";
-//    String disk = "F";
-//    String pathPrefixWin = disk + ":\\Dropbox\\IDEA_Projects\\IdeaPluginDev\\sandbox\\AppleScriptSampleProject\\src" +
-//            "\\sdefs\\";
-    String pathPrefixMac = "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/sandbox/AppleScriptSampleProject/src" +
-            "/sdefs/";
-    String projectSdefsPathMac = projectPath + "src/sdefs";
-////    String pathPrefix = pathPrefixMac;
 
-//    String[] cmdShell = new String[]{"/bin/bash", "-c", " sdef /Applications/Smile/Smile.app > " +
-//            pathPrefixMac + "Smile_gen.xml"};
-//    try {
-//      System.out.println("executing command: " + cmdShell);
-//      Runtime.getRuntime().exec(cmdShell);
-//    } catch (IOException e1) {
-//      e1.printStackTrace();
-//    }
     VirtualFile directoryFile = currentDirectory != null ? currentDirectory.getVirtualFile() : project.getBaseDir();
     FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, true);
     FileChooser.chooseFiles(descriptor, project, directoryFile, new Consumer<List<VirtualFile>>() {
@@ -51,7 +34,7 @@ public class LoadDictionaryAction extends AnAction {
       public void consume(final List<VirtualFile> files) {
         ScriptSuiteRegistry currentSuiteRegistry = getCurrentSuiteRegistry();
         for (VirtualFile file : files) {
-          if ("xml".equals(file.getExtension())) {
+          if (ApplicationDictionary.extensionSupported(file.getExtension())) {
             ApplicationDictionary dictionary = new ApplicationDictionary(project, file);
             currentSuiteRegistry.addApplicationDictionary(dictionary);
           }

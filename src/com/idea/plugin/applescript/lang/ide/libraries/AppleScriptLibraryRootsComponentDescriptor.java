@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.libraries;
 
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
@@ -39,7 +40,6 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
   @Override
   public List<? extends RootDetector> getRootDetectors() {
     return Arrays.asList(
-//            new AppleScriptLibRootDetector(OrderRootType.SOURCES, "choose sources"),
             new AppleScriptLibRootDetector(OrderRootType.CLASSES, "choose classes"));
   }
 
@@ -50,8 +50,8 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
 
     @Override
     public boolean isFileSelectable(VirtualFile file) {
-      if (!(file.isDirectory() || "xml".equals(file.getExtension()))) return false;
-      return super.isFileSelectable(file);
+      return (file.isDirectory() || ApplicationDictionary.extensionSupported(file.getExtension())) && super
+              .isFileSelectable(file);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
 
         if (chosenFile.isDirectory()) {
           collectFilesRecursively(collectedFiles, chosenFile, getRootType());
-        } else if ("xml".equals(chosenFile.getExtension())) {
+        } else if (ApplicationDictionary.extensionSupported(chosenFile.getExtension())) {
           collectedFiles.add(chosenFile);
         }
       }
@@ -106,11 +106,8 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
     VfsUtilCore.visitChildrenRecursively(dir, new VirtualFileVisitor() {
       @Override
       public boolean visitFile(@NotNull VirtualFile file) {
-        if (!file.isDirectory() && "xml".equals(file.getExtension())) {
-//          OrderRootType fileRootType = myProvider.isCompact(file) ? OrderRootType.CLASSES : OrderRootType.SOURCES;
-//          if (fileRootType == rootType) {
+        if (!file.isDirectory() && (ApplicationDictionary.extensionSupported(file.getExtension()))) {
           collectedFiles.add(file);
-//          }
         }
         return true;
       }
@@ -132,7 +129,7 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
       return result;
     }
 
-    public void collectRoots(VirtualFile file, final List<VirtualFile> result, @NotNull final ProgressIndicator
+    private void collectRoots(VirtualFile file, final List<VirtualFile> result, @NotNull final ProgressIndicator
             progressIndicator) {
       if (file.getFileSystem() instanceof JarFileSystem) {
         return;
@@ -140,11 +137,11 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
       VfsUtilCore.visitChildrenRecursively(file, new VirtualFileVisitor() {
         @Override
         public boolean visitFile(@NotNull VirtualFile file) {
-          if (file.isDirectory()) {
+          if (ApplicationDictionary.extensionSupported(file.getExtension())) {
+            result.add(file);
+          } else if (file.isDirectory()) {
             progressIndicator.setText2(file.getPath());
             progressIndicator.checkCanceled();
-          } else if ("xml".equalsIgnoreCase(file.getExtension())) {
-            result.add(file);
           }
           return true;
         }

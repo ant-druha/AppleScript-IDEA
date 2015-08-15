@@ -1,7 +1,6 @@
 package com.idea.plugin.applescript.lang.parser;
 
 import com.idea.plugin.applescript.AppleScriptFileType;
-import com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryKind;
 import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
 import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings;
 import com.intellij.openapi.application.ApplicationManager;
@@ -11,19 +10,10 @@ import com.intellij.openapi.fileEditor.FileEditorManagerAdapter;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.impl.libraries.LibraryEx;
-import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Created by Andrey on 09.08.2015.
@@ -48,13 +38,11 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
               @Override
               public void fileOpened(@NotNull final FileEditorManager source, @NotNull final VirtualFile file) {
                 if (file.getFileType() == AppleScriptFileType.INSTANCE) {
-                  //here we should search for earlier loaded library suites for this
-                  // file and load that suite for the file
 
                   ScriptSuiteRegistryMappings registryMappingsService = ScriptSuiteRegistryMappings.
                           getInstance(source.getProject());
                   ScriptSuiteRegistry restoredLibraryForFile =
-                          loadScriptSuiteRegistryForFile(source.getProject(), file);
+                          getScriptSuiteRegistryForFile(source.getProject(), file);
                   currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
                           new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, source.getProject());
                   if (registryMappingsService != null && restoredLibraryForFile == null) {
@@ -73,22 +61,11 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
                 if (newFile == null) return;
                 if (!newFile.equals(oldFile) && newFile.getFileType() == AppleScriptFileType.INSTANCE) {
                   ScriptSuiteRegistry restoredLibraryForFile =
-                          loadScriptSuiteRegistryForFile(project, newFile);
+                          getScriptSuiteRegistryForFile(project, newFile);
                   currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
                           new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, project);
                 }
 
-                LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
-                Collection<VirtualFile> collectedFiles = new ArrayList<VirtualFile>();
-                for (Library lib : projectLibraryTable.getLibraries()) {
-                  if (lib instanceof LibraryEx) {
-                    LibraryEx libEx = (LibraryEx) lib;
-                    if (libEx.getKind() == AppleScriptLibraryKind.INSTANCE) {
-                      collectedFiles.addAll(Arrays.asList(libEx.getFiles(OrderRootType.CLASSES)));
-                    }
-                  }
-
-                }
               }
 
               @Override
@@ -100,7 +77,7 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
 
   @Contract("_, null -> null")
   @Nullable
-  private static ScriptSuiteRegistry loadScriptSuiteRegistryForFile(@NotNull Project project, @Nullable VirtualFile
+  private static ScriptSuiteRegistry getScriptSuiteRegistryForFile(@NotNull Project project, @Nullable VirtualFile
           theFile) {
     if (theFile != null && theFile.getFileType() == AppleScriptFileType.INSTANCE) {
       ScriptSuiteRegistryMappings registryMappingsService = ScriptSuiteRegistryMappings.getInstance(project);

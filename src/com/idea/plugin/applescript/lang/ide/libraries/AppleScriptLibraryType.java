@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.libraries;
 
+import com.idea.plugin.applescript.AppleScriptIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.libraries.LibraryType;
 import com.intellij.openapi.roots.libraries.LibraryTypeService;
@@ -25,7 +26,7 @@ public class AppleScriptLibraryType extends LibraryType<AppleScriptLibraryProper
   @Nullable
   @Override
   public String getCreateActionName() {
-    return "AppleScript";
+    return "AppleScript dictionary";
   }
 
   @Nullable
@@ -53,6 +54,6 @@ public class AppleScriptLibraryType extends LibraryType<AppleScriptLibraryProper
   @Nullable
   @Override
   public Icon getIcon() {
-    return null;
+    return AppleScriptIcons.DICTIONARY;
   }
 }
