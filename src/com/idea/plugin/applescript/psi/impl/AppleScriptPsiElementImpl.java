@@ -73,7 +73,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     }
 
     for (AppleScriptComponent component : result) {
-      if (referencingElement != null && isCanBeReferenced(referencingElement, component)) {//do not process
+      if (referencingElement != null && canBeReferenced(referencingElement, component)) {//do not process
         // declarations below todo move condition to ResolveProcessor ?
         if (!processor.execute(component, state)) {
           return false;
@@ -87,8 +87,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     return true;
   }
 
-  private static boolean isCanBeReferenced(@NotNull PsiElement referencingElement,
-                                           @NotNull AppleScriptComponent component) {
+  private static boolean canBeReferenced(@NotNull PsiElement referencingElement,
+                                         @NotNull AppleScriptComponent component) {
     //todo handle other declarations besides simple reference elements (inside object references etc)
     return referencingElement instanceof AppleScriptObjectPropertyDeclaration
             || referencingElement instanceof AppleScriptHandlerCall

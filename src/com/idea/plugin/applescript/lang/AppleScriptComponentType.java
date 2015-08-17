@@ -73,7 +73,7 @@ public enum AppleScriptComponentType {
         return DICTIONARY_COMMAND;
       } else if (element instanceof DictionaryEnumeratorImpl) {
         return DICTIONARY_ENUMERATOR;
-      } else if (element instanceof Suite) {
+      } else if (element instanceof SuiteImpl) {
         return DICTIONARY_SUITE;
       }
     }

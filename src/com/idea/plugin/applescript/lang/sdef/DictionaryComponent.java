@@ -42,4 +42,6 @@ public interface DictionaryComponent extends PsiElement, PsiNamedElement, Naviga
   @NotNull
   String getType();
 
+  void setDescription(String description);
+
 }

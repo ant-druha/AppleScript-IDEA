@@ -27,4 +27,7 @@ public interface AppleScriptCommand extends DictionaryComponent {
 
   @NotNull
   List<CommandParameter> getMandatoryParameters();
+
+  void setParameters(List<CommandParameter> parameters);
+
 }

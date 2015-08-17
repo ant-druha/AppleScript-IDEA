@@ -29,11 +29,25 @@ public class ApplicationDictionary extends FakePsiElement {
   @NotNull private String name;
   //todo add sdef file types as xml
   public static final List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
+
+  final private List<Suite> mySuites = new ArrayList<Suite>();
   private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
   private List<AppleScriptPropertyDefinition> dictionaryPropertyList = new ArrayList<AppleScriptPropertyDefinition>();
   private List<DictionaryRecord> dictionaryRecordList = new ArrayList<DictionaryRecord>();
   private List<DictionaryEnumeration> dictionaryEnumerationList = new ArrayList<DictionaryEnumeration>();
   private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
+  private List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
+  private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
+
+  @NotNull
+  @Override
+  public Project getProject() {
+    return project;
+  }
+
+  public boolean addSuite(Suite suite) {
+    return suite != null && mySuites.add(suite);
+  }
 
   @NotNull
   public VirtualFile getApplicationFile() {
@@ -60,9 +74,6 @@ public class ApplicationDictionary extends FakePsiElement {
     return dictionaryClassList;
   }
 
-  private List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
-  private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
-
   public ApplicationDictionary(@NotNull Project project, @NotNull VirtualFile applicationBundleFile) {
     this.project = project;
     this.applicationFile = applicationBundleFile;
@@ -83,15 +94,10 @@ public class ApplicationDictionary extends FakePsiElement {
 
   private void readDictionaryFromApplicationBundle(@NotNull VirtualFile applicationFile, @NotNull Project project) {
     if (!SystemInfo.isMac) return;
-    final String pathPrefix = FileUtil.getTempDirectory() + "/"; //FileUtil.getTempDirectory();
-//    final String pathPrefixProject =
-//            "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/sandbox/AppleScriptSampleProject/src/sdefs/";
-
-    final String fileName = applicationFile.getNameWithoutExtension().replace(" ", "_") + System.currentTimeMillis();
-//    final String fileName = applicationFile.getNameWithoutExtension();
-    final String finalFilePath = pathPrefix + fileName + "_gen.xml";
+    final String pathPrefix = FileUtil.getTempDirectory() + "/";
+    final String fileName = applicationFile.getNameWithoutExtension().replace(" ", "_");
+    final String finalFilePath = pathPrefix + fileName + "_generated.xml";
     final String appFileFinalPath = "\"" + applicationFile.getPath() + "\"";
-//    final String appFileFinalPath = applicationFile.getPath();
 //    todo add detection of .sdef files as xml file types
     String[] shellCommand = new String[]{"/bin/bash", "-c", " sdef " + appFileFinalPath + " > " +
             finalFilePath};
@@ -164,9 +170,15 @@ public class ApplicationDictionary extends FakePsiElement {
     dictionaryRecordList.add(record);
   }
 
+//  @Override
+//  public PsiFile getContainingFile() {
+//    return PsiManager.getInstance(getProject()).findFile(applicationFile);
+////    return super.getContainingFile();
+//  }
+
   @Override
   public PsiElement getParent() {
-    return null;
+    return PsiManager.getInstance(getProject()).findFile(applicationFile);
   }
 
   private void readDictionaryFromXmlFile(VirtualFile virtualFile, Project project) {

@@ -11,6 +11,8 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryProperties;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
+import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Contract;
@@ -40,7 +42,80 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
 
   public ScriptSuiteRegistryMappings(@NotNull Project project) {
     super(project);
+    addProjectTableListeners();
+  }
 
+  private void addProjectTableListeners() {
+    LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(getProject());
+    projectLibraryTable.addListener(new LibraryTable.Listener() {
+      @Override
+      public void afterLibraryAdded(Library newLibrary) {
+        if (!(newLibrary instanceof LibraryEx)) return;
+        cacheDictionaries((LibraryEx) newLibrary);
+      }
+
+      @Override
+      public void afterLibraryRenamed(Library library) {
+
+      }
+
+      @Override
+      public void beforeLibraryRemoved(Library library) {
+
+      }
+
+      @Override
+      public void afterLibraryRemoved(Library library) {
+
+      }
+    });
+  }
+
+  private List<VirtualFile> getCachedDictionaryFilesForLibrary(@NotNull LibraryEx libEx) {
+    List<VirtualFile> cachedDictionaryFiles = new ArrayList<VirtualFile>();
+    Collection<String> cachedDictionaryUrls;
+    if (!isCached(libEx)) {
+      cachedDictionaryUrls = cacheDictionaries(libEx);
+    } else {
+      cachedDictionaryUrls = ((AppleScriptLibraryProperties) libEx.getProperties()).getCachedDictionaryUrls();
+    }
+    for (String fileUrl : cachedDictionaryUrls) {
+      File finalXmlFile = new File(fileUrl);
+      VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
+      if (virtualXmlFile != null)
+        cachedDictionaryFiles.add(virtualXmlFile);
+    }
+    return cachedDictionaryFiles;
+  }
+
+  private List<String> cacheDictionaries(@NotNull LibraryEx libEx) {
+    List<String> cachedDictionaryUrls;// = new ArrayList<String>();
+    final Map<VirtualFile, String> cachedDictionaryFileUrlMap =
+            serializeDictionaryFilesForLibrary(libEx, OrderRootType.CLASSES, getProject());
+    LibraryEx.ModifiableModelEx modifiableModel = libEx.getModifiableModel();
+
+    cachedDictionaryUrls = doCacheDictionaries(cachedDictionaryFileUrlMap, modifiableModel);
+
+//    if (!cachedDictionaryFileUrlMap.values().isEmpty()) {
+//      modifiableModel.setProperties(new AppleScriptLibraryProperties(cachedDictionaryFileUrlMap.values()));
+//      cachedDictionaryUrls.addAll(cachedDictionaryFileUrlMap.values());
+//    }
+    return cachedDictionaryUrls;
+  }
+
+  private boolean isCached(@NotNull LibraryEx library) {
+    LibraryProperties properties = library.getProperties();
+    if (properties instanceof AppleScriptLibraryProperties) {
+      AppleScriptLibraryProperties scriptProperties = (AppleScriptLibraryProperties) properties;
+      Collection<String> savedUrls = scriptProperties.getCachedDictionaryUrls();
+      for (String url : savedUrls) {
+        if (!(new File(url).exists())) {
+          return false;
+        }
+      }
+      return !savedUrls.isEmpty();
+    }
+    return false;
   }
 
   public void associate(VirtualFile file, ScriptSuiteRegistry suiteRegistry) {
@@ -48,6 +123,14 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
 
     setMapping(file, suiteRegistry);
 
+  }
+
+  public ScriptSuiteRegistry getSuiteRegistryByName(String libName) {
+    if (StringUtil.isEmpty(libName)) return null;
+    for (ScriptSuiteRegistry suiteRegistry : getAvailableValues()) {
+      if (libName.equals(suiteRegistry.getName())) return suiteRegistry;
+    }
+    return null;
   }
 
   public static ScriptSuiteRegistryMappings getInstance(@NotNull Project project) {
@@ -90,42 +173,16 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
     return result;
   }
 
-  private void addSuitesFromLibraryTable(List<ScriptSuiteRegistry> result, LibraryTable projectLibraryTable) {
-    for (Library lib : projectLibraryTable.getLibraries()) {
+  private void addSuitesFromLibraryTable(List<ScriptSuiteRegistry> result, LibraryTable libraryTable) {
+    for (Library lib : libraryTable.getLibraries()) {
       ArrayList<VirtualFile> collectedFiles = new ArrayList<VirtualFile>();
       if (lib instanceof LibraryEx) {
         LibraryEx libEx = (LibraryEx) lib;
         if (libEx.getKind() == AppleScriptLibraryKind.INSTANCE) {
           collectedFiles.addAll(Arrays.asList(libEx.getFiles(OrderRootType.CLASSES)));
           if (libEx.getName() != null) {
-            LibraryProperties properties = libEx.getProperties();
             ScriptSuiteRegistry registry;
-            List<VirtualFile> cachedDictionaries = new ArrayList<VirtualFile>();
-            if (properties instanceof AppleScriptLibraryProperties) {
-              AppleScriptLibraryProperties scriptProperties = (AppleScriptLibraryProperties) properties;
-              Collection<String> cachedDictionaryUrls = scriptProperties.getCachedDictionaryUrls();
-              if (cachedDictionaryUrls.isEmpty()) {
-                Map<VirtualFile, String> cachedDictionaryFileUrlMap;
-                LibraryEx.ModifiableModelEx modifiableModel = libEx.getModifiableModel();
-                cachedDictionaryFileUrlMap = serializeDictionaryFilesForLibrary(libEx, OrderRootType.CLASSES,
-                        getProject());
-
-                cacheDictionaries(cachedDictionaryFileUrlMap);
-
-                if (!cachedDictionaryFileUrlMap.values().isEmpty()) {
-                  modifiableModel.setProperties(new AppleScriptLibraryProperties(cachedDictionaryFileUrlMap.values()));
-                }
-                cachedDictionaryUrls.addAll(cachedDictionaryFileUrlMap.values());
-              }
-              for (String fileUrl : cachedDictionaryUrls) {
-                File finalXmlFile = new File(fileUrl);
-                VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
-                if (virtualXmlFile != null)
-                  cachedDictionaries.add(virtualXmlFile);
-
-              }
-            }
-
+            List<VirtualFile> cachedDictionaries = getCachedDictionaryFilesForLibrary(libEx);
             if (cachedDictionaries.isEmpty()) {
               registry = new ScriptSuiteRegistry(libEx.getName(), getProject(), collectedFiles);
             } else {
@@ -140,8 +197,11 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
     }
   }
 
-  private void cacheDictionaries(Map<VirtualFile, String> cachedDictionaryFileUrlMap) {
-
+  private static List<String> doCacheDictionaries(Map<VirtualFile, String> cachedDictionaryFileUrlMap, LibraryEx
+          .ModifiableModelEx modifiableModel) {
+    final List<String> result = new ArrayList<String>();
+    //only for MacOs X so far
+    if (!SystemInfo.isMac) return result;
     try {
       System.out.println("=== Caching Dictionaries Started ===");
       char sep = File.separatorChar;
@@ -168,30 +228,34 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
           long execEnd = System.currentTimeMillis();
           System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
         }
-//        File finalXmlFile = new File(finalFilePath);
-//        VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
-//        readDictionaryFromXmlFile(virtualXmlFile, project);
-//        finalXmlFile.delete();
-//      finalXmlFile.deleteOnExit();
+        if (!targetFile.exists()) {
+          cachedDictionaryFileUrlMap.remove(pair.getKey());
+        }
 
       }
-      System.out.println("=== Caching Dictionaries Completed ===");
+      if (!cachedDictionaryFileUrlMap.values().isEmpty()) {
+        modifiableModel.setProperties(new AppleScriptLibraryProperties(cachedDictionaryFileUrlMap.values()));
+        result.addAll(cachedDictionaryFileUrlMap.values());
+      }
+      System.out.println("=== Caching Dictionaries Completed. Cached files: " + result.size() + " ===");
     } catch (IOException e1) {
       e1.printStackTrace();
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+    return result;
   }
 
-  private Map<VirtualFile, String> serializeDictionaryFilesForLibrary(LibraryEx libEx, OrderRootType classes, Project
-          project) {
-    Map<VirtualFile, String> result = new HashMap<VirtualFile, String>();
+  private static Map<VirtualFile, String> serializeDictionaryFilesForLibrary(LibraryEx libEx, OrderRootType rootType,
+                                                                             Project project) {
+    final Map<VirtualFile, String> result = new HashMap<VirtualFile, String>();
     char sep = File.separatorChar;
     final String myCacheDir = CACHED_DICTIONARIES_SYSTEM_FOLDER + sep + project.getName() + sep + libEx.getName();
 
-    for (VirtualFile vFile : Arrays.asList(libEx.getFiles(OrderRootType.CLASSES))) {
-      final String cachedFileName = myCacheDir + sep + vFile.getNameWithoutExtension().replace(" ", "_") +
-              "_generated.xml";
+    for (VirtualFile vFile : Arrays.asList(libEx.getFiles(rootType))) {
+      final String fileName = vFile.getNameWithoutExtension().replace(" ", "_") + "_cached_" +
+              rootType.name().replace(" ", "_") + ".xml";
+      final String cachedFileName = myCacheDir + sep + fileName;
       result.put(vFile, cachedFileName);
     }
     return result;

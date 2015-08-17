@@ -786,6 +786,8 @@ left handlerLabeledParametersCall ::=
 private parameterValue ::= expression
 commandParameterSelector ::= <<parseCommandParameterSelector>>
 commandParameter ::= given? commandParameterSelector parameterValue
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandParameter"
+implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter"}
 //private commandParameters ::= ( ((with|without) commandParameterSelector) | commandParameter )*
 //commandParameterSelector ::= <<parseCommandParameterSelector>>
 //todo the same as for commands?
@@ -1081,7 +1083,8 @@ left objectRef ::=
 private valueExpression ::= primaryExpressionD coercionExpression?
 
 commandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
-
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
+ implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall"}
 //commandHandlerCallExpression ::= dictionaryCommandName dictionaryCommandParameters?
 external dictionaryCommandParameters ::= parseParametersForCommand parsingCommand
 
@@ -1096,6 +1099,8 @@ external dictionaryCommandParameters ::= parseParametersForCommand parsingComman
 //external dictionaryCommandNameExternalRule ::= parseDictionaryCommandNameInner parsedName
 //commandParameterSelector ::= <<parseCommandParameterSelector>>
 dictionaryCommandName ::= <<parseDictionaryCommandNameInner>>
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AppleScriptCommandNameImpl"
+implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandName"}
 //private dictionaryCommandName ::= <<parseDictionaryCommandNameInner parsedCommandName>> //dictionaryCommandNameExternalRule
 
 private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel

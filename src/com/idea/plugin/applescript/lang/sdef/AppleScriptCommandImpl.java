@@ -1,6 +1,5 @@
 package com.idea.plugin.applescript.lang.sdef;
 
-import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,30 +19,18 @@ public class AppleScriptCommandImpl extends BaseDictionaryComponent implements A
   @NotNull private List<String> parameterNames = new ArrayList<String>();
   @NotNull private Map<String, CommandParameter> parametersMap = new HashMap<String, CommandParameter>();
   @Nullable private CommandResult result;
-  @Nullable PsiElement parent;
   @Nullable String cocoaClassName; //todo reference to the real Psi CocoaClass could be implemented
 
 
-  public AppleScriptCommandImpl(@NotNull String name, @NotNull String code, @NotNull Suite suite, @Nullable
-  List<CommandParameter>
-          parameters, @Nullable CommandDirectParameter directParameter, @Nullable CommandResult result,
+  public AppleScriptCommandImpl(@NotNull String name, @NotNull String code, @NotNull Suite suite,
+                                @Nullable List<CommandParameter> parameters,
+                                @Nullable CommandDirectParameter directParameter, @Nullable CommandResult result,
                                 @Nullable String description) {
     super(code, name, suite, description);
     this.directParameter = directParameter;
     this.result = result;
     if (parameters != null) {
-      for (CommandParameter parameter : parameters) {
-        this.parameterNames.add(parameter.getName());
-        this.parameters.add(parameter);
-        this.parametersMap.put(parameter.getName(), parameter);
-        if (!parameter.isOptional()
-                && !(parameter.getName().equals("in") || parameter.getName().equals("of"))//workaround for such
-                // parameters not being detected
-          // as parameters but as object references
-                ) {
-          mandatoryParameters.add(parameter);
-        }
-      }
+      setParameters(parameters);
     }
   }
 
@@ -76,11 +63,6 @@ public class AppleScriptCommandImpl extends BaseDictionaryComponent implements A
     return directParameter;
   }
 
-  @Nullable
-  @Override
-  public PsiElement getParent() {
-    return parent;
-  }
 
   @Nullable
   public CommandResult getResult() {
@@ -91,6 +73,21 @@ public class AppleScriptCommandImpl extends BaseDictionaryComponent implements A
   @NotNull
   public List<CommandParameter> getMandatoryParameters() {
     return mandatoryParameters;
+  }
+
+  @Override
+  public void setParameters(@NotNull List<CommandParameter> parameters) {
+    for (CommandParameter parameter : parameters) {
+      this.parameterNames.add(parameter.getName());
+      this.parameters.add(parameter);
+      this.parametersMap.put(parameter.getName(), parameter);
+      if (!parameter.isOptional()
+              && !(parameter.getName().equals("in") || parameter.getName().equals("of"))//workaround for such
+        // parameters not being detected as parameters but as object references
+              ) {
+        mandatoryParameters.add(parameter);
+      }
+    }
   }
 
   @Override

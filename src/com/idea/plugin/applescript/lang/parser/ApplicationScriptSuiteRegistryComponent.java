@@ -11,9 +11,12 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDocumentManager;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
 
 /**
  * Created by Andrey on 09.08.2015.
@@ -30,6 +33,16 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
     return currentScriptSuiteRegistry;
   }
 
+  public boolean update(@Nullable Project project, @Nullable VirtualFile file) {
+    if (project == null || file == null) return false;
+    ScriptSuiteRegistry savedForFile = getScriptSuiteRegistryForFile(project, file);
+    if (savedForFile != null) {
+      currentScriptSuiteRegistry = savedForFile;
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public void initComponent() {
     // TODO: insert component initialization logic here
@@ -43,6 +56,13 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
                           getInstance(source.getProject());
                   ScriptSuiteRegistry restoredLibraryForFile =
                           getScriptSuiteRegistryForFile(source.getProject(), file);
+                  String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
+                  String newName = restoredLibraryForFile != null ? restoredLibraryForFile.getName() : "null";
+                  if (!oldName.equals(newName)) {
+                    System.out.println(" ---- Current Suite Registry changed. Was: "
+                            + oldName + " Now: " + newName + " ----");
+                  }
+
                   currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
                           new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, source.getProject());
                   if (registryMappingsService != null && restoredLibraryForFile == null) {
@@ -62,8 +82,17 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
                 if (!newFile.equals(oldFile) && newFile.getFileType() == AppleScriptFileType.INSTANCE) {
                   ScriptSuiteRegistry restoredLibraryForFile =
                           getScriptSuiteRegistryForFile(project, newFile);
+
+                  String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
+                  String newName = restoredLibraryForFile != null ? restoredLibraryForFile.getName() : "null";
+                  if (!oldName.equals(newName)) {
+                    System.out.println(" ---- Current Suite Registry changed. Was: "
+                            + oldName + " Now: " + newName + " ----");
+                  }
+
                   currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
                           new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, project);
+                  PsiDocumentManager.getInstance(project).reparseFiles(Arrays.asList(newFile), false);
                 }
 
               }

@@ -1,7 +1,9 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.FakePsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,8 +15,9 @@ public abstract class BaseDictionaryComponent extends FakePsiElement implements 
 
   @NotNull private final String code;
   @NotNull private final String name;
-  @NotNull private final Suite suite;
+  @NotNull private final Suite suite;//replace to parent field but leave the property
   @Nullable private String description;
+//  @NotNull final protected PsiElement parent;
 
   protected BaseDictionaryComponent(@NotNull String code, @NotNull String name, @NotNull Suite suite, @Nullable
   String description) {
@@ -56,8 +59,20 @@ public abstract class BaseDictionaryComponent extends FakePsiElement implements 
   }
 
   @Override
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  @NotNull
+  @Override
+  public Project getProject() {
+//    super.getProject();
+    return getSuite().getProject();
+  }
+
+  @Override
   public PsiElement getParent() {
-    return null;
+    return getSuite();
   }
 
   @Nullable
@@ -81,5 +96,11 @@ public abstract class BaseDictionaryComponent extends FakePsiElement implements 
   @Override
   public Suite getSuite() {
     return suite;
+  }
+
+  @Override
+  public PsiManager getManager() {
+    return super.getManager();
+//    return PsiManager.getInstance(getProject());
   }
 }

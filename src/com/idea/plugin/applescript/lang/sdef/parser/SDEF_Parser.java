@@ -30,13 +30,12 @@ public class SDEF_Parser {
         XmlTag[] suiteTags = rootTag.getSubTags();
         for (XmlTag suiteTag : suiteTags) {
           Suite suite = parseSuiteTag(suiteTag, parsedDictionary);
-          XmlAttribute suiteNameAttr = suiteTag.getAttribute("name");
-          String suiteName = suiteNameAttr != null ? suiteNameAttr.getValue() : "";
 
           XmlTag[] suiteCommands = suiteTag.findSubTags("command");
           for (XmlTag commandTag : suiteCommands) {
             AppleScriptCommand command = parseCommandTag(commandTag, suite);
             parsedDictionary.addCommand(command);
+            suite.addCommand(command);
           }
 
           XmlTag[] suiteClasses = suiteTag.findSubTags("class");
@@ -64,6 +63,7 @@ public class SDEF_Parser {
             DictionaryEnumeration enumeration = parseEnumerationTag(enumerationTag, suite);
             parsedDictionary.addEnumeration(enumeration);
           }
+          parsedDictionary.addSuite(suite);
         }
 
       }
@@ -79,7 +79,7 @@ public class SDEF_Parser {
     String description = suiteTag.getAttributeValue("description");
     String hiddenVal = suiteTag.getAttributeValue("hidden");
     if (name != null && code != null) {
-      result = new Suite(code, name, "yes".equals(hiddenVal), description, dictionary);
+      result = new SuiteImpl(code, name, "yes".equals(hiddenVal), description, dictionary);
     }
     return result;
   }
@@ -204,6 +204,11 @@ public class SDEF_Parser {
     String code = commandTag.getAttributeValue("code");
     String description = commandTag.getAttributeValue("description");
 
+    if (name == null || code == null) return null;
+
+//    result = new AppleScriptCommandImpl(code, name, suite);
+//    result.setDescription(description);
+
     XmlTag directParam = commandTag.findFirstSubTag("direct-parameter");
     CommandDirectParameter directParameter = null;
     if (directParam != null) {
@@ -257,9 +262,7 @@ public class SDEF_Parser {
         commandParameters.add(commandParameter);
       }
     }
-    if (name != null && code != null) {
-      result = new AppleScriptCommandImpl(name, code, suite, commandParameters, directParameter, null, description);
-    }
+    result = new AppleScriptCommandImpl(name, code, suite, commandParameters, directParameter, null, description);
     return result;
   }
 }
