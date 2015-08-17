@@ -2,6 +2,8 @@ package com.idea.plugin.applescript.lang.ide.libraries;
 
 import com.idea.plugin.applescript.lang.parser.ScriptSuiteRegistryHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -38,8 +40,8 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
   private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
 
-  private Map<String, DictionaryEnumeratorImpl> dictionaryEnumeratorMap =
-          new HashMap<String, DictionaryEnumeratorImpl>();
+  private Map<String, DictionaryEnumerator> dictionaryEnumeratorMap =
+          new HashMap<String, DictionaryEnumerator>();
 
   private Map<String, DictionaryEnumeration> dictionaryEnumerationMap =
           new HashMap<String, DictionaryEnumeration>();
@@ -52,7 +54,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     this.suiteRegistryName = suiteRegistryName;
     this.project = project;
     for (VirtualFile applicationBundle : applicationBundleList) {
-      ApplicationDictionary dictionary = new ApplicationDictionary(project, applicationBundle);
+      ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, applicationBundle);
       addApplicationDictionary(dictionary);
     }
     addStandardSuite();
@@ -85,7 +87,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
         File file = new File(url.toURI());
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
         if (virtualFile != null) {
-          ApplicationDictionary standardDefinitions = new ApplicationDictionary(project, virtualFile);
+          ApplicationDictionary standardDefinitions = new ApplicationDictionaryImpl(project, virtualFile);
           addApplicationDictionary(standardDefinitions);
         }
       }
@@ -149,9 +151,9 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   }
 
 
-  public List<DictionaryEnumeratorImpl> findConstantsStartingWithWord(String name) {
-    List<DictionaryEnumeratorImpl> result = new ArrayList<DictionaryEnumeratorImpl>();
-    for (DictionaryEnumeratorImpl constantEnum : dictionaryEnumeratorMap.values()) {
+  public List<DictionaryEnumerator> findConstantsStartingWithWord(String name) {
+    List<DictionaryEnumerator> result = new ArrayList<DictionaryEnumerator>();
+    for (DictionaryEnumerator constantEnum : dictionaryEnumeratorMap.values()) {
       if (startsWithWord(constantEnum.getName(), name)) {
         result.add(constantEnum);
       }
@@ -159,7 +161,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     return result;
   }
 
-  public DictionaryEnumeratorImpl getEnumerator(String name) {
+  public DictionaryEnumerator getEnumerator(String name) {
     return dictionaryEnumeratorMap.get(name);
   }
 
@@ -233,7 +235,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
 
   public void addEnumeration(DictionaryEnumeration enumeration) {
     dictionaryEnumerationMap.put(enumeration.getName(), enumeration);
-    for (DictionaryEnumeratorImpl enumerator : enumeration.getEnumerators()) {
+    for (DictionaryEnumerator enumerator : enumeration.getEnumerators()) {
       dictionaryEnumeratorMap.put(enumerator.getName(), enumerator);
     }
   }

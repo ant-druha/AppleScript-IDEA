@@ -4,7 +4,8 @@ import java.util.List;
 
 public interface DictionaryEnumeration extends DictionaryComponent {
 
-  List<DictionaryEnumeratorImpl> getEnumerators();
+  List<DictionaryEnumerator> getEnumerators();
 
+  void setEnumerators(List<DictionaryEnumerator> enumerators);
 
 }

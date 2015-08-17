@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.libraries;
 
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
@@ -50,7 +50,7 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
 
     @Override
     public boolean isFileSelectable(VirtualFile file) {
-      return (file.isDirectory() || ApplicationDictionary.extensionSupported(file.getExtension())) && super
+      return (file.isDirectory() || ApplicationDictionaryImpl.extensionSupported(file.getExtension())) && super
               .isFileSelectable(file);
     }
 
@@ -93,7 +93,7 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
 
         if (chosenFile.isDirectory()) {
           collectFilesRecursively(collectedFiles, chosenFile, getRootType());
-        } else if (ApplicationDictionary.extensionSupported(chosenFile.getExtension())) {
+        } else if (ApplicationDictionaryImpl.extensionSupported(chosenFile.getExtension())) {
           collectedFiles.add(chosenFile);
         }
       }
@@ -106,7 +106,7 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
     VfsUtilCore.visitChildrenRecursively(dir, new VirtualFileVisitor() {
       @Override
       public boolean visitFile(@NotNull VirtualFile file) {
-        if (!file.isDirectory() && (ApplicationDictionary.extensionSupported(file.getExtension()))) {
+        if (!file.isDirectory() && (ApplicationDictionaryImpl.extensionSupported(file.getExtension()))) {
           collectedFiles.add(file);
         }
         return true;
@@ -137,7 +137,7 @@ public class AppleScriptLibraryRootsComponentDescriptor extends LibraryRootsComp
       VfsUtilCore.visitChildrenRecursively(file, new VirtualFileVisitor() {
         @Override
         public boolean visitFile(@NotNull VirtualFile file) {
-          if (ApplicationDictionary.extensionSupported(file.getExtension())) {
+          if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
             result.add(file);
           } else if (file.isDirectory()) {
             progressIndicator.setText2(file.getPath());

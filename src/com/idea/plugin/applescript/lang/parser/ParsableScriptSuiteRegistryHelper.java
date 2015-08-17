@@ -62,7 +62,7 @@ public class ParsableScriptSuiteRegistryHelper/* implements ScriptSuiteRegistryH
     return getCurrentScriptSuiteRegistry().getParameterNamesForCommand(name);
   }
 
-  public static DictionaryEnumeratorImpl getEnumerator(String name) {
+  public static DictionaryEnumerator getEnumerator(String name) {
     return getCurrentScriptSuiteRegistry().getEnumerator(name);
   }
 
@@ -70,7 +70,7 @@ public class ParsableScriptSuiteRegistryHelper/* implements ScriptSuiteRegistryH
     return getCurrentScriptSuiteRegistry().findClassesStartingWithName(name);
   }
 
-  public static List<DictionaryEnumeratorImpl> findConstantsStartingWithWord(String name) {
+  public static List<DictionaryEnumerator> findConstantsStartingWithWord(String name) {
     return getCurrentScriptSuiteRegistry().findConstantsStartingWithWord(name);
   }
 

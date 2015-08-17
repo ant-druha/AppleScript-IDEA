@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiNamedElement;
@@ -11,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface DictionaryComponent extends PsiElement, PsiNamedElement, NavigationItem {
 
-  @NotNull
+  @Nullable
   String getCode();
 
   @Nullable
@@ -36,12 +37,18 @@ public interface DictionaryComponent extends PsiElement, PsiNamedElement, Naviga
   @Nullable
   String getDescription();
 
-  @NotNull
+  @Nullable
   Suite getSuite();
+
+  @Nullable
+  DictionaryComponent getDictionaryParentComponent();
 
   @NotNull
   String getType();
 
   void setDescription(String description);
+
+  @NotNull
+  ApplicationDictionary getDictionary();
 
 }

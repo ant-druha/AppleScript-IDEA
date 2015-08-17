@@ -6,4 +6,6 @@ package com.idea.plugin.applescript.lang.sdef;
 public interface Suite extends DictionaryComponent {
 
   boolean addCommand(AppleScriptCommand command);
+
+  boolean isHidden();
 }

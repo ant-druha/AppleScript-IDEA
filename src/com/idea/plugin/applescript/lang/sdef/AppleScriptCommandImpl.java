@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by Andrey on 02.07.2015.
  */
-public class AppleScriptCommandImpl extends BaseDictionaryComponent implements AppleScriptCommand {
+public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> implements AppleScriptCommand {
 
   @NotNull private List<CommandParameter> parameters = new ArrayList<CommandParameter>();
   @NotNull private List<CommandParameter> mandatoryParameters = new ArrayList<CommandParameter>();
@@ -22,11 +22,11 @@ public class AppleScriptCommandImpl extends BaseDictionaryComponent implements A
   @Nullable String cocoaClassName; //todo reference to the real Psi CocoaClass could be implemented
 
 
-  public AppleScriptCommandImpl(@NotNull String name, @NotNull String code, @NotNull Suite suite,
+  public AppleScriptCommandImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
                                 @Nullable List<CommandParameter> parameters,
                                 @Nullable CommandDirectParameter directParameter, @Nullable CommandResult result,
                                 @Nullable String description) {
-    super(code, name, suite, description);
+    super(suite, name, code, description);
     this.directParameter = directParameter;
     this.result = result;
     if (parameters != null) {
@@ -34,8 +34,8 @@ public class AppleScriptCommandImpl extends BaseDictionaryComponent implements A
     }
   }
 
-  public AppleScriptCommandImpl(@NotNull String code, @NotNull String name, @NotNull Suite suite) {
-    super(code, name, suite);
+  public AppleScriptCommandImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code) {
+    super(suite, name, code);
   }
 
   @Override
@@ -91,8 +91,19 @@ public class AppleScriptCommandImpl extends BaseDictionaryComponent implements A
   }
 
   @Override
+  public void setDirectParameter(@Nullable CommandDirectParameter directParameter) {
+    this.directParameter = directParameter;
+  }
+
+  @Override
   @Nullable
   public String getCocoaClassName() {
     return cocoaClassName;
+  }
+
+  @NotNull
+  @Override
+  public Suite getSuite() {
+    return myParent;
   }
 }

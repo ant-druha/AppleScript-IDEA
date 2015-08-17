@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DictionaryClass extends BaseDictionaryComponent implements AppleScriptClass {
+public class DictionaryClass extends AbstractDictionaryComponent<Suite> implements AppleScriptClass {
 
   private List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
   //Application classes have attributes, to-one relationships, and to-many relationships. AppleScript classes
@@ -21,13 +21,13 @@ public class DictionaryClass extends BaseDictionaryComponent implements AppleScr
   //<!ENTITY % class-contents "(contents | element | property | responds-to | synonym | documentation | xref)">
   //<!ELEMENT class ((%implementation;)?, access-group*, type*, (%class-contents;)*)>
 
-  public DictionaryClass(@NotNull String code, @NotNull String name, @NotNull Suite suite) {
-    super(code, name, suite, null);
+  public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code) {
+    super(suite, name, code, null);
   }
 
-  public DictionaryClass(@NotNull String code, @NotNull String name, String description, @NotNull Suite suite,
-                         List<AppleScriptPropertyDefinition> properties) {
-    super(code, name, suite, description);
+  public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
+                         List<AppleScriptPropertyDefinition> properties, String description) {
+    super(suite, name, code, description);
     this.properties = properties;
   }
 
@@ -41,5 +41,15 @@ public class DictionaryClass extends BaseDictionaryComponent implements AppleScr
   @Override
   public List<AppleScriptPropertyDefinition> getProperties() {
     return properties;
+  }
+
+  public void setProperties(List<AppleScriptPropertyDefinition> properties) {
+    this.properties = properties;
+  }
+
+  @NotNull
+  @Override
+  public Suite getSuite() {
+    return myParent;
   }
 }

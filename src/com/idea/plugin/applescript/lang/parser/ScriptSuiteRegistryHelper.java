@@ -29,9 +29,9 @@ public interface ScriptSuiteRegistryHelper {
 
   List<AppleScriptClass> findClassesStartingWithName(String name);
 
-  List<DictionaryEnumeratorImpl> findConstantsStartingWithWord(String name);
+  List<DictionaryEnumerator> findConstantsStartingWithWord(String name);
 
-  DictionaryEnumeratorImpl getEnumerator(String name);
+  DictionaryEnumerator getEnumerator(String name);
 
   AppleScriptClass getClassWithName(String name);
 

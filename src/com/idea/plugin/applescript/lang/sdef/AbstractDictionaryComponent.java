@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
@@ -11,26 +12,26 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Created by Andrey on 09.07.2015.
  */
-public abstract class BaseDictionaryComponent extends FakePsiElement implements DictionaryComponent {
+public abstract class AbstractDictionaryComponent<P extends DictionaryComponent> extends FakePsiElement implements
+        DictionaryComponent {
 
   @NotNull private final String code;
   @NotNull private final String name;
-  @NotNull private final Suite suite;//replace to parent field but leave the property
+  @NotNull protected final P myParent;
   @Nullable private String description;
-//  @NotNull final protected PsiElement parent;
 
-  protected BaseDictionaryComponent(@NotNull String code, @NotNull String name, @NotNull Suite suite, @Nullable
-  String description) {
+  protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name, @NotNull String code,
+                                        @Nullable String description) {
     this.code = code;
     this.name = name;
-    this.suite = suite;
+    this.myParent = parent;
     this.description = description;
   }
 
-  protected BaseDictionaryComponent(@NotNull String code, @NotNull String name, @NotNull Suite suite) {
+  protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name, @NotNull String code) {
     this.code = code;
     this.name = name;
-    this.suite = suite;
+    this.myParent = parent;
   }
 
   @NotNull
@@ -42,37 +43,48 @@ public abstract class BaseDictionaryComponent extends FakePsiElement implements 
   @NotNull
   @Override
   public String getQualifiedName() {
-    return getSuite().getQualifiedName() + "/" + getType().substring(11) + ":" + getCode();
+    return getDictionaryParentComponent().getQualifiedName() + "/" + getShortQname();
+  }
+
+  @NotNull
+  private String getShortQname() {
+    return getType().substring(11) + ":" + getCode();
   }
 
   @NotNull
   @Override
   public String getQualifiedPath() {
-    return getSuite().getQualifiedPath() + "/" + getType().substring(11) + ":" + getCode();
+    return getDictionaryParentComponent().getQualifiedPath() + "/" + getShortQname();
   }
 
   @NotNull
   @Override
   public String getType() {
+    //prefixed with "dictionary " to distinguish from native AppleScript typres..
     AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
     return componentType != null ? componentType.toString().toLowerCase() : "dictionary reference";
   }
 
   @Override
-  public void setDescription(String description) {
+  public void setDescription(@Nullable String description) {
     this.description = description;
   }
 
   @NotNull
   @Override
+  public ApplicationDictionary getDictionary() {
+    return getSuite().getDictionary();
+  }
+
+  @NotNull
+  @Override
   public Project getProject() {
-//    super.getProject();
-    return getSuite().getProject();
+    return getDictionaryParentComponent().getProject();
   }
 
   @Override
   public PsiElement getParent() {
-    return getSuite();
+    return getDictionaryParentComponent();
   }
 
   @Nullable
@@ -94,8 +106,12 @@ public abstract class BaseDictionaryComponent extends FakePsiElement implements 
 
   @NotNull
   @Override
-  public Suite getSuite() {
-    return suite;
+  public abstract Suite getSuite();
+
+  @NotNull
+  @Override
+  public P getDictionaryParentComponent() {
+    return myParent;
   }
 
   @Override

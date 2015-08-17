@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
 import com.idea.plugin.applescript.lang.sdef.*;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlDocument;
@@ -79,135 +80,121 @@ public class SDEF_Parser {
     String description = suiteTag.getAttributeValue("description");
     String hiddenVal = suiteTag.getAttributeValue("hidden");
     if (name != null && code != null) {
-      result = new SuiteImpl(code, name, "yes".equals(hiddenVal), description, dictionary);
+      result = new SuiteImpl(dictionary, code, name, "yes".equals(hiddenVal), description);
     }
     return result;
   }
 
   private static AppleScriptClass parseClassExtensionTag(XmlTag classExtensionTag, ApplicationDictionary dictionary,
                                                          Suite suite) {
-    AppleScriptClass result = null;
-
     String parentClassName = classExtensionTag.getAttributeValue("extends");
     AppleScriptClass parentClass = dictionary.getClassByName(parentClassName);
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
+    if (parentClassName == null || parentClassCode == null) return null;
+
+    final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode);
     String description = classExtensionTag.getAttributeValue("description");
+    classExtension.setDescription(description);
 
-    List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
     XmlTag[] propertyTags = classExtensionTag.findSubTags("property");
-
-    if (parentClassName != null && parentClassCode != null) {
-      for (XmlTag propTag : propertyTags) {
-        AppleScriptPropertyDefinition property = null;
-        String pName = propTag.getAttributeValue("name");
-        String pCode = propTag.getAttributeValue("code");
-        String pDescription = propTag.getAttributeValue("description");
-        String pType = propTag.getAttributeValue("type");
-        if (pName != null && pCode != null && pType != null) {
-          property = new DictionaryPropertyImpl(pCode, pName, pType, suite, pDescription);
-          properties.add(property);
-        }
-
+    List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
+    for (XmlTag propTag : propertyTags) {
+      AppleScriptPropertyDefinition property;
+      String pName = propTag.getAttributeValue("name");
+      String pCode = propTag.getAttributeValue("code");
+      String pDescription = propTag.getAttributeValue("description");
+      String pType = propTag.getAttributeValue("type");
+      if (pName != null && pCode != null && pType != null) {
+        property = new DictionaryPropertyImpl(classExtension, pName, pCode, pType, pDescription);
+        properties.add(property);
       }
-      result = new DictionaryClass(parentClassCode, parentClassName, description, suite, properties);
     }
-    return result;
+    classExtension.setProperties(properties);
+    return classExtension;
   }
 
   private static DictionaryEnumeration parseEnumerationTag(XmlTag enumerationTag, Suite suite) {
-    DictionaryEnumeration result = null;
     String name = enumerationTag.getAttributeValue("name");
     String code = enumerationTag.getAttributeValue("code");
+    if (name == null || code == null) return null;
+
     String description = enumerationTag.getAttributeValue("description");
-
-    List<DictionaryEnumeratorImpl> enumConstants = new ArrayList<DictionaryEnumeratorImpl>();
-
+    final List<DictionaryEnumerator> enumConstants = new ArrayList<DictionaryEnumerator>();
     XmlTag[] enumTags = enumerationTag.findSubTags("enumerator");
-
-    if (name != null && code != null) {
-      for (XmlTag enumTag : enumTags) {
-        DictionaryEnumeratorImpl enumConst = null;
-        String eName = enumTag.getAttributeValue("name");
-        String eCode = enumTag.getAttributeValue("code");
-        String eDescription = enumTag.getAttributeValue("description");
-        if (eName != null && eCode != null) {
-          enumConst = new DictionaryEnumeratorImpl(eCode, eName, suite, eDescription);
-          enumConstants.add(enumConst);
-        }
+    final DictionaryEnumeration enumeration = new DictionaryEnumerationImpl(suite, name, code, description);
+    for (XmlTag enumTag : enumTags) {
+      DictionaryEnumerator enumConst;
+      String eName = enumTag.getAttributeValue("name");
+      String eCode = enumTag.getAttributeValue("code");
+      String eDescription = enumTag.getAttributeValue("description");
+      if (eName != null && eCode != null) {
+        enumConst = new DictionaryEnumeratorImpl(enumeration, eName, eCode, eDescription);
+        enumConstants.add(enumConst);
       }
-      result = new DictionaryEnumerationImpl(code, name, suite, description, enumConstants);
     }
-    return result;
+    enumeration.setEnumerators(enumConstants);
+    return enumeration;
   }
 
   private static DictionaryRecord parseRecordTag(XmlTag recordTag, Suite suite) {
-    DictionaryRecord result = null;
     String name = recordTag.getAttributeValue("name");
     String code = recordTag.getAttributeValue("code");
+    if (name == null || code == null) return null;
+
     String description = recordTag.getAttributeValue("description");
-
-    List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
-
+    final List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
     XmlTag[] propertyTags = recordTag.findSubTags("property");
-
-    if (name != null && code != null) {
-      for (XmlTag propTag : propertyTags) {
-        AppleScriptPropertyDefinition property = null;
-        String pName = propTag.getAttributeValue("name");
-        String pCode = propTag.getAttributeValue("code");
-        String pDescription = propTag.getAttributeValue("description");
-        String pType = propTag.getAttributeValue("type");
-        if (pName != null && pCode != null && pType != null) {
-          property = new DictionaryPropertyImpl(pCode, pName, pType, suite, pDescription);
-          properties.add(property);
-        }
-
+    final DictionaryRecord record = new DictionaryRecordDefinition(suite, name, code, description);
+    for (XmlTag propTag : propertyTags) {
+      AppleScriptPropertyDefinition property;
+      String pName = propTag.getAttributeValue("name");
+      String pCode = propTag.getAttributeValue("code");
+      String pDescription = propTag.getAttributeValue("description");
+      String pType = propTag.getAttributeValue("type");
+      if (pName != null && pCode != null && pType != null) {
+        property = new DictionaryPropertyImpl(record, pName, pCode, pType, pDescription);
+        properties.add(property);
       }
-      result = new DictionaryRecordDefinition(code, name, description, suite, properties);
     }
-    return result;
+    record.setProperties(properties);//could be zero??
+    return record;
   }
 
   private static AppleScriptClass parseClassTag(XmlTag classTag, Suite suite) {
-    AppleScriptClass result = null;
     String name = classTag.getAttributeValue("name");
     String code = classTag.getAttributeValue("code");
+
+    if (name == null || code == null) return null;
+
+    final AppleScriptClass aClass = new DictionaryClass(suite, name, code);
     String description = classTag.getAttributeValue("description");
-
-    List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
-
+    aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
-
-    if (name != null && code != null) {
-      for (XmlTag propTag : propertyTags) {
-        AppleScriptPropertyDefinition property = null;
-        String pName = propTag.getAttributeValue("name");
-        String pCode = propTag.getAttributeValue("code");
-        String pDescription = propTag.getAttributeValue("description");
-        String pType = propTag.getAttributeValue("type");
-        if (pName != null && pCode != null && pType != null) {
-          property = new DictionaryPropertyImpl(pCode, pName, pType, suite, pDescription);
-          properties.add(property);
-        }
-
+    final List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
+    for (XmlTag propTag : propertyTags) {
+      String pName = propTag.getAttributeValue("name");
+      String pCode = propTag.getAttributeValue("code");
+      String pDescription = propTag.getAttributeValue("description");
+      String pType = propTag.getAttributeValue("type");
+      if (pName != null && pCode != null && pType != null) {
+        final AppleScriptPropertyDefinition property = new DictionaryPropertyImpl(aClass, pName, pCode, pType,
+                pDescription);
+        properties.add(property);
       }
-      result = new DictionaryClass(code, name, description, suite, properties);
     }
-
-
-    return result;
+    aClass.setProperties(properties);
+    return aClass;
   }
 
   private static AppleScriptCommand parseCommandTag(XmlTag commandTag, Suite suite) {
-    AppleScriptCommand result = null;
     String name = commandTag.getAttributeValue("name");
     String code = commandTag.getAttributeValue("code");
     String description = commandTag.getAttributeValue("description");
 
     if (name == null || code == null) return null;
 
-//    result = new AppleScriptCommandImpl(code, name, suite);
-//    result.setDescription(description);
+    final AppleScriptCommand command = new AppleScriptCommandImpl(suite, name, code);
+    command.setDescription(description);
 
     XmlTag directParam = commandTag.findFirstSubTag("direct-parameter");
     CommandDirectParameter directParameter = null;
@@ -256,13 +243,15 @@ public class SDEF_Parser {
         if ("yes".equals(pOptional)) {
           bOptional = true;
         }
-        commandParameter = new CommandParameterImpl(pName, pType, pCode, suite, pDescription, bOptional);
+        commandParameter = new CommandParameterImpl(command, pName, pCode, bOptional, pType, pDescription);
       }
       if (commandParameter != null) {
         commandParameters.add(commandParameter);
       }
     }
-    result = new AppleScriptCommandImpl(name, code, suite, commandParameters, directParameter, null, description);
-    return result;
+    command.setParameters(commandParameters);
+    command.setDirectParameter(directParameter);
+//    result = new AppleScriptCommandImpl(suite, name, code, commandParameters, directParameter, null, description);
+    return command;
   }
 }

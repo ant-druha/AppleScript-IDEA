@@ -11,4 +11,7 @@ public interface CommandParameter extends DictionaryComponent {
 
   @NotNull
   String getTypeSpecifier();
+
+  @NotNull
+  AppleScriptCommand getMyCommand();
 }

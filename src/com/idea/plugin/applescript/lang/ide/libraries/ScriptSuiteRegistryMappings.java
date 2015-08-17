@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.ide.libraries;
 
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.lang.LanguagePerFileMappings;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.*;
@@ -149,7 +150,7 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
     ScriptSuiteRegistry myLibrary = new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, getProject());
     VirtualFile applicationBundleFile = getVirtualFileFromPath(value);
     if (applicationBundleFile != null) {
-      ApplicationDictionary dictionary = new ApplicationDictionary(getProject(), applicationBundleFile);
+      ApplicationDictionary dictionary = new ApplicationDictionaryImpl(getProject(), applicationBundleFile);
       myLibrary.addApplicationDictionary(dictionary);
     }
     return myLibrary;

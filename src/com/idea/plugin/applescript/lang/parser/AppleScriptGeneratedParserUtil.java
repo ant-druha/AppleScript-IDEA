@@ -2,7 +2,11 @@ package com.idea.plugin.applescript.lang.parser;
 
 import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
 import com.idea.plugin.applescript.lang.parcer.AppleScriptParser;
-import com.idea.plugin.applescript.lang.sdef.*;
+import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
+import com.idea.plugin.applescript.lang.sdef.CommandDirectParameter;
+import com.idea.plugin.applescript.lang.sdef.CommandParameter;
+import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;

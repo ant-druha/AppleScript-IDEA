@@ -2,7 +2,8 @@ package com.idea.plugin.applescript.lang.parser;
 
 import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
 import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings;
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.ide.IdeView;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -34,8 +35,8 @@ public class LoadDictionaryAction extends AnAction {
       public void consume(final List<VirtualFile> files) {
         ScriptSuiteRegistry currentSuiteRegistry = getCurrentSuiteRegistry();
         for (VirtualFile file : files) {
-          if (ApplicationDictionary.extensionSupported(file.getExtension())) {
-            ApplicationDictionary dictionary = new ApplicationDictionary(project, file);
+          if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
+            ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, file);
             currentSuiteRegistry.addApplicationDictionary(dictionary);
           }
         }

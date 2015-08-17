@@ -13,4 +13,6 @@ public interface AppleScriptClass extends DictionaryComponent {
 
   @NotNull
   List<AppleScriptPropertyDefinition> getProperties();
+
+  void setProperties(List<AppleScriptPropertyDefinition> properties);
 }
