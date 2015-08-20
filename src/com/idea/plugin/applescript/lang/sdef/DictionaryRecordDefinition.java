@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -9,14 +10,15 @@ public class DictionaryRecordDefinition extends AbstractDictionaryComponent<Suit
   private List<AppleScriptPropertyDefinition> properties;// = new ArrayList<AppleScriptPropertyDefinition>();
 
   public DictionaryRecordDefinition(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                                    List<AppleScriptPropertyDefinition> properties, String description) {
-    super(suite, name, code, description);
+                                    List<AppleScriptPropertyDefinition> properties, String description,
+                                    @NotNull XmlTag xmlTagRecord) {
+    super(suite, name, code, xmlTagRecord, description);
     this.properties = properties;
   }
 
   public DictionaryRecordDefinition(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                                    String description) {
-    super(suite, name, code, description);
+                                    String description, @NotNull XmlTag xmlTagRecord) {
+    super(suite, name, code, xmlTagRecord, description);
   }
 
   @NotNull
@@ -31,6 +33,6 @@ public class DictionaryRecordDefinition extends AbstractDictionaryComponent<Suit
   @NotNull
   @Override
   public Suite getSuite() {
-    return myParent;
+    return getDictionaryParentComponent();
   }
 }

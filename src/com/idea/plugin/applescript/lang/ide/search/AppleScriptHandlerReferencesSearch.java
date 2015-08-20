@@ -40,7 +40,9 @@ public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiRefe
     // (TargetElementEvaluatorEx2)
     // 2. com.intellij.pom.PomDeclarationSearcher#findDeclarationsAt
     // 3...
-    final PsiElement element = queryParameters.getElementToSearch(); //selector_identifier here
+    final PsiElement element = queryParameters.getElementToSearch(); //was selector_identifier->redefined in
+    // pomDeclarationSearcher to
+    // the handler declaration
     AppleScriptHandler handler = null;
     PsiElement contextElement;
     if (element instanceof AppleScriptHandler) {
@@ -57,11 +59,11 @@ public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiRefe
     if (handler == null) return true;
 
     final List<AppleScriptHandlerSelectorPart> parts = handler.getParameters();
+    if (parts.isEmpty())
+      return true;
     final String handlerSelector = handler.getSelector(); //or just getName()...
     final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(element.getProject());
 
-    if (parts.isEmpty())
-      return true;
 
     String firstSelector = parts.get(0).getSelectorPart();
 

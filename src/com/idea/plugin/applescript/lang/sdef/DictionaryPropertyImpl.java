@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,21 +10,21 @@ public class DictionaryPropertyImpl extends AbstractDictionaryComponent<Dictiona
   @NotNull private String typeSpecifier;
   @Nullable private AccessType accessType = AccessType.RW;
 
-  public DictionaryPropertyImpl(@NotNull DictionaryComponent classOrRecord, @NotNull String name, @NotNull String
-          code, @NotNull String typeSpecifier,
-
-                                @Nullable String description) {
-    super(classOrRecord, name, code, description);
+  public DictionaryPropertyImpl(@NotNull DictionaryComponent classOrRecord, @NotNull String name,
+                                @NotNull String code, @NotNull String typeSpecifier,
+                                @Nullable String description, @NotNull XmlTag XmlTagProperty) {
+    super(classOrRecord, name, code, XmlTagProperty, description);
     this.typeSpecifier = typeSpecifier;
+    assert (myParent instanceof AppleScriptClass || myParent instanceof DictionaryRecord);
   }
 
   protected DictionaryPropertyImpl(@NotNull DictionaryComponent classOrRecord, @NotNull String name,
                                    @NotNull String code, @NotNull String typeSpecifier,
-                                   @Nullable AccessType accessType) {
-    super(classOrRecord, name, code);
+                                   @Nullable AccessType accessType, @NotNull XmlTag XmlTagProperty) {
+    super(classOrRecord, name, code, XmlTagProperty);
     this.typeSpecifier = typeSpecifier;
     this.accessType = accessType;
-
+    assert (myParent instanceof AppleScriptClass || myParent instanceof DictionaryRecord);
   }
 
   @NotNull
@@ -58,6 +59,7 @@ public class DictionaryPropertyImpl extends AbstractDictionaryComponent<Dictiona
   @NotNull
   @Override
   public Suite getSuite() {
-    return getDictionaryParentComponent().getSuite();
+    return isClassProperty()? getDictionaryParentComponent().getSuite() :
+            getDictionaryParentComponent().getSuite();//not safe cast...
   }
 }

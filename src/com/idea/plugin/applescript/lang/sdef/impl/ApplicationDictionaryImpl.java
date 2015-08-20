@@ -1,7 +1,9 @@
 package com.idea.plugin.applescript.lang.sdef.impl;
 
+import com.idea.plugin.applescript.AppleScriptLanguage;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
+import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
@@ -177,6 +179,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @NotNull
   @Override
+  public List<String> getNameIdentifiers() {
+    return Arrays.asList(name.split(" "));
+  }
+
+  @NotNull
+  @Override
   public String getQualifiedPath() {
     return "dictionary:" + getName() + "/" + getQualifiedName();
   }
@@ -191,6 +199,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public String getDescription() {
     return null;
+  }
+
+  @NotNull
+  @Override
+  public Language getLanguage() {
+    return AppleScriptLanguage.INSTANCE;
   }
 
   public PsiElement setName(@NotNull String name) {

@@ -50,7 +50,11 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   @Override
   public String getCommandName() {
     //todo change to iteration over identifiers
-    return getCommandNameElement().getText();
+    StringBuilder sb = new StringBuilder();
+    for (AppleScriptIdentifier id : getCommandNameElement().getIdentifiers()) {
+      sb.append(id.getText()).append(" ");
+    }
+    return sb.toString().trim();
   }
 
   @Nullable
@@ -216,7 +220,6 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
       final List<AppleScriptCommand> allCommandsWithName = suiteRegistry != null ? suiteRegistry.
               getAllCommandsWithName(getCommandName()) :
               ParsableScriptSuiteRegistryHelper.getAllCommandsWithName(getCommandName());
-      AppleScriptCommand result = null;
       final List<PsiElement> results = new ArrayList<PsiElement>();
       for (AppleScriptCommand command : allCommandsWithName) {
         if (resolveCommandInner(command)) {
@@ -245,7 +248,7 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     @NotNull
     @Override
     public String getCanonicalText() {
-      return getCommandNameElement().getText();
+      return getCommandName();
     }
 
     @Override

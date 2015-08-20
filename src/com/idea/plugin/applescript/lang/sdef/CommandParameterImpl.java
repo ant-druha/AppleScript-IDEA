@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,16 +13,16 @@ public class CommandParameterImpl extends AbstractDictionaryComponent<AppleScrip
 
   public CommandParameterImpl(@NotNull AppleScriptCommand myCommand, @NotNull String name, @NotNull String code,
                               boolean optional, @NotNull String typeSpecifier,
-
-                              @Nullable String description) {
-    super(myCommand, name, code, description);
+                              @Nullable String description, @NotNull XmlTag xmlTagParameter) {
+    super(myCommand, name, code, xmlTagParameter, description);
     this.typeSpecifier = typeSpecifier;
     this.optional = optional;
   }
 
   public CommandParameterImpl(@NotNull AppleScriptCommand myCommand, @NotNull String name, @NotNull String code,
-                              @NotNull String typeSpecifier) {
-    this(myCommand, name, code, false, typeSpecifier, null);
+                              @NotNull String typeSpecifier, @NotNull XmlTag xmlTagParameter) {
+    super(myCommand, name, code, xmlTagParameter);
+    this.typeSpecifier = typeSpecifier;
   }
 
 

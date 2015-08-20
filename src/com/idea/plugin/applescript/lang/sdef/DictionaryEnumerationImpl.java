@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,19 +12,20 @@ public class DictionaryEnumerationImpl extends AbstractDictionaryComponent<Suite
   List<DictionaryEnumerator> enumerators = new ArrayList<DictionaryEnumerator>();
 
   public DictionaryEnumerationImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                                   List<DictionaryEnumerator> enumerators, @Nullable String description) {
-    super(suite, name, code, description);
+                                   List<DictionaryEnumerator> enumerators, @Nullable String description,
+                                   @NotNull XmlTag XmlTagEnumeration) {
+    super(suite, name, code, XmlTagEnumeration, description);
     this.enumerators = enumerators;
   }
 
   public DictionaryEnumerationImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                                   @Nullable String description) {
-    super(suite, name, code, description);
+                                   @Nullable String description, @NotNull XmlTag XmlTagEnumeration) {
+    super(suite, name, code, XmlTagEnumeration, description);
   }
 
   public DictionaryEnumerationImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                                   List<DictionaryEnumerator> enumerators) {
-    this(suite, name, code, enumerators, null);
+                                   List<DictionaryEnumerator> enumerators, @NotNull XmlTag XmlTagEnumeration) {
+    this(suite, name, code, enumerators, null, XmlTagEnumeration);
   }
 
   @Override

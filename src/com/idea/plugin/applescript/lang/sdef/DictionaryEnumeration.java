@@ -1,5 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 public interface DictionaryEnumeration extends DictionaryComponent {
@@ -8,4 +10,7 @@ public interface DictionaryEnumeration extends DictionaryComponent {
 
   void setEnumerators(List<DictionaryEnumerator> enumerators);
 
+  @NotNull
+  @Override
+  Suite getSuite();
 }

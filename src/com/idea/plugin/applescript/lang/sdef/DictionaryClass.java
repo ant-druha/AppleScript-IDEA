@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -21,13 +22,15 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   //<!ENTITY % class-contents "(contents | element | property | responds-to | synonym | documentation | xref)">
   //<!ELEMENT class ((%implementation;)?, access-group*, type*, (%class-contents;)*)>
 
-  public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code) {
-    super(suite, name, code, null);
+  public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
+                         @NotNull XmlTag xmlTagClass) {
+    super(suite, name, code, xmlTagClass, null);
   }
 
   public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                         List<AppleScriptPropertyDefinition> properties, String description) {
-    super(suite, name, code, description);
+                         List<AppleScriptPropertyDefinition> properties,
+                         @NotNull XmlTag xmlTagClass, String description) {
+    super(suite, name, code, xmlTagClass, description);
     this.properties = properties;
   }
 

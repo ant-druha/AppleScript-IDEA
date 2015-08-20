@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,12 +22,11 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
   @Nullable private CommandResult result;
   @Nullable String cocoaClassName; //todo reference to the real Psi CocoaClass could be implemented
 
-
   public AppleScriptCommandImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
                                 @Nullable List<CommandParameter> parameters,
                                 @Nullable CommandDirectParameter directParameter, @Nullable CommandResult result,
-                                @Nullable String description) {
-    super(suite, name, code, description);
+                                @Nullable String description, @NotNull XmlTag xmlTagCommand) {
+    super(suite, name, code, xmlTagCommand, description);
     this.directParameter = directParameter;
     this.result = result;
     if (parameters != null) {
@@ -34,8 +34,9 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
     }
   }
 
-  public AppleScriptCommandImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code) {
-    super(suite, name, code);
+  public AppleScriptCommandImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
+                                @NotNull XmlTag xmlTagCommand) {
+    super(suite, name, code, xmlTagCommand);
   }
 
   @Override

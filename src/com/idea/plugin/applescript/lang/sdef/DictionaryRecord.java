@@ -11,4 +11,7 @@ public interface DictionaryRecord extends DictionaryComponent {
 
   void setProperties(List<AppleScriptPropertyDefinition> properties);
 
+  @NotNull
+  @Override
+  Suite getSuite();
 }

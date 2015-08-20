@@ -4,8 +4,8 @@ import com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.intellij.codeInsight.TargetElementEvaluatorEx2;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
+import com.intellij.util.ThreeState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,16 +28,11 @@ public class AppleScriptTargetElementEvaluator extends TargetElementEvaluatorEx2
     return null;
   }
 
+  @NotNull
   @Override
-  public boolean isAcceptableReferencedElement(@Nullable PsiElement element, @Nullable PsiElement
+  public ThreeState isAcceptableReferencedElement(@Nullable PsiElement element, @Nullable PsiElement
           referenceOrReferencedElement) {
-    return element instanceof AppleScriptReferenceElement;
-  }
-
-
-  @Override
-  public boolean isIdentifierPart(PsiFile element, CharSequence text, int offset) {
-    return false;
+    return element instanceof AppleScriptReferenceElement ? ThreeState.YES : ThreeState.NO;
   }
 
   @Override

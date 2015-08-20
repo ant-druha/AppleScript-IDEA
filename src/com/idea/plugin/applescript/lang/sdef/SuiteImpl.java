@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,13 +15,14 @@ public class SuiteImpl extends AbstractDictionaryComponent<ApplicationDictionary
   private List<DictionaryClass> classDefinitions = new ArrayList<DictionaryClass>();
   //(class | class-extension | command | enumeration | event | record-type | value-type | documentation)+
 
-  public SuiteImpl(@NotNull String code, @NotNull String name, @NotNull ApplicationDictionary dictionary) {
-    super(dictionary, name, code);
+  public SuiteImpl(@NotNull String code, @NotNull String name, @NotNull ApplicationDictionary dictionary,
+                   @NotNull XmlTag xmlTagSuite) {
+    super(dictionary, name, code, xmlTagSuite);
   }
 
   public SuiteImpl(@NotNull ApplicationDictionary dictionary, @NotNull String code, @NotNull String name,
-                   boolean hidden, @Nullable String description) {
-    super(dictionary, name, code, description);
+                   boolean hidden, @Nullable String description, @NotNull XmlTag xmlTagSuite) {
+    super(dictionary, name, code, xmlTagSuite, description);
     this.hidden = hidden;
   }
 

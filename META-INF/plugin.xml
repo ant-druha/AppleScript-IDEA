@@ -80,6 +80,9 @@
         <referencesSearch
                 implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerReferencesSearch"/>
 
+        <referencesSearch
+                implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptDictionaryComponentReferencesSearch"/>
+
         <lang.refactoringSupport language="AppleScript"
                                  implementationClass="com.idea.plugin.applescript.lang.ide.refactoring.AppleScriptRefactoringSupportProvider"/>
 

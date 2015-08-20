@@ -1,18 +1,20 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class DictionaryEnumeratorImpl extends AbstractDictionaryComponent<DictionaryEnumeration> implements
         DictionaryEnumerator {
   public DictionaryEnumeratorImpl(@NotNull DictionaryEnumeration myEnumeration, @NotNull String name,
-                                  @NotNull String code, @Nullable String description) {
-    super(myEnumeration, name, code, description);
+                                  @NotNull String code, @Nullable String description, @NotNull XmlTag
+                                          XmlTagEnumerator) {
+    super(myEnumeration, name, code, XmlTagEnumerator, description);
   }
 
   public DictionaryEnumeratorImpl(@NotNull DictionaryEnumeration myEnumeration, @NotNull String name,
-                                  @NotNull String code) {
-    super(myEnumeration, name, code);
+                                  @NotNull String code, @NotNull XmlTag XmlTagEnumerator) {
+    super(myEnumeration, name, code, XmlTagEnumerator);
   }
 
   @NotNull

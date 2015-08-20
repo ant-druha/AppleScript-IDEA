@@ -16,10 +16,15 @@ public abstract class AppleScriptCommandNameImpl extends AppleScriptPsiElementIm
     super(node);
   }
 
-  @Override
-  public String getText() {
-    return super.getText().replaceAll("\\s{2,}", " ");
-  }
+//  @Override
+//  public String getText() {
+//    StringBuilder sb = new StringBuilder();
+//    for (AppleScriptIdentifier id : getIdentifiers()) {
+//      sb.append(id.getText()).append(" ");
+//    }
+//    return sb.toString().trim();
+////    return super.getText().replaceAll("\\s{2,}", " ");
+//  }
 
   @Override
   public List<AppleScriptIdentifier> getIdentifiers() {

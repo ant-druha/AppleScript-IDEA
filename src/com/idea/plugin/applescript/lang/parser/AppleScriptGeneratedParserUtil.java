@@ -48,7 +48,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, StringHolder parsedName) {
     if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
     boolean r;
-    PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse ApplicationDictionary Command Name>");
+    PsiBuilder.Marker m = enter_section_(b, l, _COLLAPSE_, "<parse ApplicationDictionary Command Name>");
 //    PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse ApplicationDictionary Command Name>");
     r = parseCommandName(b, l + 1, parsedName);
     exit_section_(b, l, m, DICTIONARY_COMMAND_NAME, r, false, null);

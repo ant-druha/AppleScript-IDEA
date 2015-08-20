@@ -2,42 +2,49 @@ package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.impl.FakePsiElement;
+import com.idea.plugin.applescript.psi.sdef.impl.DictionaryPsiElementBase;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Andrey on 09.07.2015.
  */
-public abstract class AbstractDictionaryComponent<P extends DictionaryComponent> extends FakePsiElement implements
-        DictionaryComponent {
+public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
+        extends DictionaryPsiElementBase<P, XmlTag> implements DictionaryComponent {
 
   @NotNull private final String code;
   @NotNull private final String name;
-  @NotNull protected final P myParent;
   @Nullable private String description;
 
   protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name, @NotNull String code,
-                                        @Nullable String description) {
+                                        @NotNull XmlTag myXmlTag, @Nullable String description) {
+    super(myXmlTag, parent);
     this.code = code;
     this.name = name;
-    this.myParent = parent;
     this.description = description;
   }
 
-  protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name, @NotNull String code) {
+  protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name,
+                                        @NotNull String code, @NotNull XmlTag myXmlTag) {
+    super(myXmlTag, parent);
     this.code = code;
     this.name = name;
-    this.myParent = parent;
   }
 
   @NotNull
   @Override
   public String getName() {
     return name;
+  }
+
+  @NotNull
+  @Override
+  public List<String> getNameIdentifiers() {
+    return Arrays.asList(name.split(" "));
   }
 
   @NotNull
@@ -60,7 +67,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @NotNull
   @Override
   public String getType() {
-    //prefixed with "dictionary " to distinguish from native AppleScript typres..
+    //prefixed with "dictionary " to distinguish from native AppleScript types..
     AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
     return componentType != null ? componentType.toString().toLowerCase() : "dictionary reference";
   }
@@ -74,17 +81,6 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @Override
   public ApplicationDictionary getDictionary() {
     return getSuite().getDictionary();
-  }
-
-  @NotNull
-  @Override
-  public Project getProject() {
-    return getDictionaryParentComponent().getProject();
-  }
-
-  @Override
-  public PsiElement getParent() {
-    return getDictionaryParentComponent();
   }
 
   @Nullable
@@ -108,15 +104,9 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @Override
   public abstract Suite getSuite();
 
-  @NotNull
+  @Nullable
   @Override
-  public P getDictionaryParentComponent() {
-    return myParent;
-  }
-
-  @Override
-  public PsiManager getManager() {
-    return super.getManager();
-//    return PsiManager.getInstance(getProject());
+  public String getLocationString() {
+    return getQualifiedPath();
   }
 }

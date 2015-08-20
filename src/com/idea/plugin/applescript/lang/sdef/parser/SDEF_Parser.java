@@ -80,7 +80,7 @@ public class SDEF_Parser {
     String description = suiteTag.getAttributeValue("description");
     String hiddenVal = suiteTag.getAttributeValue("hidden");
     if (name != null && code != null) {
-      result = new SuiteImpl(dictionary, code, name, "yes".equals(hiddenVal), description);
+      result = new SuiteImpl(dictionary, code, name, "yes".equals(hiddenVal), description, suiteTag);
     }
     return result;
   }
@@ -92,7 +92,8 @@ public class SDEF_Parser {
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
     if (parentClassName == null || parentClassCode == null) return null;
 
-    final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode);
+    final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode,
+            classExtensionTag);
     String description = classExtensionTag.getAttributeValue("description");
     classExtension.setDescription(description);
 
@@ -105,7 +106,7 @@ public class SDEF_Parser {
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
       if (pName != null && pCode != null && pType != null) {
-        property = new DictionaryPropertyImpl(classExtension, pName, pCode, pType, pDescription);
+        property = new DictionaryPropertyImpl(classExtension, pName, pCode, pType, pDescription, propTag);
         properties.add(property);
       }
     }
@@ -121,14 +122,15 @@ public class SDEF_Parser {
     String description = enumerationTag.getAttributeValue("description");
     final List<DictionaryEnumerator> enumConstants = new ArrayList<DictionaryEnumerator>();
     XmlTag[] enumTags = enumerationTag.findSubTags("enumerator");
-    final DictionaryEnumeration enumeration = new DictionaryEnumerationImpl(suite, name, code, description);
+    final DictionaryEnumeration enumeration = new DictionaryEnumerationImpl(suite, name, code, description,
+            enumerationTag);
     for (XmlTag enumTag : enumTags) {
       DictionaryEnumerator enumConst;
       String eName = enumTag.getAttributeValue("name");
       String eCode = enumTag.getAttributeValue("code");
       String eDescription = enumTag.getAttributeValue("description");
       if (eName != null && eCode != null) {
-        enumConst = new DictionaryEnumeratorImpl(enumeration, eName, eCode, eDescription);
+        enumConst = new DictionaryEnumeratorImpl(enumeration, eName, eCode, eDescription, enumTag);
         enumConstants.add(enumConst);
       }
     }
@@ -144,7 +146,7 @@ public class SDEF_Parser {
     String description = recordTag.getAttributeValue("description");
     final List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
     XmlTag[] propertyTags = recordTag.findSubTags("property");
-    final DictionaryRecord record = new DictionaryRecordDefinition(suite, name, code, description);
+    final DictionaryRecord record = new DictionaryRecordDefinition(suite, name, code, description, recordTag);
     for (XmlTag propTag : propertyTags) {
       AppleScriptPropertyDefinition property;
       String pName = propTag.getAttributeValue("name");
@@ -152,7 +154,7 @@ public class SDEF_Parser {
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
       if (pName != null && pCode != null && pType != null) {
-        property = new DictionaryPropertyImpl(record, pName, pCode, pType, pDescription);
+        property = new DictionaryPropertyImpl(record, pName, pCode, pType, pDescription, propTag);
         properties.add(property);
       }
     }
@@ -166,7 +168,7 @@ public class SDEF_Parser {
 
     if (name == null || code == null) return null;
 
-    final AppleScriptClass aClass = new DictionaryClass(suite, name, code);
+    final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag);
     String description = classTag.getAttributeValue("description");
     aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
@@ -178,7 +180,7 @@ public class SDEF_Parser {
       String pType = propTag.getAttributeValue("type");
       if (pName != null && pCode != null && pType != null) {
         final AppleScriptPropertyDefinition property = new DictionaryPropertyImpl(aClass, pName, pCode, pType,
-                pDescription);
+                pDescription, propTag);
         properties.add(property);
       }
     }
@@ -193,7 +195,7 @@ public class SDEF_Parser {
 
     if (name == null || code == null) return null;
 
-    final AppleScriptCommand command = new AppleScriptCommandImpl(suite, name, code);
+    final AppleScriptCommand command = new AppleScriptCommandImpl(suite, name, code, commandTag);
     command.setDescription(description);
 
     XmlTag directParam = commandTag.findFirstSubTag("direct-parameter");
@@ -243,7 +245,7 @@ public class SDEF_Parser {
         if ("yes".equals(pOptional)) {
           bOptional = true;
         }
-        commandParameter = new CommandParameterImpl(command, pName, pCode, bOptional, pType, pDescription);
+        commandParameter = new CommandParameterImpl(command, pName, pCode, bOptional, pType, pDescription, paramTag);
       }
       if (commandParameter != null) {
         commandParameters.add(commandParameter);

@@ -10,6 +10,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerAdapter;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import org.jetbrains.annotations.Contract;
@@ -50,26 +51,27 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
             .subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerAdapter() {
               @Override
               public void fileOpened(@NotNull final FileEditorManager source, @NotNull final VirtualFile file) {
-                if (file.getFileType() == AppleScriptFileType.INSTANCE) {
-
-                  ScriptSuiteRegistryMappings registryMappingsService = ScriptSuiteRegistryMappings.
-                          getInstance(source.getProject());
-                  ScriptSuiteRegistry restoredLibraryForFile =
-                          getScriptSuiteRegistryForFile(source.getProject(), file);
-                  String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
-                  String newName = restoredLibraryForFile != null ? restoredLibraryForFile.getName() : "null";
-                  if (!oldName.equals(newName)) {
-                    System.out.println(" ---- Current Suite Registry changed. Was: "
-                            + oldName + " Now: " + newName + " ----");
-                  }
-
-                  currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
-                          new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, source.getProject());
-                  if (registryMappingsService != null && restoredLibraryForFile == null) {
-                    registryMappingsService.associate(file, currentScriptSuiteRegistry);
-                  }
-                }
+//                if (file.getFileType() == AppleScriptFileType.INSTANCE) {
+//
+//                  ScriptSuiteRegistryMappings registryMappingsService = ScriptSuiteRegistryMappings.
+//                          getInstance(source.getProject());
+//                  ScriptSuiteRegistry restoredLibraryForFile =
+//                          getScriptSuiteRegistryForFile(source.getProject(), file);
+//                  String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
+//                  String newName = restoredLibraryForFile != null ? restoredLibraryForFile.getName() : "null";
+//                  if (!oldName.equals(newName)) {
+//                    System.out.println(" ---- Current Suite Registry changed. Was: "
+//                            + oldName + " Now: " + newName + " ----");
+//                  }
+//
+//                  currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
+//                          new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, source.getProject());
+//                  if (registryMappingsService != null && restoredLibraryForFile == null) {
+//                    registryMappingsService.associate(file, currentScriptSuiteRegistry);
+//                  }
+//                }
               }
+
 
               @Override
               public void selectionChanged(@NotNull FileEditorManagerEvent event) {
@@ -94,6 +96,7 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
                           new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, project);
                   PsiDocumentManager.getInstance(project).reparseFiles(Arrays.asList(newFile), false);
                 }
+//                FileEditorManager.getInstance(project).getSelectedTextEditor();
 
               }
 
@@ -102,6 +105,46 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
 
               }
             });
+
+    ApplicationManager.getApplication().getMessageBus().connect()
+            .subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before
+                    .Adapter() {
+
+              @Override
+              public void beforeFileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+                if (file.getFileType() == AppleScriptFileType.INSTANCE) {
+
+                  ScriptSuiteRegistryMappings registryMappingsService = ScriptSuiteRegistryMappings.
+                          getInstance(source.getProject());
+                  ScriptSuiteRegistry restoredLibraryForFile =
+                          getScriptSuiteRegistryForFile(source.getProject(), file);
+                  String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
+                  String newName = restoredLibraryForFile != null ? restoredLibraryForFile.getName() : "null";
+                  if (!oldName.equals(newName)) {
+                    System.out.println(" ---- Current Suite Registry changed. Was: "
+                            + oldName + " Now: " + newName + " ----");
+                  }
+
+                  currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
+                          new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, source.getProject());
+                  if (registryMappingsService != null && restoredLibraryForFile == null) {
+                    registryMappingsService.associate(file, currentScriptSuiteRegistry);
+                  }
+                }
+              }
+            });
+    //todo initialize it in project component on project loading and get from there via another message bus
+    String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
+    currentScriptSuiteRegistry = currentScriptSuiteRegistry == null ?
+            new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, ProjectManager.getInstance()
+                    .getDefaultProject()) :
+            currentScriptSuiteRegistry;
+    String newName = currentScriptSuiteRegistry.getName();
+    if (!oldName.equals(newName)) {
+      System.out.println(" ---- Current Suite Registry changed initialized. Name: " + newName + " ----");
+      System.out.println(" ---- Current Suite Registry changed. Was: "
+              + oldName + " Now: " + newName + " ----");
+    }
   }
 
   @Contract("_, null -> null")

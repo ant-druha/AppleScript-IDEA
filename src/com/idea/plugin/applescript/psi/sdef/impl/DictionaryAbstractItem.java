@@ -1,4 +1,4 @@
-package com.idea.plugin.applescript.psi.dictionary.impl;
+package com.idea.plugin.applescript.psi.sdef.impl;
 
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent;
