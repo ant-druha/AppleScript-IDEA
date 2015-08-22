@@ -25,6 +25,9 @@ public interface AppleScriptCommand extends DictionaryComponent {
   @Nullable
   CommandResult getResult();
 
+  @Nullable
+  CommandResult setResult(CommandResult result);
+
   @NotNull
   List<CommandParameter> getMandatoryParameters();
 

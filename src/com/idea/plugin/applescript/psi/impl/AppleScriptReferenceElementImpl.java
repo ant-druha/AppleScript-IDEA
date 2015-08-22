@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.psi.impl;
 
+import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptComponentScopeResolver;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
@@ -8,7 +9,6 @@ import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElementFactory;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.UnfairTextRange;
@@ -136,7 +136,11 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
     final List<? extends PsiElement> elements =
             ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptComponentScopeResolver
                     .INSTANCE, true, true);
-    return elements != null ? elements.toArray() : LookupElement.EMPTY_ARRAY;
+    //here we should add elements from parsed dictionaries (commands, classes etc.. which are the most relevant)
+    return elements != null && !elements.isEmpty() ? elements.toArray() : ParsableScriptSuiteRegistryHelper.
+            findCommandsStartingWithName("display").toArray()
+//    LookupElement.EMPTY_ARRAY
+    ;
   }
 
   @Override

@@ -1,8 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
-import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
-import com.intellij.psi.PsiNamedElement;
+import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +10,10 @@ import java.util.List;
 /**
  * Created by Andrey on 09.07.2015.
  */
-public interface DictionaryComponent extends AppleScriptPsiElement, PsiNamedElement {
+public interface DictionaryComponent extends AppleScriptComponent {
+
+  @NotNull
+  String getDocumentation();
 
   @Nullable
   String getCode();

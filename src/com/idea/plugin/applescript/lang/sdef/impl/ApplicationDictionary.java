@@ -2,6 +2,7 @@ package com.idea.plugin.applescript.lang.sdef.impl;
 
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,4 +50,10 @@ public interface ApplicationDictionary extends DictionaryComponent {
   void setDictionaryPropertyList(List<AppleScriptPropertyDefinition> dictionaryPropertyList);
 
   void addRecord(DictionaryRecord record);
+
+  ApplicationDictionary setRootTag(XmlTag myRootTag);
+
+  XmlTag getRootTag();
+
+
 }

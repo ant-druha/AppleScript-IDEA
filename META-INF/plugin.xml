@@ -1,6 +1,6 @@
 <idea-plugin version="2">
     <id>com.yourcompany.unique.plugin.id</id>
-    <name>Plugin display name here</name>
+    <name>AppleScript for IDEA</name>
     <version>1.0</version>
     <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
 
@@ -62,6 +62,8 @@
         <annotator language="AppleScript"
                    implementationClass="com.idea.plugin.applescript.lang.ide.annotator.AppleScriptColorAnnotator"/>
 
+        <lang.documentationProvider language="AppleScript"
+                                    implementationClass="com.idea.plugin.applescript.lang.ide.AppleScriptDocumentationProvider"/>
         <!--not used -->
         <targetElementEvaluator language="AppleScript"
                                 implementationClass="com.idea.plugin.applescript.lang.resolve.AppleScriptTargetElementEvaluator"/>

@@ -15,9 +15,6 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   // related terms, see the Glossary.
   private List<DictionaryClass> elements = new ArrayList<DictionaryClass>();
 
-  private String suiteName;
-  private String dictionaryName;
-
   //<!-- CLASSES -->
   //<!ENTITY % class-contents "(contents | element | property | responds-to | synonym | documentation | xref)">
   //<!ELEMENT class ((%implementation;)?, access-group*, type*, (%class-contents;)*)>

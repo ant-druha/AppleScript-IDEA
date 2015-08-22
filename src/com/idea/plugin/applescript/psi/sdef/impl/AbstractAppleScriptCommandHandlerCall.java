@@ -9,13 +9,11 @@ import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter;
-import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandName;
+import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
+import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName;
 import com.intellij.lang.ASTNode;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.resolve.reference.impl.PsiPolyVariantCachingReference;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,36 +23,30 @@ import java.util.List;
 /**
  * Created by Andrey on 16.08.2015.
  */
-public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElementImpl implements
-        AppleScriptCommandHandlerCall, AppleScriptExpression {
-
-  private CommandHandlerReference myReference;
+public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElementImpl//AppleScriptPsiElementImpl
+        implements AppleScriptCommandHandlerCall, AppleScriptExpression {
 
   public AbstractAppleScriptCommandHandlerCall(ASTNode node) {
     super(node);
-    myReference = new CommandHandlerReference();
-  }
-
-  @Override
-  public PsiReference getReference() {
-    return myReference;
   }
 
   @NotNull
   @Override
-  public AppleScriptCommandName getCommandNameElement() {
-    return PsiTreeUtil.getChildOfType(this, AppleScriptCommandName.class);
+  public PsiReference getReference() {
+    return new CommandHandlerReference();
   }
+
+  @NotNull
+  @Override
+  public DictionaryCompositeName getCompositeNameElement() {
+    return PsiTreeUtil.getRequiredChildOfType(this, DictionaryCompositeName.class);
+  }
+
 
   @NotNull
   @Override
   public String getCommandName() {
-    //todo change to iteration over identifiers
-    StringBuilder sb = new StringBuilder();
-    for (AppleScriptIdentifier id : getCommandNameElement().getIdentifiers()) {
-      sb.append(id.getText()).append(" ");
-    }
-    return sb.toString().trim();
+    return getCompositeNameElement().getCompositeName();
   }
 
   @Nullable
@@ -180,32 +172,14 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     return null;
   }
 
-  private class CommandHandlerReference extends PsiPolyVariantCachingReference implements MultiRangeReference,
+  private class CommandHandlerReference extends AbstractDictionaryReferenceElement implements MultiRangeReference,
           PsiPolyVariantReference {
-
-    @NotNull
-    @Override
-    public List<TextRange> getRanges() {
-      // return ranges of command name + all command parameter -> parameter selector
-      //should match getCanonicalText() call
-      List<TextRange> result = new ArrayList<TextRange>();
-      final int parentOffset = -getElement().getTextRange().getStartOffset();
-      for (AppleScriptIdentifier id : getCommandNameElement().getIdentifiers()) {
-        TextRange argumentRange = id.getTextRange();
-        if (!argumentRange.isEmpty()) {
-          result.add(argumentRange.shiftRight(parentOffset));
-        }
-      }
-      return result;
-    }
 
     @Override
     public boolean isReferenceTo(PsiElement element) {
       PsiElement target = resolve();
       if (element instanceof AppleScriptCommandHandlerCall && target != null) {
         AppleScriptCommandHandlerCall thatHandler = (AppleScriptCommandHandlerCall) element;
-//        thatHandler.getCommandName().equals(getCommandName());
-//        return getHandlerSelector().equals(thatHandler.getSelector());
         return target == thatHandler;
       }
       return super.isReferenceTo(element);
@@ -217,9 +191,10 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
       ScriptSuiteRegistryMappings registryMappings = ScriptSuiteRegistryMappings.getInstance(containingFile
               .getProject());
       ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
+      String commandName = getCommandName();
       final List<AppleScriptCommand> allCommandsWithName = suiteRegistry != null ? suiteRegistry.
-              getAllCommandsWithName(getCommandName()) :
-              ParsableScriptSuiteRegistryHelper.getAllCommandsWithName(getCommandName());
+              getAllCommandsWithName(commandName) :
+              ParsableScriptSuiteRegistryHelper.getAllCommandsWithName(commandName);
       final List<PsiElement> results = new ArrayList<PsiElement>();
       for (AppleScriptCommand command : allCommandsWithName) {
         if (resolveCommandInner(command)) {
@@ -231,40 +206,15 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     }
 
     private boolean resolveCommandInner(AppleScriptCommand command) {
+      //todo add checks for parameters
       return command != null;
 
     }
 
+    @NotNull
     @Override
-    public PsiElement getElement() {
+    protected DictionaryCompositeElement getMyElement() {
       return AbstractAppleScriptCommandHandlerCall.this;
-    }
-
-    @Override
-    public TextRange getRangeInElement() {
-      return ReferenceRange.getRange(this);
-    }
-
-    @NotNull
-    @Override
-    public String getCanonicalText() {
-      return getCommandName();
-    }
-
-    @Override
-    public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
-      return null;
-    }
-
-    @Override
-    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
-      return null;
-    }
-
-    @NotNull
-    @Override
-    public Object[] getVariants() {
-      return new Object[0];
     }
   }
 }

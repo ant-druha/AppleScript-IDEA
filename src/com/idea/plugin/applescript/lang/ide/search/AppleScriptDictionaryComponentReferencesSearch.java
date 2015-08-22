@@ -2,6 +2,7 @@ package com.idea.plugin.applescript.lang.ide.search;
 
 import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
+import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.Result;
 import com.intellij.psi.PsiElement;
@@ -59,8 +60,8 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
 
   private static class MyOccurrenceProcessor implements TextOccurenceProcessor {
     private final Processor<PsiReference> myConsumer;
-    private DictionaryComponent myDictionaryComponent;
-    private String myComponentName;
+    private final DictionaryComponent myDictionaryComponent;
+    private final String myComponentName;
 
     public MyOccurrenceProcessor(DictionaryComponent dictionaryComponent, String componentName,
                                  Processor<PsiReference> consumer) {
@@ -71,10 +72,16 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
 
     @Override
     public boolean execute(@NotNull PsiElement element, int offsetInElement) {
-      String selector;
+      String selector = null;
       if (element instanceof AppleScriptCommandHandlerCall) {
         AppleScriptCommandHandlerCall handlerCall = (AppleScriptCommandHandlerCall) element;
         selector = handlerCall.getCommandName();
+      }//todo: handle other component types
+      else if (element instanceof DictionaryCompositeElement){
+        DictionaryCompositeElement dictionaryCompositeElement = (DictionaryCompositeElement)element;
+        selector = dictionaryCompositeElement.getCompositeNameElement().getCompositeName();
+      }
+      if (selector!=null) {
         if (myComponentName.equals(selector)) {
           for (PsiReference ref : element.getReferences()) {
             if (ref.isReferenceTo(myDictionaryComponent)) {
@@ -82,7 +89,7 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
             }
           }
         }
-      }//todo: handle other component types
+      }
       return true;
     }
   }

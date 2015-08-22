@@ -199,6 +199,7 @@ private nls ::= NLS* // zero or more new lines and spaces
 
 // //todo can not be used for naming handlers
 identifier ::= var_identifier//|appleScriptProperty
+dictionaryIdentifier ::= var_identifier|builtInClassIdCommon|builtInClassIdNative|script
 
 //appleScriptNativeHandler ::= run|quit|idle|open
 //private identifierOrStandardCommands ::= identifier|applicationStandardCommandNames
@@ -394,6 +395,8 @@ constantLiteralExpression ::= boolean_constant|date_time_constants|save_opt_cons
 //|appleScriptPropertiesConstant
 
 dictionaryConstant ::= <<parseDictionaryConstant>>
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier"
+ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 // SIMPLE literals
 
@@ -509,6 +512,8 @@ private handlerInterleavedCallOrPropertyReference ::= handlerInterleavedParamete
 private handlerInterleavedCallOrPropertyReferenceDOrReferenceIdentifier ::= handlerInterleavedParametersCall | ((propertyReferenceD|referenceIdentifier) handlerPositionalParametersCall) | referenceIdentifier
 
 propertyReference ::=  propertyLabelReference
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
+ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 propertyReferenceD ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty//typeSpecifierD|referenceIdentifier//referenceIdentifier goes lower
 //private propertyLabelIdentifier ::= dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty|
@@ -524,6 +529,7 @@ builtInClassProperty|referenceIdentifier //|builtInClassIdentifier|builtInClassI
 
 
 dictionaryPropertyName ::= <<parseDictionaryPropertyName>>
+
 private dictionaryPropertyNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel|script
 
 private builtInClassProperty ::= stringProperty | BUILT_IN_PROPERTY
@@ -577,6 +583,8 @@ indexReferenceD ::= ((typeSpecifierD [index] (indexValueExpression|parenthesized
 //|userClassName
 
 dictionaryClassName ::= <<parseDictionaryClassName>>
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
+ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 userClassName ::= identifier
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
@@ -1099,8 +1107,8 @@ external dictionaryCommandParameters ::= parseParametersForCommand parsingComman
 //external dictionaryCommandNameExternalRule ::= parseDictionaryCommandNameInner parsedName
 //commandParameterSelector ::= <<parseCommandParameterSelector>>
 dictionaryCommandName ::= <<parseDictionaryCommandNameInner>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AppleScriptCommandNameImpl"
-implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandName"}
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
+implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 //private dictionaryCommandName ::= <<parseDictionaryCommandNameInner parsedCommandName>> //dictionaryCommandNameExternalRule
 
 private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel

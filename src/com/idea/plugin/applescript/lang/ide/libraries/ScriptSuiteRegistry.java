@@ -66,6 +66,9 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     this.suiteRegistryName = suiteRegistryName;
     this.project = project;
     this.applicationDictionaries = applicationDictionaries;
+    for (ApplicationDictionary dictionary : applicationDictionaries) {
+      addApplicationDictionary(dictionary);
+    }
     addStandardSuite();
   }
 

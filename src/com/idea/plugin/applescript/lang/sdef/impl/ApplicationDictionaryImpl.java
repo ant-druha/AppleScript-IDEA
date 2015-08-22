@@ -3,17 +3,25 @@ package com.idea.plugin.applescript.lang.sdef.impl;
 import com.idea.plugin.applescript.AppleScriptLanguage;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
+import com.idea.plugin.applescript.psi.AppleScriptExpression;
+import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
+import com.idea.plugin.applescript.psi.sdef.DictionaryIdentifier;
+import com.idea.plugin.applescript.psi.sdef.impl.DictionaryIdentifierImpl;
 import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.FakePsiElement;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +38,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull private final Project project;
   @NotNull private final VirtualFile applicationFile;
   @NotNull private String name;
+  private XmlTag myRootTag;
 
   private final List<Suite> mySuites = new ArrayList<Suite>();
   private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
@@ -43,15 +52,20 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   public ApplicationDictionaryImpl(@NotNull Project project, @NotNull VirtualFile applicationBundleFile) {
     this.project = project;
     this.applicationFile = applicationBundleFile;
-    name = applicationBundleFile.getPath();
-    readApplicationDictionary();
+    readDictionaryFromApplicationBundle();
+    if (StringUtil.isEmpty(name))
+      name = applicationBundleFile.getPath();
+    if (name.contains("/")) {
+      String[] paths = name.split("/");
+      name = paths[paths.length > 0 ? paths.length - 1 : 0];
+    }
     System.out.println("Dictionary ===" + name + "=== initialized. Commands: " + dictionaryCommandList.size() + "\n");
   }
 
-  private void readApplicationDictionary() {
+  private void readDictionaryFromApplicationBundle() {
     if (!extensionSupported(applicationFile.getExtension())) return;
     if ("xml".equalsIgnoreCase(applicationFile.getExtension())) {
-      readDictionaryFromXmlFile(applicationFile, project);
+      readDictionaryFromXmlFile(applicationFile);
     } else {
       readDictionaryFromApplicationBundle(applicationFile, project);
     }
@@ -116,7 +130,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
       System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
       File finalXmlFile = new File(finalFilePath);
       VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
-      readDictionaryFromXmlFile(virtualXmlFile, project);
+      readDictionaryFromXmlFile(virtualXmlFile);
       finalXmlFile.deleteOnExit();
     } catch (IOException e1) {
       e1.printStackTrace();
@@ -160,6 +174,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return dictionaryEnumerationList.add(enumeration);
   }
 
+  @NotNull
+  @Override
+  public String getDocumentation() {
+    return getType() + " <b>" + getName() + "</b>";
+  }
+
   @Nullable
   @Override
   public String getCode() {
@@ -169,6 +189,53 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Nullable
   @Override
   public String getCocoaClassName() {
+    return null;
+  }
+
+  @Override
+  public boolean isGlobal() {
+    return false;
+  }
+
+  @Override
+  public boolean isScriptProperty() {
+    return false;
+  }
+
+  @Override
+  public boolean isHandler() {
+    return false;
+  }
+
+  @Nullable
+  @Override
+  public PsiElement getOriginalDeclaration() {
+    return null;
+  }
+
+  @Override
+  public boolean isObjectProperty() {
+    return false;
+  }
+
+  @Override
+  public boolean isComposite() {
+    return false;
+  }
+
+  @Override
+  public boolean isResolveTarget() {
+    return false;
+  }
+
+  @Override
+  public boolean isVariable() {
+    return false;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptExpression findAssignedValue() {
     return null;
   }
 
@@ -262,11 +329,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return this;
   }
 
-  private void readDictionaryFromXmlFile(VirtualFile virtualFile, Project project) {
-    if (project != null && virtualFile != null) {
+  private void readDictionaryFromXmlFile(VirtualFile virtualFile) {
+    if (virtualFile != null) {
       PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
       XmlFile xmlFile = (XmlFile) psiFile;
       if (xmlFile != null && xmlFile.isValid()) {
+        setRootTag(xmlFile.getRootTag());
         SDEF_Parser.parse(xmlFile, this);
         System.out.println("dictionary loaded");
       }
@@ -276,5 +344,35 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   public static boolean extensionSupported(String extension) {
     return extension != null && SUPPORTED_EXTENSIONS.contains(extension.toLowerCase());
+  }
+
+  @NotNull
+  @Override
+  public AppleScriptIdentifier getIdentifier() {
+    DictionaryIdentifier myIdentifier = null;
+    XmlAttribute titleAttr = myRootTag.getAttribute("title");
+    if (titleAttr != null) {
+      XmlAttributeValue attrValue = titleAttr.getValueElement();
+      if (attrValue != null) {
+        myIdentifier = new DictionaryIdentifierImpl(this, getName(), attrValue);
+      }
+    }
+    return myIdentifier != null ? myIdentifier : new DictionaryIdentifierImpl(this, getName(), myRootTag);
+  }
+
+  @Nullable
+  @Override
+  public PsiElement getNameIdentifier() {
+    return getIdentifier();
+  }
+
+  public ApplicationDictionary setRootTag(XmlTag myRootTag) {
+    this.myRootTag = myRootTag;
+    return this;
+  }
+
+  @Override
+  public XmlTag getRootTag() {
+    return myRootTag;
   }
 }

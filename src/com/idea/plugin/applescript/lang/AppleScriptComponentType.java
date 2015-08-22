@@ -1,7 +1,10 @@
 package com.idea.plugin.applescript.lang;
 
 import com.idea.plugin.applescript.AppleScriptIcons;
-import com.idea.plugin.applescript.lang.sdef.*;
+import com.idea.plugin.applescript.lang.sdef.AppleScriptClass;
+import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
+import com.idea.plugin.applescript.lang.sdef.DictionaryEnumeratorImpl;
+import com.idea.plugin.applescript.lang.sdef.SuiteImpl;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptScriptObject;
 import com.idea.plugin.applescript.psi.AppleScriptSimpleFormalParameter;
@@ -65,9 +68,7 @@ public enum AppleScriptComponentType {
       } else if (component instanceof AppleScriptScriptObject) {
         //todo how better to define this?
         return SCRIPT;
-      }
-    } else if (element instanceof DictionaryComponent) {
-      if (element instanceof AppleScriptClass) {
+      } else if (element instanceof AppleScriptClass) {
         return DICTIONARY_CLASS;
       } else if (element instanceof AppleScriptCommand) {
         return DICTIONARY_COMMAND;

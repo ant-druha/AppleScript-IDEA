@@ -15,8 +15,11 @@ import java.util.List;
 
 public class SDEF_Parser {
 
-  public static void parse(@NotNull XmlFile file, ApplicationDictionary parsedDictionary) {
+  public static void parse(@NotNull XmlFile file, @NotNull ApplicationDictionary parsedDictionary) {
     System.out.println("Start parsing xml file --- " + file.toString() + " ---");
+    if (parsedDictionary.getRootTag() == null) {
+      parsedDictionary.setRootTag(file.getRootTag());
+    }
     final XmlDocument document = file.getDocument();
     if (document != null) {
       final XmlTag rootTag = document.getRootTag();
@@ -198,6 +201,16 @@ public class SDEF_Parser {
     final AppleScriptCommand command = new AppleScriptCommandImpl(suite, name, code, commandTag);
     command.setDescription(description);
 
+    XmlTag resultTag = commandTag.findFirstSubTag("result");
+    if (resultTag != null) {
+      String rType = resultTag.getAttributeValue("type");
+      String rDesc = resultTag.getAttributeValue("description");
+      if (rType != null) {
+        CommandResult commandResult = new CommandResult(rType, rDesc);
+        command.setResult(commandResult);
+      }
+    }
+
     XmlTag directParam = commandTag.findFirstSubTag("direct-parameter");
     CommandDirectParameter directParameter = null;
     if (directParam != null) {
@@ -251,8 +264,8 @@ public class SDEF_Parser {
         commandParameters.add(commandParameter);
       }
     }
-    command.setParameters(commandParameters);
     command.setDirectParameter(directParameter);
+    command.setParameters(commandParameters);
 //    result = new AppleScriptCommandImpl(suite, name, code, commandParameters, directParameter, null, description);
     return command;
   }

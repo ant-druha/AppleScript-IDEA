@@ -3,25 +3,27 @@ package com.idea.plugin.applescript.psi.sdef.impl;
 import com.idea.plugin.applescript.AppleScriptLanguage;
 import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
+import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.FakePsiElement;
+import com.intellij.psi.xml.XmlElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Created by Andrey on 19.08.2015.
  */
-public abstract class DictionaryPsiElementBase<P extends DictionaryComponent, D extends PsiElement>
+public abstract class DictionaryComponentBase<P extends DictionaryComponent, D extends XmlElement>
         extends FakePsiElement implements AppleScriptPsiElement {
 
   @NotNull protected final D myXmlElement;
   @NotNull protected final P myParent;
 
-  protected DictionaryPsiElementBase(@NotNull D myXmlElement, @NotNull P myParent) {
+  protected DictionaryComponentBase(@NotNull D myXmlElement, @NotNull P myParent) {
     this.myXmlElement = myXmlElement;
     this.myParent = myParent;
   }
@@ -81,6 +83,12 @@ public abstract class DictionaryPsiElementBase<P extends DictionaryComponent, D 
   @Override
   public String getText() {
     return myXmlElement.getText();
+  }
+
+  @Nullable
+  @Override
+  public ASTNode getNode() {
+    return myXmlElement.getNode();
   }
 
   @Override

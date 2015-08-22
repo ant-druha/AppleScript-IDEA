@@ -7,15 +7,25 @@ import org.jetbrains.annotations.Nullable;
  * Created by Andrey on 03.07.2015.
  */
 public class CommandResult {
-  @NotNull PsiType type;
-  @Nullable String description;
+  @NotNull private String type;
+  @Nullable private String description;
 
-  public CommandResult(@NotNull AppleScriptClassType type) {
+  public CommandResult(@NotNull String type) {
     this.type = type;
   }
 
-  public CommandResult(@NotNull PsiType type, @Nullable String description) {
+  public CommandResult(@NotNull String type, @Nullable String description) {
     this.type = type;
     this.description = description;
+  }
+
+  @NotNull
+  public String getType() {
+    return type;
+  }
+
+  @Nullable
+  public String getDescription() {
+    return description;
   }
 }

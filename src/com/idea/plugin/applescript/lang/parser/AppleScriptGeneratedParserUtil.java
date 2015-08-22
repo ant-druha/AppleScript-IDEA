@@ -387,11 +387,26 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     r = tryToParseDictionaryClass(b, l + 1);
     exit_section_(b, l, m, null, r, false, null);
     if (r) {
+//      m = enter_section_(b, l, _COLLAPSE_, "<parse Declared Name Inner>");
       r = tryToParseDictionaryClass(b, l + 1);
+//      exit_section_(b, l, m, null, r, false, null);
       return r;
     }
 
     return false;
+  }
+
+  /* ********************************************************** */
+  // builtInClassIdCommon|builtInClassIdNative|script
+  public static boolean builtInClassIdentifier(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "builtInClassIdentifier")) return false;
+    boolean r;
+    PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<built in class identifier>");
+    r = builtInClassIdCommon(b, l + 1);
+    if (!r) r = builtInClassIdNative(b, l + 1);
+    if (!r) r = consumeToken(b, SCRIPT);
+    exit_section_(b, l, m, BUILT_IN_CLASS_IDENTIFIER, r, false, null);
+    return r;
   }
 
   private static boolean tryToParseDictionaryClass(PsiBuilder b, int l) {
@@ -403,15 +418,24 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     while (b.getTokenText() != null && candidatesCount > 0) {
       if (candidatesCount == 1) {
         if (ParsableScriptSuiteRegistryHelper.getClassWithName(currentTokenText.value) != null) {
-          b.advanceLexer();
+          boolean r = identifier(b, l + 1);
+          if (!r) r = builtInClassIdentifier(b, l + 1);
+          if (!r) b.advanceLexer(); //advance lexer in any case
+
           return true;
         }
-        b.advanceLexer();
+        boolean r = identifier(b, l + 1);
+        if (!r) r = builtInClassIdentifier(b, l + 1);
+        if (!r) b.advanceLexer(); //advance lexer in any case
+
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
         candidatesCount = ParsableScriptSuiteRegistryHelper.findClassesStartingWithName(currentTokenText.value).size();
       } else {
         boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.getClassWithName(currentTokenText.value) != null;
-        b.advanceLexer();
+        boolean r = identifier(b, l + 1);
+        if (!r) r = builtInClassIdentifier(b, l + 1);
+        if (!r) b.advanceLexer(); //advance lexer in any case
+
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
         candidatesCount = ParsableScriptSuiteRegistryHelper.findClassesStartingWithName(currentTokenText.value).size();
         if (candidatesCount == 0) {
@@ -684,19 +708,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   static boolean propertyOrClassSimpleIdentifier(PsiBuilder b, int l) {
     return recursion_guard_(b, l, "builtInClassIdentifier")
             && consumeCommandNameOrParameterName(b, l);
-  }
-
-  /* ********************************************************** */
-  // builtInClassIdCommon|builtInClassIdNative|script
-  public static boolean builtInClassIdentifier(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "builtInClassIdentifier")) return false;
-    boolean r;
-    PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<built in class identifier>");
-    r = builtInClassIdCommon(b, l + 1);
-    if (!r) r = builtInClassIdNative(b, l + 1);
-    if (!r) r = consumeToken(b, SCRIPT);
-    exit_section_(b, l, m, BUILT_IN_CLASS_IDENTIFIER, r, false, null);
-    return r;
   }
 
   /* ********************************************************** */

@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,6 +71,12 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
     return result;
   }
 
+  @Nullable
+  public CommandResult setResult(@Nullable CommandResult result) {
+    this.result = result;
+    return result;
+  }
+
   @Override
   @NotNull
   public List<CommandParameter> getMandatoryParameters() {
@@ -100,6 +107,42 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
   @Nullable
   public String getCocoaClassName() {
     return cocoaClassName;
+  }
+
+  @NotNull
+  @Override
+  public String getDocumentation() {
+    StringBuilder sb = new StringBuilder();
+    final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
+    sb.append(super.getDocumentation());
+    CommandDirectParameter p = getDirectParameter();
+    List<CommandParameter> parameters = getParameters();
+    if (p != null || !parameters.isEmpty()) {
+      sb.append("<p><b>Parameters:</b></p>");
+    }
+    if (p != null)
+      sb.append(indent).append(indent).append(p.getTypeSpecifier()).append(" : ").append(StringUtil.notNullize(p
+              .getDescription())).
+              append("<br>");
+
+    for (CommandParameter par : parameters) {
+      String op = "";
+      String cl = "";
+      if (par.isOptional()) {
+        op = "[";
+        cl = "]";
+      }
+      String pType = StringUtil.notNullize(par.getTypeSpecifier());
+      sb.append(indent).append(indent).append(op).append("<b>").append(par.getName()).append("</b> ").append(pType)
+              .append(cl).append(" : ").
+              append(par.getDescription()).append("<br>");
+    }
+    CommandResult res = getResult();
+    if (res != null) {
+      sb.append("<p>").append("<b>Returns:</b></p>").append(indent).append(indent).
+              append(res.getType()).append(" : ").append(StringUtil.notNullize(res.getDescription()));
+    }
+    return sb.toString();
   }
 
   @NotNull

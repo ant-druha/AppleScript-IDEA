@@ -31,4 +31,9 @@ public class CommandDirectParameter {
   public boolean isOptional() {
     return optional;
   }
+
+  @Nullable
+  public String getDescription() {
+    return description;
+  }
 }
