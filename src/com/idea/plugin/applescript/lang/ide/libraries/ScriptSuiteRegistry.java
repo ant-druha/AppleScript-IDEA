@@ -2,7 +2,6 @@ package com.idea.plugin.applescript.lang.ide.libraries;
 
 import com.idea.plugin.applescript.lang.parser.ScriptSuiteRegistryHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
-import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -34,6 +33,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   @NotNull private Project project;
   //or only store set of VirtualFiles ? and load Suites
   private Set<ApplicationDictionary> applicationDictionaries = new HashSet<ApplicationDictionary>();
+  private Map<String, ApplicationDictionary> applicationDictionariesMap = new HashMap<String, ApplicationDictionary>();
   private List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
   private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
   private Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
@@ -65,7 +65,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
           applicationDictionaries) {
     this.suiteRegistryName = suiteRegistryName;
     this.project = project;
-    this.applicationDictionaries = applicationDictionaries;
+//    this.applicationDictionaries = applicationDictionaries;
     for (ApplicationDictionary dictionary : applicationDictionaries) {
       addApplicationDictionary(dictionary);
     }
@@ -176,9 +176,21 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     return dictionaryEnumerationMap.get(name);
   }
 
+  @Override
+  public List<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName) {
+    ApplicationDictionary dictionary = applicationDictionariesMap.get(dictionaryName);
+    return dictionary != null ? dictionary.getAllCommands() : null;
+  }
+
+  @Override
+  public List<AppleScriptCommand> geAllCommandsForSuiteRegistry() {
+    return dictionaryCommandList;
+  }
+
   public void addApplicationDictionary(ApplicationDictionary dictionary) {
     if (!alreadyContains(dictionary)) {
       applicationDictionaries.add(dictionary);
+      applicationDictionariesMap.put(dictionary.getName(), dictionary);
       for (AppleScriptCommand command : dictionary.getDictionaryCommandList()) {
         addCommand(command);
       }
@@ -241,6 +253,13 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     for (DictionaryEnumerator enumerator : enumeration.getEnumerators()) {
       dictionaryEnumeratorMap.put(enumerator.getName(), enumerator);
     }
+  }
+
+  @Nullable
+  @Override
+  public ApplicationDictionary findDictionaryByName(String name) {
+    if (name == null) return null;
+    return applicationDictionariesMap.get(name);
   }
 
   @Nullable

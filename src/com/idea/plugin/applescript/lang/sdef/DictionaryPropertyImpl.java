@@ -12,9 +12,12 @@ public class DictionaryPropertyImpl extends AbstractDictionaryComponent<Dictiona
 
   public DictionaryPropertyImpl(@NotNull DictionaryComponent classOrRecord, @NotNull String name,
                                 @NotNull String code, @NotNull String typeSpecifier,
-                                @Nullable String description, @NotNull XmlTag XmlTagProperty) {
+                                @Nullable String description, @NotNull XmlTag XmlTagProperty, AccessType accessType) {
     super(classOrRecord, name, code, XmlTagProperty, description);
     this.typeSpecifier = typeSpecifier;
+    if (accessType != null) {
+      this.accessType = accessType;
+    }
     assert (myParent instanceof AppleScriptClass || myParent instanceof DictionaryRecord);
   }
 
@@ -56,10 +59,25 @@ public class DictionaryPropertyImpl extends AbstractDictionaryComponent<Dictiona
     return isRecordProperty() ? (DictionaryRecord) myParent : null;
   }
 
+  @Override
+  public void setAccessType(@Nullable AccessType accessType) {
+    this.accessType = accessType;
+  }
+
   @NotNull
   @Override
   public Suite getSuite() {
     return isClassProperty()? getDictionaryParentComponent().getSuite() :
             getDictionaryParentComponent().getSuite();//not safe cast...
+  }
+
+  @Nullable
+  public AccessType getAccessType() {
+    return accessType;
+  }
+
+  @NotNull
+  public String getTypeSpecifier() {
+    return typeSpecifier;
   }
 }

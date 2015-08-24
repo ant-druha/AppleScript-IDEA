@@ -54,6 +54,7 @@ public class AppleScriptLibraryType extends LibraryType<AppleScriptLibraryProper
   @Nullable
   @Override
   public Icon getIcon() {
-    return AppleScriptIcons.DICTIONARY;
+//    return AppleScriptIcons.DICTIONARY;
+    return AppleScriptIcons.OPEN_DICTIONARY;
   }
 }

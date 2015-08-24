@@ -19,5 +19,12 @@ public interface AppleScriptPropertyDefinition extends DictionaryComponent {
   @Nullable
   DictionaryRecord getMyRecord();
 
+  void setAccessType(AccessType accessType);
+
+  @Nullable
+  AccessType getAccessType();
+
+  @NotNull
+  String getTypeSpecifier();
 
 }

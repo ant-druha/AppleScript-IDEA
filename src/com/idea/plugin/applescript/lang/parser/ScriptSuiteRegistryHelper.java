@@ -12,13 +12,18 @@ import java.util.List;
 public interface ScriptSuiteRegistryHelper {
 
   @Nullable
+  ApplicationDictionary findDictionaryByName(String name);
+
+  @Nullable
   List<String> getParameterNamesForCommand(String name);
 
+  @Nullable
   CommandDirectParameter getDirectParameterForCommand(String commandName);
 
   @Nullable
   AppleScriptCommand getCommandWithName(String name);
 
+  @Nullable
   AppleScriptPropertyDefinition getPropertyWithName(String name);
 
   @NotNull
@@ -31,9 +36,17 @@ public interface ScriptSuiteRegistryHelper {
 
   List<DictionaryEnumerator> findConstantsStartingWithWord(String name);
 
+  @Nullable
   DictionaryEnumerator getEnumerator(String name);
 
+  @Nullable
   AppleScriptClass getClassWithName(String name);
 
+  @Nullable
   DictionaryEnumeration getEnumerationWithName(String name);
+
+  @Nullable
+  List<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName);
+
+  List<AppleScriptCommand> geAllCommandsForSuiteRegistry();
 }

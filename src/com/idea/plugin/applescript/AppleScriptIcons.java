@@ -12,4 +12,6 @@ public class AppleScriptIcons {
     public static final Icon FILE = IconLoader.getIcon("/com/idea/plugin/applescript/icons/apple_script_favicon.png");
   public static final Icon APPLE_BLACK = IconLoader.getIcon("/com/idea/plugin/applescript/icons/AppleBlack_13x13.png");
   public static final Icon DICTIONARY = IconLoader.getIcon("/com/idea/plugin/applescript/icons/dictionaryIcon.png");
+  public static final Icon OPEN_DICTIONARY = IconLoader.getIcon
+          ("/com/idea/plugin/applescript/icons/OpenDictionarySmall.png");
 }

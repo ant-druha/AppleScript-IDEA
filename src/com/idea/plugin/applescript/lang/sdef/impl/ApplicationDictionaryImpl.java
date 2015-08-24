@@ -48,6 +48,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
   private List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
   private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
+  private Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<String, AppleScriptClass>();
 
   public ApplicationDictionaryImpl(@NotNull Project project, @NotNull VirtualFile applicationBundleFile) {
     this.project = project;
@@ -155,6 +156,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public boolean addClass(AppleScriptClass appleScriptClass) {
     dictionaryClassMap.put(appleScriptClass.getName(), appleScriptClass);
+    dictionaryClassByCodeMap.put(appleScriptClass.getCode(), appleScriptClass);
     return dictionaryClassList.add(appleScriptClass);
   }
 
@@ -162,6 +164,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Nullable
   public AppleScriptClass getClassByName(String name) {
     return dictionaryClassMap.get(name);
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptClass findClassByCode(String code) {
+    return dictionaryClassByCodeMap.get(code);
   }
 
   @Override
@@ -374,5 +382,23 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public XmlTag getRootTag() {
     return myRootTag;
+  }
+
+  @Nullable
+  @Override
+  public Suite findSuiteByCode(String suiteCode) {
+    if (suiteCode == null) return null;
+    for (Suite suite : mySuites) {
+      if (suiteCode.equals(suite.getCode())) {
+        return suite;
+      }
+    }
+    return null;
+  }
+
+  @NotNull
+  @Override
+  public List<AppleScriptCommand> getAllCommands() {
+    return dictionaryCommandList;
   }
 }

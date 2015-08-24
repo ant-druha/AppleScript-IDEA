@@ -2,10 +2,8 @@ package com.idea.plugin.applescript.lang.sdef;
 
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Created by Andrey on 16.08.2015.
- */
-public interface Suite extends DictionaryComponent {
+public interface DictionarySuite extends DictionaryComponent {
+  boolean addCommand(AppleScriptCommand command);
 
   boolean addClass(AppleScriptClass appleScriptClass);
 
@@ -20,8 +18,4 @@ public interface Suite extends DictionaryComponent {
   boolean addEnumeration(DictionaryEnumeration enumeration);
 
   void addRecord(DictionaryRecord record);
-
-  boolean addCommand(AppleScriptCommand command);
-
-  boolean isHidden();
 }

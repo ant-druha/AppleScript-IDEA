@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by Andrey on 01.07.2015.
  */
-public class ParsableScriptSuiteRegistryHelper/* implements ScriptSuiteRegistryHelper */ {
+public class ParsableScriptSuiteRegistryHelper /*implements ScriptSuiteRegistryHelper*/ {
   private Project myProject;
   private static ScriptSuiteRegistryHelper currentScriptSuiteRegistry;//how to be sure of not null ???
 
@@ -72,6 +72,15 @@ public class ParsableScriptSuiteRegistryHelper/* implements ScriptSuiteRegistryH
 
   public static List<DictionaryEnumerator> findConstantsStartingWithWord(String name) {
     return getCurrentScriptSuiteRegistry().findConstantsStartingWithWord(name);
+  }
+
+  public static List<AppleScriptCommand> geAllCommandsForSuiteRegistry() {
+    return getCurrentScriptSuiteRegistry().geAllCommandsForSuiteRegistry();
+  }
+
+  @Nullable
+  public static ApplicationDictionary findDictionaryByName(String name) {
+    return getCurrentScriptSuiteRegistry().findDictionaryByName(name);
   }
 
 }

@@ -4,11 +4,13 @@ import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper
 import com.idea.plugin.applescript.lang.resolve.AppleScriptComponentScopeResolver;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
+import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.idea.plugin.applescript.lang.util.ScopeUtil;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElementFactory;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.UnfairTextRange;
@@ -22,6 +24,7 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -133,18 +136,25 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   @NotNull
   @Override
   public Object[] getVariants() {
-    final List<? extends PsiElement> elements =
+    List<? extends PsiElement> elements =
             ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptComponentScopeResolver
                     .INSTANCE, true, true);
     //here we should add elements from parsed dictionaries (commands, classes etc.. which are the most relevant)
-    return elements != null && !elements.isEmpty() ? elements.toArray() : ParsableScriptSuiteRegistryHelper.
-            findCommandsStartingWithName("display").toArray()
-//    LookupElement.EMPTY_ARRAY
-    ;
+    List<AppleScriptCommand> availableCommands = ParsableScriptSuiteRegistryHelper.geAllCommandsForSuiteRegistry();
+
+    List<PsiElement> result = new ArrayList<PsiElement>();
+    if (availableCommands!=null)
+      result.addAll(availableCommands);
+    if (elements!=null)
+      result.addAll(elements);
+
+    return !result.isEmpty() ? result.toArray() : LookupElement.EMPTY_ARRAY;
+//    !elements.isEmpty() ? elements.toArray() : ParsableScriptSuiteRegistryHelper.
+//            findCommandsStartingWithName("display").toArray();
   }
 
   @Override
   public boolean isSoft() {
     return false;
   }
-  }
+}

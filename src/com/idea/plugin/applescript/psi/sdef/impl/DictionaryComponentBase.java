@@ -69,8 +69,8 @@ public abstract class DictionaryComponentBase<P extends DictionaryComponent, D e
   @NotNull
   @Override
   public Project getProject() {
-//    return getDictionaryParentComponent().getProject(); //should we use XMLTag then here??
-    return myXmlElement.getProject(); //should we use XMLTag then here??
+    return getDictionaryParentComponent().getProject(); //should we use XMLTag then here??
+//    return myXmlElement.getProject(); //should we use XMLTag then here??
   }
 
   @Override

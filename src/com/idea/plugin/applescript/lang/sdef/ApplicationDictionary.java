@@ -1,6 +1,5 @@
-package com.idea.plugin.applescript.lang.sdef.impl;
+package com.idea.plugin.applescript.lang.sdef;
 
-import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +12,7 @@ import java.util.Map;
 /**
  * Created by Andrey on 17.08.2015.
  */
-public interface ApplicationDictionary extends DictionaryComponent {
+public interface ApplicationDictionary extends DictionarySuite {
   //todo add sdef file types as xml
   List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
 
@@ -34,26 +33,17 @@ public interface ApplicationDictionary extends DictionaryComponent {
 
   List<String> getParameterNamesForCommand(String name);
 
-  boolean addCommand(AppleScriptCommand command);
-
-  boolean addClass(AppleScriptClass appleScriptClass);
-
-  @Nullable
-  AppleScriptClass getClassByName(String name);
-
-  boolean addProperty(AppleScriptPropertyDefinition property);
-
-  boolean addEnumeration(DictionaryEnumeration enumeration);
-
   List<AppleScriptPropertyDefinition> getDictionaryPropertyList();
 
   void setDictionaryPropertyList(List<AppleScriptPropertyDefinition> dictionaryPropertyList);
-
-  void addRecord(DictionaryRecord record);
 
   ApplicationDictionary setRootTag(XmlTag myRootTag);
 
   XmlTag getRootTag();
 
+  @NotNull
+  List<AppleScriptCommand> getAllCommands();
 
+  @Nullable
+  Suite findSuiteByCode(String suiteCode);
 }

@@ -1,6 +1,5 @@
 package com.idea.plugin.applescript.lang.sdef;
 
-import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

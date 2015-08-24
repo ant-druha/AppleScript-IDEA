@@ -1122,9 +1122,9 @@ private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtI
 private primaryExpressionD ::=
      literalExpression
  |   commandHandlerCallExpression
- | ( referenceExpressionD (   ( <<isParsingCommandHandlerCallParameters>> handlerPositionalParametersCall? )
-                            | ( <<isTreePrevSimpleReference>> ( handlerLabeledParametersCall | handlerPositionalParametersCall ) )?
-                          )
+ | ( referenceExpressionD (   ( <<isParsingCommandHandlerCallParameters>> handlerPositionalParametersCall )
+                            | ( <<isTreePrevSimpleReference>> ( handlerLabeledParametersCall | handlerPositionalParametersCall ) )
+                          )?
    )
  |   parenthesizedExpression
  |   apple_script_command_expression

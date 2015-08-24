@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -19,4 +20,14 @@ public interface AppleScriptClass extends DictionaryComponent {
   @NotNull
   @Override
   Suite getSuite();
+
+  @Nullable
+  String getParentClassName();
+
+  AppleScriptClass getParentClass();
+
+  List<String> getElementNames();
+
+  @NotNull
+  List<AppleScriptClass> getElements();
 }

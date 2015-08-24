@@ -3,6 +3,7 @@ package com.idea.plugin.applescript.lang.ide;
 import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.intellij.lang.documentation.AbstractDocumentationProvider;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -22,11 +23,17 @@ public class AppleScriptDocumentationProvider extends AbstractDocumentationProvi
 
   @Override
   public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-    PsiElement targetElement = element.getReference() != null ? element.getReference().resolve() : null;
+    PsiElement targetElement = element instanceof DictionaryComponent ? element :
+            element.getReference() != null ? element.getReference().resolve() : null;
     if (targetElement instanceof DictionaryComponent) {
       DictionaryComponent applicationElement = (DictionaryComponent) targetElement;
       return applicationElement.getDocumentation();
     }
     return null;
+  }
+
+  @Override
+  public PsiElement getDocumentationElementForLink(PsiManager psiManager, String link, PsiElement context) {
+    return AppleScriptDocHelper.getDocumentationElementForLink(psiManager, link, context);
   }
 }

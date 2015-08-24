@@ -2,11 +2,7 @@ package com.idea.plugin.applescript.lang.parser;
 
 import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
 import com.idea.plugin.applescript.lang.parcer.AppleScriptParser;
-import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
-import com.idea.plugin.applescript.lang.sdef.CommandDirectParameter;
-import com.idea.plugin.applescript.lang.sdef.CommandParameter;
-import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
-import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;
@@ -137,9 +133,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean isTreePrevSimpleReference(PsiBuilder b, int l) {
     boolean treePrevSimpleRef = b.getLatestDoneMarker() != null
-            && b.getLatestDoneMarker().getTokenType() == REFERENCE_IDENTIFIER;
+            && b.getLatestDoneMarker().getTokenType() == REFERENCE_IDENTIFIER
+            && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
     boolean treePrevNotLValAssignment =
-            b.getUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT) == Boolean.FALSE;
+            b.getUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE;
 
     return treePrevSimpleRef && treePrevNotLValAssignment;
     //return b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) == Boolean.TRUE;

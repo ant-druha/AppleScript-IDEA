@@ -1,11 +1,12 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
-import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.AppleScriptExpression;
+import com.idea.plugin.applescript.psi.impl.AppleScriptElementPresentation;
 import com.idea.plugin.applescript.psi.sdef.DictionaryIdentifier;
 import com.idea.plugin.applescript.psi.sdef.impl.DictionaryComponentBase;
 import com.idea.plugin.applescript.psi.sdef.impl.DictionaryIdentifierImpl;
+import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttribute;
@@ -14,6 +15,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -170,6 +172,18 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @NotNull
   @Override
   public abstract Suite getSuite();
+
+  @Nullable
+  @Override
+  public Icon getIcon(boolean open) {
+    AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
+    return componentType != null ? componentType.getIcon() : null;
+  }
+
+  @Override
+  public ItemPresentation getPresentation() {
+    return new AppleScriptElementPresentation(this);
+  }
 
   @Nullable
   @Override

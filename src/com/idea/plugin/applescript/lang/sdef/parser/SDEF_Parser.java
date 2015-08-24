@@ -1,7 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
 import com.idea.plugin.applescript.lang.sdef.*;
-import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionary;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlDocument;
@@ -46,6 +45,7 @@ public class SDEF_Parser {
           for (XmlTag classTag : suiteClasses) {
             AppleScriptClass appleScriptClass = parseClassTag(classTag, suite);
             parsedDictionary.addClass(appleScriptClass);
+            suite.addClass(appleScriptClass);
           }
 
           XmlTag[] suiteClassExtensions = suiteTag.findSubTags("class-extension");
@@ -53,6 +53,7 @@ public class SDEF_Parser {
             AppleScriptClass appleScriptClass = parseClassExtensionTag(classExtensionTag, parsedDictionary, suite);
             if (appleScriptClass != null) {
               parsedDictionary.addClass(appleScriptClass);
+              suite.addClass(appleScriptClass);
             }
           }
 
@@ -60,14 +61,16 @@ public class SDEF_Parser {
           for (XmlTag recordTag : recordTypeTags) {
             DictionaryRecord record = parseRecordTag(recordTag, suite);
             parsedDictionary.addRecord(record);
+            suite.addRecord(record);
           }
 
           XmlTag[] enumerationTags = suiteTag.findSubTags("enumeration");
           for (XmlTag enumerationTag : enumerationTags) {
             DictionaryEnumeration enumeration = parseEnumerationTag(enumerationTag, suite);
             parsedDictionary.addEnumeration(enumeration);
+            suite.addEnumeration(enumeration);
           }
-          parsedDictionary.addSuite(suite);
+          parsedDictionary.addSuite(suite);//todo remove adding the components directly to dictionary (see above)
         }
 
       }
@@ -95,8 +98,10 @@ public class SDEF_Parser {
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
     if (parentClassName == null || parentClassCode == null) return null;
 
+    List<String> elementNames = initClassElements(classExtensionTag);
+
     final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode,
-            classExtensionTag);
+            classExtensionTag, parentClassName, elementNames);
     String description = classExtensionTag.getAttributeValue("description");
     classExtension.setDescription(description);
 
@@ -108,8 +113,11 @@ public class SDEF_Parser {
       String pCode = propTag.getAttributeValue("code");
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
+      String pAccessType = propTag.getAttributeValue("access");
+      AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {
-        property = new DictionaryPropertyImpl(classExtension, pName, pCode, pType, pDescription, propTag);
+        property = new DictionaryPropertyImpl(classExtension, pName, pCode, pType, pDescription, propTag, accessType);
+
         properties.add(property);
       }
     }
@@ -156,8 +164,10 @@ public class SDEF_Parser {
       String pCode = propTag.getAttributeValue("code");
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
+      String pAccessType = propTag.getAttributeValue("access");
+      AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {
-        property = new DictionaryPropertyImpl(record, pName, pCode, pType, pDescription, propTag);
+        property = new DictionaryPropertyImpl(record, pName, pCode, pType, pDescription, propTag, accessType);
         properties.add(property);
       }
     }
@@ -171,7 +181,11 @@ public class SDEF_Parser {
 
     if (name == null || code == null) return null;
 
-    final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag);
+    String parentClassName = classTag.getAttributeValue("inherits");
+    List<String> elementNames = initClassElements(classTag);
+
+
+    final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag, parentClassName, elementNames);
     String description = classTag.getAttributeValue("description");
     aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
@@ -181,14 +195,28 @@ public class SDEF_Parser {
       String pCode = propTag.getAttributeValue("code");
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
+      String pAccessType = propTag.getAttributeValue("access");
+      AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {
         final AppleScriptPropertyDefinition property = new DictionaryPropertyImpl(aClass, pName, pCode, pType,
-                pDescription, propTag);
+                pDescription, propTag, accessType);
         properties.add(property);
       }
     }
     aClass.setProperties(properties);
     return aClass;
+  }
+
+  private static List<String> initClassElements(XmlTag classTag) {
+    XmlTag[] elementNameTags = classTag.findSubTags("element");
+    List<String> elementNames = new ArrayList<String>();
+    for (XmlTag elemTag : elementNameTags) {
+      String val = elemTag.getAttributeValue("type");
+      if (val != null) {
+        elementNames.add(val);
+      }
+    }
+    return elementNames;
   }
 
   private static AppleScriptCommand parseCommandTag(XmlTag commandTag, Suite suite) {
