@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef.impl;
 
 import com.idea.plugin.applescript.AppleScriptLanguage;
+import com.idea.plugin.applescript.lang.ide.AppleScriptDocHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
 import com.idea.plugin.applescript.psi.AppleScriptExpression;
@@ -185,7 +186,16 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull
   @Override
   public String getDocumentation() {
-    return getType() + " <b>" + getName() + "</b>";
+    StringBuilder sb = new StringBuilder();
+    sb.append(getType()).append(" <b>").append(getName()).append("</b>");
+    sb.append("<p>");
+    for (Suite suite : mySuites) {
+      sb.append("<br>    <b>");
+      AppleScriptDocHelper.appendElementLink(sb, suite, suite.getName());
+      sb.append("</b><br>");
+    }
+    sb.append("</p>");
+    return sb.toString();
   }
 
   @Nullable

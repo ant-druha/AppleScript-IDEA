@@ -38,6 +38,10 @@ public class AppleScriptDocHelper {
     } else if (psiElement instanceof ApplicationDictionary) {
       ApplicationDictionary dictionary = (ApplicationDictionary) psiElement;
       elementRef = URL_PREFIX_DICTIONARY + dictionary.getName();
+    } else if (psiElement instanceof Suite) {
+      Suite suite = (Suite) psiElement;
+      elementRef = "dictionary:" + suite.getDictionary().getName() + TYPE_SEPARATOR + URL_PREFIX_SUITE +
+              suite.getCode();
     }
     if (StringUtil.isEmpty(elementRef)) return null;
 
@@ -53,23 +57,25 @@ public class AppleScriptDocHelper {
 
     int dicNameIdxEnt = link.indexOf(TYPE_SEPARATOR) > 0 ? link.indexOf(TYPE_SEPARATOR) : link.length();
     final String dictionaryName = link.substring("dictionary".length() + 1, dicNameIdxEnt);
+    ApplicationDictionary dictionary = ParsableScriptSuiteRegistryHelper.findDictionaryByName(dictionaryName);
 
     int typeIndexStart = link.lastIndexOf(TYPE_SEPARATOR);
     int hashIndex = link.indexOf("#");
     String typeName = link.substring(typeIndexStart + TYPE_SEPARATOR.length(), hashIndex);
+    String targetName = link.substring(hashIndex + 1);
 
+    int SuiteIdxStart = link.lastIndexOf(ELEMENT_NAME_SEPARATOR);
     if ("class".equals(typeName)) {
-      int SuiteIdxStart = link.lastIndexOf(ELEMENT_NAME_SEPARATOR);
       final String suiteCode = link.substring(SuiteIdxStart + ELEMENT_NAME_SEPARATOR.length(), typeIndexStart);
 
-      ApplicationDictionary dictionary = ParsableScriptSuiteRegistryHelper.findDictionaryByName(dictionaryName);
       Suite suite = dictionary != null ? dictionary.findSuiteByCode(suiteCode) : null;
-      classCode = link.substring(hashIndex + 1);
-      result = suite != null ? suite.findClassByCode(classCode) : null;//search in suite first
+      result = suite != null ? suite.findClassByCode(targetName) : null;//search in suite first
       if (result == null)
-        result = dictionary != null ? dictionary.findClassByCode(classCode) : null;
+        result = dictionary != null ? dictionary.findClassByCode(targetName) : null;
     } else if ("dictionary".equals(typeName)) {
-      result = ParsableScriptSuiteRegistryHelper.findDictionaryByName(dictionaryName);
+      result = dictionary;
+    } else if ("suite".equals(typeName)) {
+      result = dictionary != null ? dictionary.findSuiteByCode(targetName) : null;
     }
 //    result = ParsableScriptSuiteRegistryHelper.getClassWithName(className);
     return result;
