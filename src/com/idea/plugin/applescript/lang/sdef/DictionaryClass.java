@@ -49,16 +49,10 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     sb.append("<HTML>");
     final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
     //todo repeating super =(
+    sb.append(super.getDocumentation());
     String type = StringUtil.capitalizeWords(getType(), true);
     String className = getName();
-    sb.append("<b>");
-
-    AppleScriptDocHelper.appendElementLink(sb, getDictionary(), getDictionary().getName());
-
-//    sb.append(getDictionary().getName());
-
-    sb.append("</b> ").
-            append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
+//    sb.append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
     sb.append("<p>").append(type.substring(10)).append(" <b>").append(className).
             append("</b>");
 
@@ -114,7 +108,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   }
 
   public AppleScriptClass getParentClass() {
-    return getDictionary().getClassByName(getParentClassName());
+    return getDictionary().findClassByName(getParentClassName());
   }
 
   @NotNull
@@ -126,7 +120,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   public List<AppleScriptClass> getElements() {
     if (!initialized && !elementNames.isEmpty()) {
       for (String className : elementNames) {
-        AppleScriptClass cls = getDictionary().getClassByName(className);
+        AppleScriptClass cls = getDictionary().findClassByName(className);
         if (cls != null) {
           elements.add(cls);
         }

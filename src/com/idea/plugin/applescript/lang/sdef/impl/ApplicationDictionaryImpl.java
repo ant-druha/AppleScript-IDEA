@@ -1,14 +1,17 @@
 package com.idea.plugin.applescript.lang.sdef.impl;
 
 import com.idea.plugin.applescript.AppleScriptLanguage;
+import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.lang.ide.AppleScriptDocHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
 import com.idea.plugin.applescript.psi.AppleScriptExpression;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
+import com.idea.plugin.applescript.psi.impl.AppleScriptElementPresentation;
 import com.idea.plugin.applescript.psi.sdef.DictionaryIdentifier;
 import com.idea.plugin.applescript.psi.sdef.impl.DictionaryIdentifierImpl;
 import com.intellij.lang.Language;
+import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
@@ -26,6 +29,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -56,12 +60,10 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     this.applicationFile = applicationBundleFile;
     readDictionaryFromApplicationBundle();
     if (StringUtil.isEmpty(name))
-      name = applicationBundleFile.getPath();
-    if (name.contains("/")) {
-      String[] paths = name.split("/");
-      name = paths[paths.length > 0 ? paths.length - 1 : 0];
-    }
-    System.out.println("Dictionary ===" + name + "=== initialized. Commands: " + dictionaryCommandList.size() + "\n");
+      setName(applicationBundleFile.getPath());
+    System.out.println("Dictionary ===" + name + "=== initialized. Commands: " + dictionaryCommandList.size() + ". " +
+            "Classes: " +
+            dictionaryClassList.size() + "\n");
   }
 
   private void readDictionaryFromApplicationBundle() {
@@ -161,9 +163,21 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return dictionaryClassList.add(appleScriptClass);
   }
 
+  @Nullable
+  @Override
+  public Icon getIcon(boolean open) {
+    AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
+    return componentType != null ? componentType.getIcon() : null;
+  }
+
+  @Override
+  public ItemPresentation getPresentation() {
+    return new AppleScriptElementPresentation(this);
+  }
+
   @Override
   @Nullable
-  public AppleScriptClass getClassByName(String name) {
+  public AppleScriptClass findClassByName(String name) {
     return dictionaryClassMap.get(name);
   }
 
@@ -293,6 +307,14 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   }
 
   public PsiElement setName(@NotNull String name) {
+    if (name.contains("/")) {
+//      String[] paths = name.split("/");
+      int start = name.lastIndexOf("/") + 1;
+      int end = name.lastIndexOf(".");
+      end = end > 0 ? end : name.length();
+      name = name.substring(start, end);//paths[paths.length > 0 ? paths.length - 1 : 0];
+
+    }
     this.name = name;
     return this;
   }
@@ -392,6 +414,18 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public XmlTag getRootTag() {
     return myRootTag;
+  }
+
+  @Nullable
+  @Override
+  public Suite findSuiteByName(String suiteName) {
+    if (suiteName == null) return null;
+    for (Suite suite : mySuites) {
+      if (suiteName.equals(suite.getName())) {
+        return suite;
+      }
+    }
+    return null;
   }
 
   @Nullable

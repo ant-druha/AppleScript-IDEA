@@ -94,7 +94,7 @@ public class SDEF_Parser {
   private static AppleScriptClass parseClassExtensionTag(XmlTag classExtensionTag, ApplicationDictionary dictionary,
                                                          Suite suite) {
     String parentClassName = classExtensionTag.getAttributeValue("extends");
-    AppleScriptClass parentClass = dictionary.getClassByName(parentClassName);
+    AppleScriptClass parentClass = dictionary.findClassByName(parentClassName);
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
     if (parentClassName == null || parentClassCode == null) return null;
 

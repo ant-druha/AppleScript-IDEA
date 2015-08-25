@@ -25,23 +25,26 @@ public class AppleScriptDocHelper {
 
   public static String appendElementLink(StringBuilder sb, AppleScriptPsiElement psiElement, String label) {
     String elementRef = "";
+//    label = label.replace(".",".");
 //    String sampleLink = "psi_element://#dictionary:Mail.xml#class:item";
     String sampleClassLink = "psi_element://class#Mail.xml:item";
-    String sample2ClassLink = "psi_element://dictionary:Finder.xml/suite:fndr/class#ctnr"; //this one
+    String sample2ClassLink = "psi_element://dictionary:Finder.xml/suite:fndr/class#ctnr"; //this one does not work
+    // (dup. codes)
+    String sample3ClassLink = "psi_element://dictionary:Finder.xml/suite:Finder Basics/class#icon family"; //this one
     String sampleDictionaryLink = "psi_element://dictionary#Finder.xml";
-    String sampleSuiteLink = "psi_element://dictionary:Finder.xml/suite#fndr";
+    String sampleSuiteLink = "psi_element://dictionary:Finder.xml/suite#Finder Basics";
     if (psiElement instanceof AppleScriptClass) {
       AppleScriptClass dClass = (AppleScriptClass) psiElement;
       elementRef = "dictionary:" + dClass.getDictionary().getName() + TYPE_SEPARATOR + "suite" +
-              ELEMENT_NAME_SEPARATOR + dClass.getSuite().getCode() + TYPE_SEPARATOR +
-              URL_PREFIX_CLASS + dClass.getCode();
+              ELEMENT_NAME_SEPARATOR + dClass.getSuite().getName() + TYPE_SEPARATOR +
+              URL_PREFIX_CLASS + dClass.getName();
     } else if (psiElement instanceof ApplicationDictionary) {
       ApplicationDictionary dictionary = (ApplicationDictionary) psiElement;
       elementRef = URL_PREFIX_DICTIONARY + dictionary.getName();
     } else if (psiElement instanceof Suite) {
       Suite suite = (Suite) psiElement;
       elementRef = "dictionary:" + suite.getDictionary().getName() + TYPE_SEPARATOR + URL_PREFIX_SUITE +
-              suite.getCode();
+              suite.getName();
     }
     if (StringUtil.isEmpty(elementRef)) return null;
 
@@ -52,7 +55,6 @@ public class AppleScriptDocHelper {
   }
 
   public static PsiElement getDocumentationElementForLink(PsiManager psiManager, String link, PsiElement context) {
-    String classCode = null;
     PsiElement result = null;
 
     int dicNameIdxEnt = link.indexOf(TYPE_SEPARATOR) > 0 ? link.indexOf(TYPE_SEPARATOR) : link.length();
@@ -66,16 +68,16 @@ public class AppleScriptDocHelper {
 
     int SuiteIdxStart = link.lastIndexOf(ELEMENT_NAME_SEPARATOR);
     if ("class".equals(typeName)) {
-      final String suiteCode = link.substring(SuiteIdxStart + ELEMENT_NAME_SEPARATOR.length(), typeIndexStart);
+      final String suiteName = link.substring(SuiteIdxStart + ELEMENT_NAME_SEPARATOR.length(), typeIndexStart);
 
-      Suite suite = dictionary != null ? dictionary.findSuiteByCode(suiteCode) : null;
+      Suite suite = dictionary != null ? dictionary.findSuiteByName(suiteName) : null;
       result = suite != null ? suite.findClassByCode(targetName) : null;//search in suite first
       if (result == null)
-        result = dictionary != null ? dictionary.findClassByCode(targetName) : null;
+        result = dictionary != null ? dictionary.findClassByName(targetName) : null;
     } else if ("dictionary".equals(typeName)) {
       result = dictionary;
     } else if ("suite".equals(typeName)) {
-      result = dictionary != null ? dictionary.findSuiteByCode(targetName) : null;
+      result = dictionary != null ? dictionary.findSuiteByName(targetName) : null;
     }
 //    result = ParsableScriptSuiteRegistryHelper.getClassWithName(className);
     return result;
@@ -89,7 +91,7 @@ public class AppleScriptDocHelper {
       sb.append("<p>").append(indent).append("ELEMENTS <br>").append(indent).append("contains ");
       Iterator<String> it = classElements.iterator();
       String className = it.next();
-      AppleScriptClass aClass = dictionaryClass.getDictionary().getClassByName(className);
+      AppleScriptClass aClass = dictionaryClass.getDictionary().findClassByName(className);
       if (aClass != null) {
         appendElementLink(sb, aClass, aClass.getName());
       } else {
@@ -97,7 +99,7 @@ public class AppleScriptDocHelper {
       }
       while (it.hasNext()) {
         className = it.next();
-        aClass = dictionaryClass.getDictionary().getClassByName(className);
+        aClass = dictionaryClass.getDictionary().findClassByName(className);
         sb.append(", ");
         if (aClass != null) {
           appendElementLink(sb, aClass, aClass.getName());

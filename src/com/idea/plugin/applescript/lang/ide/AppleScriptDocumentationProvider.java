@@ -14,10 +14,12 @@ public class AppleScriptDocumentationProvider extends AbstractDocumentationProvi
   @Override
   public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
     PsiElement target = element.getReference() != null ? element.getReference().resolve() : null;
-//    if (element instanceof DictionaryComponent) {
-//      DictionaryComponent appElement = (DictionaryComponent)element;
-//      return appElement.getType() + " " + appElement.getQualifiedName();
-//    }
+
+    if (element instanceof DictionaryComponent) {
+      DictionaryComponent appElement = (DictionaryComponent) element;
+      return appElement.getType() + " \"" + appElement.getName() + "\" [ "
+              + appElement.getDictionary().getName() + " ]";
+    }
     return null;
   }
 

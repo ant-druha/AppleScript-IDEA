@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
+import com.idea.plugin.applescript.lang.ide.AppleScriptDocHelper;
 import com.idea.plugin.applescript.psi.AppleScriptExpression;
 import com.idea.plugin.applescript.psi.impl.AppleScriptElementPresentation;
 import com.idea.plugin.applescript.psi.sdef.DictionaryIdentifier;
@@ -149,12 +150,15 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @Override
   public String getDocumentation() {
     StringBuilder sb = new StringBuilder();
-    String type = StringUtil.capitalizeWords(getType(),true);
+    String type = StringUtil.capitalizeWords(getType(), true);
     String name = getName();
-    sb.append("<b>").append(getDictionary().getName()).append("</b> ").
-            append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
-    sb.append("<p>").append(type.substring(10)).append(" <b>").append(name).
-            append("</b>").append(" : ").append(StringUtil.notNullize(getDescription())).append("</p>");
+    sb.append("<b>");
+    AppleScriptDocHelper.appendElementLink(sb, getDictionary(), getDictionary().getName());
+    sb.append("</b> ").append(" Dictionary").append("<br>");
+//    sb.append("<p>");
+//    sb.append(type.substring(10)).append(" <b>").append(name).
+//            append("</b>").append(" : ").append(StringUtil.notNullize(getDescription()));
+//    sb.append("</p>");
     return sb.toString();
   }
 
@@ -201,13 +205,12 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
       if (attrValue != null) {
         myIdentifier = new DictionaryIdentifierImpl(this, getName(), attrValue);
       }
-    }
-    else {
-      for (XmlAttribute anyAttr: myXmlElement.getAttributes()) {
+    } else {
+      for (XmlAttribute anyAttr : myXmlElement.getAttributes()) {
         myIdentifier = new DictionaryIdentifierImpl(this, getName(), anyAttr);
       }
     }
-    return myIdentifier!=null ? myIdentifier :
+    return myIdentifier != null ? myIdentifier :
             new DictionaryIdentifierImpl(this, getName(), myXmlElement.getAttributes()[0]);
   }
 

@@ -80,6 +80,12 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     return null;
   }
 
+//  @Nullable
+//  @Override
+//  public AppleScriptDictionaryConstant getDictionaryConstant() {
+//    return null;
+//  }
+
   @Nullable
   @Override
   public AppleScriptEveryElemReferenceD getEveryElemReferenceD() {
@@ -114,14 +120,6 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   @Override
   public AppleScriptHandlerLabeledParametersCall getHandlerLabeledParametersCall() {
     return null;
-  }
-
-  @NotNull
-  @Override
-  public List<AppleScriptHandlerPositionalParametersCall> getHandlerPositionalParametersCallList() {
-    List<AppleScriptHandlerPositionalParametersCall> result = new
-            ArrayList<AppleScriptHandlerPositionalParametersCall>();
-    return result;
   }
 
   @Nullable

@@ -1,10 +1,7 @@
 package com.idea.plugin.applescript.lang;
 
 import com.idea.plugin.applescript.AppleScriptIcons;
-import com.idea.plugin.applescript.lang.sdef.AppleScriptClass;
-import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
-import com.idea.plugin.applescript.lang.sdef.DictionaryEnumeratorImpl;
-import com.idea.plugin.applescript.lang.sdef.SuiteImpl;
+import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
 import com.idea.plugin.applescript.psi.AppleScriptScriptObject;
 import com.idea.plugin.applescript.psi.AppleScriptSimpleFormalParameter;
@@ -31,6 +28,7 @@ public enum AppleScriptComponentType {
   //for other variable types
   VARIABLE(PlatformIcons.VARIABLE_ICON),
   //sdef dictionary
+  APPLICATION_DICTIONARY(AppleScriptIcons.OPEN_DICTIONARY),
   DICTIONARY_SUITE(PlatformIcons.PACKAGE_ICON),
   DICTIONARY_CLASS(PlatformIcons.CLASS_ICON),
   DICTIONARY_ENUMERATOR(PlatformIcons.VARIABLE_ICON),
@@ -76,7 +74,8 @@ public enum AppleScriptComponentType {
         return DICTIONARY_ENUMERATOR;
       } else if (element instanceof SuiteImpl) {
         return DICTIONARY_SUITE;
-      }
+      } else if (element instanceof ApplicationDictionary)
+        return APPLICATION_DICTIONARY;
     }
     return null;
   }

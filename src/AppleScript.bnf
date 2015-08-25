@@ -381,7 +381,7 @@ ifCompoundStatement ::= if expression [then] sep //sep is important - otherwise 
               |styledTextLiteralExpression
               //|built_in_type
               |numberLiteralExpression
-              |constantLiteralExpression
+              |builtInConstantLiteralExpression | (!(dictionaryClassName) dictionaryConstant)
               |listLiteralExpression
               |recordLiteralExpression
               |dateLiteralExpression
@@ -390,8 +390,8 @@ ifCompoundStatement ::= if expression [then] sep //sep is important - otherwise 
 /** Numeric, string, regexp, boolean, date, string(space,tab,return) constant*/
 //todo: is also componentName ??? for ex. parent - property can hold a value inside, but true/false can not -
 //todo is more like language keyword
-constantLiteralExpression ::= boolean_constant|date_time_constants|save_opt_constant|text_constant|itMeProperty
-|current_application_constant| dictionaryConstant | missing_value_constant
+builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|save_opt_constant|text_constant|itMeProperty
+|current_application_constant| missing_value_constant
 //|appleScriptPropertiesConstant
 
 dictionaryConstant ::= <<parseDictionaryConstant>>
@@ -426,13 +426,14 @@ private Length ::= CENTIMETRES|CENTIMETERS|FEET|INCHES|KILOMETRES|KILOMETERS|MET
 //todo these classes are not found in standard additions:
 //but declared as properties...
 builtInClassIdentifierPlural ::= builtInClassIdentifier"s"|scripts
+dictionaryClassIdentifierPlural ::= dictionaryClassName"s"|scripts
 
 //>>Real class<<
 realLiteralExpression ::= ('.'(DIGITS)(DEC_EXPONENT))|(dec_significand DEC_EXPONENT?)
 private dec_significand ::= ('.'DIGITS)|(DIGITS'.'DIGITS*)
 
 // >>Date class<<
-dateLiteralExpression ::= (date stringLiteralExpression)|currentDateCommand // hack! scripting addition command Current Date !
+dateLiteralExpression ::= (date (stringLiteralExpression|expression))|currentDateCommand // hack! scripting addition command Current Date !
 private currentDateCommand ::= CURRENT_DATE
 
 //>> List reference
@@ -509,13 +510,14 @@ private refForm ::= (my handlerInterleavedCallOrPropertyReference )
 
 private handlerInterleavedCallOrPropertyReference ::= handlerInterleavedParametersCall | propertyReference
 //expr like: my point()
-private handlerInterleavedCallOrPropertyReferenceDOrReferenceIdentifier ::= handlerInterleavedParametersCall | ((propertyReferenceD|referenceIdentifier) handlerPositionalParametersCall) | referenceIdentifier
+private handlerInterleavedCallOrPropertyReferenceDOrReferenceIdentifier ::= handlerInterleavedParametersCall |
+propertyReferenceD | handlerPositionalParametersCallExpression | referenceIdentifier
 
 propertyReference ::=  propertyLabelReference
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
  implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
-propertyReferenceD ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty//typeSpecifierD|referenceIdentifier//referenceIdentifier goes lower
+propertyReferenceD ::=  (/*!(dictionaryClassName|dictionaryConstant)*/ dictionaryPropertyName)|literalExpression|appleScriptProperty|builtInClassProperty//typeSpecifierD|referenceIdentifier//referenceIdentifier goes lower
 //private propertyLabelIdentifier ::= dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty|
 //identifier
 //todo better define or not define it here?
@@ -561,12 +563,10 @@ left filterReference ::=  (whose|where) expression
 
 //The Index reference form specifies an object or a location by describing its position with respect
 // to the beginning or end of a container. For related information, see “Relative” (page 185).
-//todo otherwise handler call in a chain can be detected as reference_expression
-//searchFiles for ff of minimumValue(2, 3) for "LeChateau"
-//todo change to expression
+//todo change to expression !!!
 private indexValueExpression ::= (referenceIdentifier|/*reservedWordsNotParameterLabel|*/integerLiteralExpression)
 //to exclude detecting as index handlerWithDirectLabeledParametersCall and other handler calls
- !(handlerParameterLabel|with|without|given|LPAREN|COLON)
+// !(handlerParameterLabel|with|without|given|LPAREN|COLON)
 
 indexReference ::= ((classTypeNameStrict [index] (indexValueExpression|parenthesizedExpression))
                    //|(classType [index] indexValueExpression)
@@ -593,7 +593,7 @@ implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
 middleElemReference ::= middle classTypeName {pin=1}
 middleElemReferenceD ::= middle typeSpecifierD {pin=1}
 nameReference ::= classTypeName [named] nameString
-nameReferenceD ::= typeSpecifierD [named] nameString
+nameReferenceD ::= typeSpecifierD [named] nameString //nameString actually could be any expression (clashed with indexReferenceD)
 private nameString ::= stringLiteralExpression//|parenthesized_expression //(smth as string) or get the string from some val
 
 rangeReference ::= (every classTypeName from boundaryReference1 to boundaryReference2)
@@ -601,9 +601,9 @@ rangeReference ::= (every classTypeName from boundaryReference1 to boundaryRefer
                    |((/*refForm |*/ classTypeName) startIndex (thru|through) stopIndex)
                    |(pluralClassName startIndex (thru|through) stopIndex)
                    
-rangeReferenceD ::= (every typeSpecifierD from (beginning|expression) to (end|expression) )
+rangeReferenceD ::= (every singularClassName from (beginning|expression) to (end|expression) )
                    |(pluralClassName from (beginning|expression) to (end|expression) )//todo what todo with plural classNames ?
-                   |((/*refForm |*/ typeSpecifierD) startIndex (thru|through) stopIndex)
+                   |((/*refForm |*/ singularClassName) startIndex (thru|through) stopIndex)
                    |(pluralClassName startIndex (thru|through) stopIndex)
 private stopIndex::= integerLiteralExpression | expression
 private startIndex ::= integerLiteralExpression | expression
@@ -847,7 +847,8 @@ handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParam
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 
-left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
+//left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
+handlerPositionalParametersCallExpression ::= referenceIdentifier LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
 { methods = [getFormalParameters] }
@@ -970,7 +971,7 @@ countCommandExpression ::= (count [[each|every] (typeSpecifierD|pluralClassName)
 private classTypeName ::= classTypeNameStrict|referenceIdentifier// add here all known classes names (file,string, etc)
 private classTypeNameStrict ::= builtInClassIdentifier|script //|applicationClassName //script "name" - like argument
 //todo is it neccesary. could be: text item, word item, document item etc...
-private typeSpecifierD ::= dictionaryClassName|builtInClassIdentifier|builtInClassIdentifierPlural ITEM?
+private typeSpecifierD ::= singularClassName|pluralClassName
 //|dictionaryPropertyName
 //todo here could be declared user classType (like as for any other language MyClass "Name string")
 //|userClassName
@@ -981,7 +982,8 @@ private typeSpecifierD ::= dictionaryClassName|builtInClassIdentifier|builtInCla
 //|declaredObjectClass
 //private declaredObjectClass ::= 
 //private applicationClassName ::= file // folder-no - it does not understand Script Editor
-private pluralClassName ::= builtInClassIdentifierPlural//|classType"s" //text plural=text !
+private pluralClassName ::= builtInClassIdentifierPlural|dictionaryClassIdentifierPlural ITEM?//|classType"s" //text plural=text !
+private singularClassName ::= dictionaryClassName|builtInClassIdentifier ITEM?
 //An expression that evaluates to a composite value whose elements are to be counted.
 // Class: List, record, reference, or string
 private composite_value ::= listLiteralExpression|recordLiteralExpression
@@ -1122,12 +1124,14 @@ private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtI
 private primaryExpressionD ::=
      literalExpression
  |   commandHandlerCallExpression
- | ( referenceExpressionD (   ( <<isParsingCommandHandlerCallParameters>> handlerPositionalParametersCall )
-                            | ( <<isTreePrevSimpleReference>> ( handlerLabeledParametersCall | handlerPositionalParametersCall ) )
+ |  handlerPositionalParametersCallExpression //may be here a full call expression ??
+ | ( referenceExpressionD (   //( <<isParsingCommandHandlerCallParameters>> handlerPositionalParametersCall )|
+                             ( <<isTreePrevSimpleReference>> handlerLabeledParametersCall )
                           )?
    )
  |   parenthesizedExpression
  |   apple_script_command_expression
+// |  dictionaryConstant //in the end, otherwise some dictionary classes are parsed as dic. constants
 
 private referenceExpressionD ::=
     refFormD
@@ -1155,7 +1159,9 @@ private refFormD ::=
 //todo need to get rig of this somehow
 primaryExpressionNoLabeledHandlerCall ::=
                              literalExpression
-                             |referenceExpressionD handlerPositionalParametersCall? // only labeled params handler is left out..?
+                             |handlerPositionalParametersCallExpression // only labeled params handler is left out..?
+                             |referenceExpressionD
+//                             |referenceExpressionD handlerPositionalParametersCall? // only labeled params handler is left out..?
                              |parenthesizedExpression
                              |apple_script_command_expression
 
@@ -1185,6 +1191,6 @@ private containment_any_part_operator ::= IS_CONTAIN|DOES_NOT_CONTAIN|IS_IN|IS_N
 
 private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
 
-left coercionExpression ::= coercionBuiltInExpression|coercionExternalExpression
-private coercionBuiltInExpression ::= AS nls typeSpecifierD {pin=3}
-private coercionExternalExpression ::= AS nls referenceIdentifier {pin=3}
+left coercionExpression ::= coercionStrictExpression|coercionUserDefinedExpression
+private coercionStrictExpression ::= AS nls typeSpecifierD {pin=3}
+private coercionUserDefinedExpression ::= AS nls referenceIdentifier {pin=3}

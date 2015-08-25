@@ -5,7 +5,6 @@ import com.intellij.formatting.Spacing;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
-import com.intellij.psi.formatter.common.AbstractBlock;
 import com.intellij.psi.impl.source.SourceTreeToPsiMap;
 import com.intellij.psi.impl.source.tree.CompositeElement;
 import com.intellij.psi.tree.IElementType;
@@ -82,7 +81,7 @@ public class AppleScriptSpacingProcessor {
         if (LCURLY == type1 || RCURLY == type2) return Spacing.createSpacing(0, 0, 0, true, 0);
 
         // handlerCall(params)
-        if (LPAREN == type2 && HANDLER_POSITIONAL_PARAMETERS_CALL == parent2) {
+        if (LPAREN == type2 && HANDLER_POSITIONAL_PARAMETERS_CALL_EXPRESSION == parent2) {
             return addSingleSpaceIf(mySettings.SPACE_BEFORE_METHOD_CALL_PARENTHESES, false);
         }
         if (LPAREN == type2 && HANDLER_POSITIONAL_PARAMETERS_DEFINITION == parent2) {

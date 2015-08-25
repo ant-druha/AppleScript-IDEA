@@ -46,4 +46,7 @@ public interface ApplicationDictionary extends DictionarySuite {
 
   @Nullable
   Suite findSuiteByCode(String suiteCode);
+
+  @Nullable
+  Suite findSuiteByName(String suiteCode);
 }

@@ -168,8 +168,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     //just remove i < ...size() condition ?
     final List<CommandParameter> mandatoryParams = commandDefinition.getMandatoryParameters();
     if (!mandatoryParams.isEmpty()) {
-      for (int i = 0; i < commandDefinition.getParameters().size()
-              && !nextTokenIs(b, "parse Command Parameters ", COMMENT, NLS) && r; i++) {
+      for (int i = 0; i < commandDefinition.getParameters().size() && !nextTokenIs(b, "", COMMENT, NLS) && r; i++) {
         r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector);
         mandatoryParams.remove(commandDefinition.getParameterByName(parsedParameterSelector.value));
         parsedParameterSelector.value = "";
@@ -255,6 +254,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Parameter Selector>");//todo check this _AND_
     parsedParameterSelector.value = "";
+    //todo replace with just b.advanceLexer();
     while (consumeTokenForParameterSelectorAndAppendSelectorText(b, l + 1, parsedParameterSelector)) {
       if (command.getParameterByName(parsedParameterSelector.value) != null) {
         r = true;
@@ -635,6 +635,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  //todo replace with just b.advanceLexer();
   private static boolean dictionaryCommandParameterSelectorTokens(PsiBuilder b, int l) {
     boolean r;
     PsiBuilder.Marker m = enter_section_(b);
@@ -644,6 +645,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!r) r = handlerParameterLabel(b, l + 1);
     if (!r) r = consumeToken(b, IN);
     if (!r) r = consumeToken(b, COPY); //without one copy
+    if (!r) r = consumeToken(b, AFTER);
+    if (!r) r = consumeToken(b, BEFORE);
+    if (!r) r = consumeToken(b, BEGINNING);
+    if (!r) r = consumeToken(b, FRONT);
+    if (!r) r = consumeToken(b, BACK);
+    if (!r) r = consumeToken(b, END);
+    if (!r) r = consumeToken(b, AS);
+
     if (!r && b.getUserData(IS_PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER) != Boolean.TRUE) {
       r = consumeToken(b, WITH);
       if (!r) r = consumeToken(b, WITHOUT);
