@@ -80,21 +80,15 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     return null;
   }
 
-//  @Nullable
-//  @Override
-//  public AppleScriptDictionaryConstant getDictionaryConstant() {
-//    return null;
-//  }
-
   @Nullable
   @Override
   public AppleScriptEveryElemReferenceD getEveryElemReferenceD() {
     return null;
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public AppleScriptExpression getExpression() {
+  public List<AppleScriptExpression> getExpressionList() {
     return null;
   }
 
@@ -191,7 +185,7 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
       ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
       String commandName = getCommandName();
       final List<AppleScriptCommand> allCommandsWithName = suiteRegistry != null ? suiteRegistry.
-              getAllCommandsWithName(commandName) :
+              findAllCommandsWithName(commandName) :
               ParsableScriptSuiteRegistryHelper.getAllCommandsWithName(commandName);
       final List<PsiElement> results = new ArrayList<PsiElement>();
       for (AppleScriptCommand command : allCommandsWithName) {

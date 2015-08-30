@@ -90,11 +90,12 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   public AppleScriptExpression findAssignedValue() {
     if (isScriptProperty() && this instanceof AppleScriptScriptPropertyDeclaration) { //todo fix it
       AppleScriptScriptPropertyDeclaration myProperty = (AppleScriptScriptPropertyDeclaration) this;
-      for (AppleScriptExpression expression : myProperty.getExpressionList()) {
-        if (!(expression instanceof AppleScriptLiteralExpression)) {
-          return expression;
-        }
-      }
+      return myProperty.getExpression();
+//      for (AppleScriptExpression expression : myProperty.getExpressionList()) {
+//        if (!(expression instanceof AppleScriptLiteralExpression)) {
+//          return expression;
+//        }
+//      }
     }
     return null;
   }

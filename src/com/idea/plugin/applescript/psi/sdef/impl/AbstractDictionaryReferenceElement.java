@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
+import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.MultiRangeReference;
@@ -35,10 +36,9 @@ public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantC
 
   @Override
   public boolean isReferenceTo(PsiElement element) {
-    if (element instanceof DictionaryCompositeElement) {//todo not correct: element should be DictionaryComponent type!
-      DictionaryCompositeElement thatElement = (DictionaryCompositeElement) element;
-      if (thatElement.getCompositeNameElement().getCompositeName().equals(getElement().
-              getCompositeNameElement().getCompositeName())) {
+    if (element instanceof DictionaryComponent) {//todo not correct: element should be DictionaryComponent type!
+      DictionaryComponent thatElement = (DictionaryComponent) element;
+      if (thatElement.getName().equals(getElement().getCompositeNameElement().getCompositeName())) {
         return resolve() == thatElement;
       }
     }

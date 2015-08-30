@@ -12,12 +12,9 @@ import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDocumentManager;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
 
 /**
  * Created by Andrey on 09.08.2015.
@@ -38,6 +35,12 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
     if (project == null || file == null) return false;
     ScriptSuiteRegistry savedForFile = getScriptSuiteRegistryForFile(project, file);
     if (savedForFile != null) {
+      String oldName = currentScriptSuiteRegistry != null ? currentScriptSuiteRegistry.getName() : "null";
+      String newName = savedForFile.getName();
+      if (!oldName.equals(newName)) {
+        System.out.println(" ---- Current Suite Registry changed. Was: "
+                + oldName + " Now: " + newName + " ----");
+      }
       currentScriptSuiteRegistry = savedForFile;
       return true;
     }
@@ -94,7 +97,7 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
 
                   currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
                           new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, project);
-                  PsiDocumentManager.getInstance(project).reparseFiles(Arrays.asList(newFile), false);
+//                  PsiDocumentManager.getInstance(project).reparseFiles(Arrays.asList(newFile), false);
                 }
 //                FileEditorManager.getInstance(project).getSelectedTextEditor();
 

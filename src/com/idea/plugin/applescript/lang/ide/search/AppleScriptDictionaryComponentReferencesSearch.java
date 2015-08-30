@@ -49,6 +49,8 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
     final String componentName = dictionaryComponent.getName(); //or just getName()...
     final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(element.getProject());
 
+//    String searchWord = dictionaryComponent instanceof AppleScriptClass ?
+//            ((AppleScriptClass) dictionaryComponent).getPluralClassName() : parts.get(0);
     String searchWord = parts.get(0);
     // queryParameters.getScopeDeterminedByUser() scope here matters as the components are defined outside of project
     // and libraries for them are not under index (todo: to investigate this )
@@ -82,7 +84,15 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
         selector = dictionaryCompositeElement.getCompositeNameElement().getCompositeName();
       }
       if (selector!=null) {
-        if (myComponentName.equals(selector)) {
+        boolean selectorMatches;
+        selectorMatches = myComponentName.equals(selector);
+//        if (!selectorMatches) {
+//          if (myDictionaryComponent instanceof AppleScriptClass) {
+//            AppleScriptClass dictionaryClass = (AppleScriptClass) myDictionaryComponent;
+//            selectorMatches = dictionaryClass.getPluralClassName().equals(selector);
+//          }
+//        }
+        if (selectorMatches) {
           for (PsiReference ref : element.getReferences()) {
             if (ref.isReferenceTo(myDictionaryComponent)) {
               return myConsumer.process(ref);

@@ -96,12 +96,13 @@ public class SDEF_Parser {
     String parentClassName = classExtensionTag.getAttributeValue("extends");
     AppleScriptClass parentClass = dictionary.findClassByName(parentClassName);
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
+    String pluralName = classExtensionTag.getAttributeValue("plural");
     if (parentClassName == null || parentClassCode == null) return null;
 
     List<String> elementNames = initClassElements(classExtensionTag);
 
     final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode,
-            classExtensionTag, parentClassName, elementNames);
+            classExtensionTag, parentClassName, elementNames, pluralName);
     String description = classExtensionTag.getAttributeValue("description");
     classExtension.setDescription(description);
 
@@ -113,6 +114,10 @@ public class SDEF_Parser {
       String pCode = propTag.getAttributeValue("code");
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
+      if (StringUtil.isEmpty(pType)) {
+        XmlTag tType = propTag.findFirstSubTag("type");
+        pType = tType != null ? tType.getAttributeValue("type") : null;
+      }
       String pAccessType = propTag.getAttributeValue("access");
       AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {
@@ -164,6 +169,10 @@ public class SDEF_Parser {
       String pCode = propTag.getAttributeValue("code");
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
+      if (StringUtil.isEmpty(pType)) {
+        XmlTag tType = propTag.findFirstSubTag("type");
+        pType = tType != null ? tType.getAttributeValue("type") : null;
+      }
       String pAccessType = propTag.getAttributeValue("access");
       AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {
@@ -178,6 +187,7 @@ public class SDEF_Parser {
   private static AppleScriptClass parseClassTag(XmlTag classTag, Suite suite) {
     String name = classTag.getAttributeValue("name");
     String code = classTag.getAttributeValue("code");
+    String pluralName = classTag.getAttributeValue("plural");
 
     if (name == null || code == null) return null;
 
@@ -185,7 +195,8 @@ public class SDEF_Parser {
     List<String> elementNames = initClassElements(classTag);
 
 
-    final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag, parentClassName, elementNames);
+    final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag, parentClassName, elementNames,
+            pluralName);
     String description = classTag.getAttributeValue("description");
     aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
@@ -195,6 +206,10 @@ public class SDEF_Parser {
       String pCode = propTag.getAttributeValue("code");
       String pDescription = propTag.getAttributeValue("description");
       String pType = propTag.getAttributeValue("type");
+      if (StringUtil.isEmpty(pType)) {
+        XmlTag tType = propTag.findFirstSubTag("type");
+        pType = tType != null ? tType.getAttributeValue("type") : null;
+      }
       String pAccessType = propTag.getAttributeValue("access");
       AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {

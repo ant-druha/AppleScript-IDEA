@@ -18,35 +18,45 @@ public interface ScriptSuiteRegistryHelper {
   List<String> getParameterNamesForCommand(String name);
 
   @Nullable
-  CommandDirectParameter getDirectParameterForCommand(String commandName);
+  CommandDirectParameter findDirectParameterForCommand(String commandName);
 
   @Nullable
-  AppleScriptCommand getCommandWithName(String name);
+  AppleScriptCommand findCommandWithName(String name);
 
   @Nullable
-  AppleScriptPropertyDefinition getPropertyWithName(String name);
+  AppleScriptPropertyDefinition findPropertyWithName(String name);
 
   @NotNull
-  List<AppleScriptCommand> getAllCommandsWithName(String name);
+  List<AppleScriptCommand> findAllCommandsWithName(String name);
 
   @NotNull
   List<AppleScriptCommand> findCommandsStartingWithName(String name);
 
   List<AppleScriptClass> findClassesStartingWithName(String name);
 
+  List<AppleScriptClass> findClassesStartingWithPluralName(String name);
+
   List<DictionaryEnumerator> findConstantsStartingWithWord(String name);
 
   @Nullable
-  DictionaryEnumerator getEnumerator(String name);
+  DictionaryEnumerator findEnumerator(String name);
 
   @Nullable
-  AppleScriptClass getClassWithName(String name);
+  AppleScriptClass findClassWithName(String name);
 
   @Nullable
-  DictionaryEnumeration getEnumerationWithName(String name);
+  AppleScriptClass findClassWithName(String dictionaryName, String name);
+
+  @Nullable
+  AppleScriptClass findClassByPluralName(String pluralForm);
+
+  @Nullable
+  DictionaryEnumeration findEnumerationWithName(String name);
 
   @Nullable
   List<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName);
 
   List<AppleScriptCommand> geAllCommandsForSuiteRegistry();
+
+  List<AppleScriptPropertyDefinition> findPropertiesStartingWithName(String name);
 }

@@ -57,7 +57,7 @@ public class AppleScriptSuiteRegistryConfigurable extends LanguagePerFileConfigu
   }
 
   @Override
-  public void afterLibraryAdded(Library newLibrary) {
+  public void afterLibraryAdded(Library newLibrary) {//not registered
     ApplicationScriptSuiteRegistryComponent suiteRegCmp = ((ApplicationScriptSuiteRegistryComponent)
             ApplicationManager.getApplication().getComponent("ApplicationScriptSuiteRegistryComponent"));
     ScriptSuiteRegistryMappings registryMappings = ScriptSuiteRegistryMappings.getInstance(myProject);

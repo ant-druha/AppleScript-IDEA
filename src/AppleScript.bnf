@@ -80,6 +80,7 @@
     ITEM='item'
     FILE_SPECIFICATION='regexp:file[\ \t\f]+specification'
     INTERNATIONAL_TEXT='regexp:international[\ \t\f]+text'
+    UNICODE_TEXT='regexp:unicode[\ \t\f]+text'
     RGB_COLOR='regexp:rgb[\ \t\f]+color'
     STYLED_CLIPBOARD_TEXT='regexp:styled[\ \t\f]+clipboard[\ \t\f]+text'
     //==> builtInClassIdNative ==>
@@ -123,6 +124,8 @@
     METERS='meters'
     MILES='miles'
     YARDS='yards'
+
+    BUILT_IN_TYPE_S='regexp:(string|integer|real|boolean|class|constant|list|record|data|date|number|reference|styled text|text item|text|item)s'
 
     //todo not only for literals
     //==>built in properties==>
@@ -190,8 +193,8 @@ private compilation_unit_ ::=
                       | (RAW_CODE sep*)
                       | sep//|spaceSep
                       )*
-                      //{recoverWhile="mainScriptRecover"}
-//mainScriptRecover ::= !(with|tell|repeat|sep)
+//                      {recoverWhile="mainScriptRecover"}
+//mainScriptRecover ::= !(end)
                       //{recoverWhile = not_next_expression}
 
 private sep ::= NLS|COMMENT //one or more new lines and spaces
@@ -308,7 +311,8 @@ private applicationClass ::= APPLICATION|app
 tell_compound_statement ::= tell objectRefWrapper nls //todo not to count Ø -| and CRLF char as a sep
                                         blockBody? nls
                             end [tell] {pin=6}
-
+//                      {recoverWhile="tellRecover"}
+//tellRecover ::= !(sep)
 private expectedType ::= typeSpecifierD|referenceIdentifier
 private errorNumber ::= integerLiteralExpression|referenceIdentifier
 private errorMessage ::= stringLiteralExpression|referenceIdentifier
@@ -416,7 +420,7 @@ private builtInClassIdNative::= ANY|BOOLEAN|DATE|FILE|INTEGER|LOCATION_SPECIFIER
 SPECIFIER|TEXT|TYPE     |ALIAS
 
 private builtInClassIdCommon::= STRING|CLASS|CONSTANT|LIST|DATA|REFERENCE|STYLED_TEXT|TEXT_ITEM|ITEM|FILE_SPECIFICATION|
-INTERNATIONAL_TEXT|RGB_COLOR|STYLED_CLIPBOARD_TEXT|unitTypeValueClasses
+INTERNATIONAL_TEXT|RGB_COLOR|STYLED_CLIPBOARD_TEXT|UNICODE_TEXT|unitTypeValueClasses
 
 private unitTypeValueClasses ::= Length|SQUARE_AREA|CUBIC_VOL|LiquidVolume|Weight|TEMPERATURE
 private Weight ::= GRAMS|KILOGRAMS|OUNCES|POUNDS
@@ -425,8 +429,11 @@ private Length ::= CENTIMETRES|CENTIMETERS|FEET|INCHES|KILOMETRES|KILOMETERS|MET
 
 //todo these classes are not found in standard additions:
 //but declared as properties...
-builtInClassIdentifierPlural ::= builtInClassIdentifier"s"|scripts
-dictionaryClassIdentifierPlural ::= dictionaryClassName"s"|scripts
+//private parseBuiltInClassIdentifierPlural ::= <<parseBuiltInClassIdentifierPluralInner>>
+private builtInClassIdentifierPlural ::= BUILT_IN_TYPE_S|scripts //parseBuiltInClassIdentifierPlural //(builtInClassIdentifier s)|scripts
+dictionaryClassIdentifierPlural ::= <<parseDictionaryClassIdentifierPluralInner>>//dictionaryClassName"s"|scripts
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
+ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 //>>Real class<<
 realLiteralExpression ::= ('.'(DIGITS)(DEC_EXPONENT))|(dec_significand DEC_EXPONENT?)
@@ -511,21 +518,21 @@ private refForm ::= (my handlerInterleavedCallOrPropertyReference )
 private handlerInterleavedCallOrPropertyReference ::= handlerInterleavedParametersCall | propertyReference
 //expr like: my point()
 private handlerInterleavedCallOrPropertyReferenceDOrReferenceIdentifier ::= handlerInterleavedParametersCall |
-propertyReferenceD | handlerPositionalParametersCallExpression | referenceIdentifier
+propertyReferenceD | (referenceIdentifier handlerPositionalParametersCallExpression?) // | referenceIdentifier
 
 propertyReference ::=  propertyLabelReference
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
  implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
-propertyReferenceD ::=  (/*!(dictionaryClassName|dictionaryConstant)*/ dictionaryPropertyName)|literalExpression|appleScriptProperty|builtInClassProperty//typeSpecifierD|referenceIdentifier//referenceIdentifier goes lower
+//text itemS of item => could be plural class names here also
+propertyReferenceD ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
 //private propertyLabelIdentifier ::= dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty|
 //identifier
 //todo better define or not define it here?
 //|appleScriptProperty
 
 //todo why builtInClassNamePlural is valid here?'text items': 'set len to (length of (text items of item))'
-private propertyLabelReference ::= dictionaryPropertyName|literalExpression|appleScriptProperty|
-builtInClassProperty|referenceIdentifier //|builtInClassIdentifier|builtInClassIdentifierPlural
+private propertyLabelReference ::= propertyReferenceD|referenceIdentifier //|builtInClassIdentifier|builtInClassIdentifierPlural
 
 
 
@@ -534,15 +541,15 @@ dictionaryPropertyName ::= <<parseDictionaryPropertyName>>
 
 private dictionaryPropertyNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel|script
 
-private builtInClassProperty ::= stringProperty | BUILT_IN_PROPERTY
+private builtInClassProperty ::= stringProperty | BUILT_IN_PROPERTY |
+(&(builtInClassIdentifier of) builtInClassIdentifier) //this way or manually write all possible properties
 
 private stringProperty ::= QUOTED_FORM
 
 //todo and how to resolve these names? - multiRangeReference?
 //example: system preferences
-private propertyLabelIdentifier ::= dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty|
-identifier
-private scriptPropertyLabelIdentifier ::= propertyLabelIdentifier //builtInClassIdentifier|identifier//todo fix all such declared identifiers
+private propertyLabelIdentifier ::= propertyReferenceD|identifier
+//private scriptPropertyLabelIdentifier ::= propertyLabelIdentifier //builtInClassIdentifier|identifier//todo fix all such declared identifiers
 private variableLabelIdentifier ::= identifier
 
 
@@ -564,23 +571,30 @@ left filterReference ::=  (whose|where) expression
 //The Index reference form specifies an object or a location by describing its position with respect
 // to the beginning or end of a container. For related information, see “Relative” (page 185).
 //todo change to expression !!!
-private indexValueExpression ::= (referenceIdentifier|/*reservedWordsNotParameterLabel|*/integerLiteralExpression)
+private indexValueExpression ::= referenceIdentifier|integerLiteralExpression|parenthesizedExpression
 //to exclude detecting as index handlerWithDirectLabeledParametersCall and other handler calls
 // !(handlerParameterLabel|with|without|given|LPAREN|COLON)
 
-indexReference ::= ((classTypeNameStrict [index] (indexValueExpression|parenthesizedExpression))
+indexReference ::= ((classTypeNameStrict [index] indexValueExpression)
                    //|(classType [index] indexValueExpression)
                    |(integerLiteralExpression('st'|'rd'|'th') classTypeName) //how to concatenate?
                    |((first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) classTypeName)
                    |((last|front|back) classTypeName))
 
-indexReferenceD ::= ((typeSpecifierD [index] (indexValueExpression|parenthesizedExpression))
+indexReferenceD ::= ((indexExpression [index] indexValueExpression)
                    |(integerLiteralExpression('st'|'rd'|'th') (typeSpecifierD|userClassName)) //how to concatenate?
                    |((first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) (typeSpecifierD|userClassName) )
-                   |((last|front|back) (typeSpecifierD|userClassName)))
+                   |((last|front|back) (typeSpecifierD|userClassName))) //could useClassname be even theoretically??
+//first need to check that this is not a property name
+private typeSpecifierForIndex ::= !(propertyReferenceD /*of*/)typeSpecifierD
+//things like: "message id of message" and "item i of EmailAddresses" _property_(1st) vs _index_(2nd) forms
+//todo improve performance (custom parsing)
+private indexExpression ::= !(propertyReferenceD (of| !([index] indexValueExpression)) ) typeSpecifierD
 
 //private typeSpecifier ::= builtInClassName|builtInClassNamePlural|applicationClassName|script|dictionaryClassName
 //|userClassName
+
+private typeSpecifier ::= typeSpecifierD | userClassName
 
 dictionaryClassName ::= <<parseDictionaryClassName>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
@@ -601,10 +615,10 @@ rangeReference ::= (every classTypeName from boundaryReference1 to boundaryRefer
                    |((/*refForm |*/ classTypeName) startIndex (thru|through) stopIndex)
                    |(pluralClassName startIndex (thru|through) stopIndex)
                    
-rangeReferenceD ::= (every singularClassName from (beginning|expression) to (end|expression) )
-                   |(pluralClassName from (beginning|expression) to (end|expression) )//todo what todo with plural classNames ?
-                   |((/*refForm |*/ singularClassName) startIndex (thru|through) stopIndex)
-                   |(pluralClassName startIndex (thru|through) stopIndex)
+rangeReferenceD ::= (every (singularClassName|userClassName) from (beginning|expression) to (end|expression) )
+                   |((pluralClassName|userClassName) from (beginning|expression) to (end|expression) )//todo what todo with plural classNames ?
+                   |((singularClassName|userClassName) startIndex (thru|through) stopIndex)
+                   |((pluralClassName|userClassName) startIndex (thru|through) stopIndex)
 private stopIndex::= integerLiteralExpression | expression
 private startIndex ::= integerLiteralExpression | expression
 private boundaryReference1 ::= beginning|expression//parenthesized_expression  here??
@@ -645,7 +659,7 @@ varAccessDeclaration ::= variableGlobalDeclaration|variableLocalDeclaration
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 //AppleScript propertyDeclaration
-scriptPropertyDeclaration ::= (property|prop) scriptPropertyLabelIdentifier COLON propertyInitializerExpression
+scriptPropertyDeclaration ::= (property|prop) propertyLabelIdentifier COLON propertyInitializerExpression
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
@@ -847,8 +861,8 @@ handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParam
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 
-//left handlerPositionalParametersCall ::= LPAREN argumentList? RPAREN
-handlerPositionalParametersCallExpression ::= referenceIdentifier LPAREN argumentList? RPAREN
+left handlerPositionalParametersCallExpression ::= LPAREN argumentList? RPAREN
+//handlerPositionalParametersCallExpression ::= referenceIdentifier LPAREN argumentList? RPAREN {pin=3}
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
 { methods = [getFormalParameters] }
@@ -950,7 +964,7 @@ private apple_script_command_expression ::= getCommandExpression|runCommandExpre
 //There are only five AppleScript commands: Get, Set, Count, Copy, and Run.
 //>>copy<<
 private copyCommandStatement ::= (copy|put) 
-(((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) targetVariablePattern|expression) {pin=1}
+( ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) (targetVariablePattern|expression) ) {pin=1}
 
 //>>count<<
 // AppleScript syntax
@@ -982,7 +996,10 @@ private typeSpecifierD ::= singularClassName|pluralClassName
 //|declaredObjectClass
 //private declaredObjectClass ::= 
 //private applicationClassName ::= file // folder-no - it does not understand Script Editor
-private pluralClassName ::= builtInClassIdentifierPlural|dictionaryClassIdentifierPlural ITEM?//|classType"s" //text plural=text !
+
+//todo need to do it in a lexer for every built in class creating corresponding tokens
+//and for dictionaryClassName need to query plural dictionaryClassName
+private pluralClassName ::= (builtInClassIdentifierPlural|dictionaryClassIdentifierPlural) items?
 private singularClassName ::= dictionaryClassName|builtInClassIdentifier ITEM?
 //An expression that evaluates to a composite value whose elements are to be counted.
 // Class: List, record, reference, or string
@@ -1086,11 +1103,12 @@ APS (handlerInterleavedParametersCall | primaryExpressionNoLabeledHandlerCall)
 left objectRef ::=
 //todo: to workaround problem with such calls:
 //todo: tell current application's CtrlrSubclassAppDelegate to changeButtonImage() (name_1's name_2 to Expr)
+// need to add container object rule after 'of' => ::= "of|in" container (into primary??)
 ( ( possessiveFormAndInterleavedCallOrPrimaryWithNoHandlerCall | (of|in|APS) THE_KW? prefixExpression ) filterReference? THE_KW? applicationObjectReference?)
 //todo other solution (and better performance) to fallback to: tell expr handlerLabeledCall
 //( (of|in|APS) THE_KW? prefixExpression filterReference? THE_KW? applicationObjectReference?)
 
-private valueExpression ::= primaryExpressionD coercionExpression?
+private valueExpression ::= primaryExpressionD coercionExpression*
 
 commandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
@@ -1124,9 +1142,9 @@ private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtI
 private primaryExpressionD ::=
      literalExpression
  |   commandHandlerCallExpression
- |  handlerPositionalParametersCallExpression //may be here a full call expression ??
- | ( referenceExpressionD (   //( <<isParsingCommandHandlerCallParameters>> handlerPositionalParametersCall )|
-                             ( <<isTreePrevSimpleReference>> handlerLabeledParametersCall )
+// |  handlerPositionalParametersCallExpression //may be here a full call expression ??
+ | ( referenceExpressionD (   ( <<isParsingCommandHandlerCallParameters>> handlerPositionalParametersCallExpression )|
+                             ( <<isTreePrevSimpleReference>> (handlerLabeledParametersCall | handlerPositionalParametersCallExpression) )
                           )?
    )
  |   parenthesizedExpression
@@ -1159,9 +1177,8 @@ private refFormD ::=
 //todo need to get rig of this somehow
 primaryExpressionNoLabeledHandlerCall ::=
                              literalExpression
-                             |handlerPositionalParametersCallExpression // only labeled params handler is left out..?
-                             |referenceExpressionD
-//                             |referenceExpressionD handlerPositionalParametersCall? // only labeled params handler is left out..?
+//                             |handlerPositionalParametersCallExpression // only labeled params handler is left out..?
+                             |referenceExpressionD handlerPositionalParametersCallExpression?
                              |parenthesizedExpression
                              |apple_script_command_expression
 

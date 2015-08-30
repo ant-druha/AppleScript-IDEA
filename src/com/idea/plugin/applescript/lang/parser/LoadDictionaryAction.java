@@ -44,6 +44,10 @@ public class LoadDictionaryAction extends AnAction {
         if (!mappings.getMappings().containsValue(currentSuiteRegistry)) {
           VirtualFile scriptFile = e.getData(PlatformDataKeys.VIRTUAL_FILE);
           mappings.associate(scriptFile, currentSuiteRegistry);
+
+//          ApplicationScriptSuiteRegistryComponent suiteRegCmp = ((ApplicationScriptSuiteRegistryComponent)
+//                  ApplicationManager.getApplication().getComponent("ApplicationScriptSuiteRegistryComponent"));
+//          suiteRegCmp.update(project, scriptFile);
         }
       }
     });

@@ -76,7 +76,7 @@ public class AbstractDictionaryConstantSpecifier extends AppleScriptPsiElementIm
       ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
       String enumeratorName = getCompositeName();
       final DictionaryEnumerator allEnumeratorsWithName = suiteRegistry != null ? suiteRegistry.
-              getEnumerator(enumeratorName) :
+              findEnumerator(enumeratorName) :
               ParsableScriptSuiteRegistryHelper.getEnumerator(enumeratorName);
       final List<PsiElement> results = new ArrayList<PsiElement>();
       results.add(allEnumeratorsWithName);

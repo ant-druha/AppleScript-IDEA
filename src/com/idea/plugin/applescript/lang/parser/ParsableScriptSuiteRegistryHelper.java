@@ -24,17 +24,22 @@ public class ParsableScriptSuiteRegistryHelper /*implements ScriptSuiteRegistryH
 
 
   public static CommandDirectParameter getDirectParameterForCommand(String commandName) {
-    return getCurrentScriptSuiteRegistry().getDirectParameterForCommand(commandName);
+    return getCurrentScriptSuiteRegistry().findDirectParameterForCommand(commandName);
   }
 
   @Nullable
-  public static AppleScriptCommand getCommandWithName(String name) {
-    return getCurrentScriptSuiteRegistry().getCommandWithName(name);
+  public static AppleScriptCommand findCommandWithName(String name) {
+    return getCurrentScriptSuiteRegistry().findCommandWithName(name);
+  }
+
+  @Nullable
+  public static AppleScriptClass findClassByPluralName(String pluralForm) {
+    return getCurrentScriptSuiteRegistry().findClassByPluralName(pluralForm);
   }
 
   @NotNull
   public static List<AppleScriptCommand> getAllCommandsWithName(String name) {
-    return getCurrentScriptSuiteRegistry().getAllCommandsWithName(name);
+    return getCurrentScriptSuiteRegistry().findAllCommandsWithName(name);
   }
 
   @NotNull
@@ -43,15 +48,19 @@ public class ParsableScriptSuiteRegistryHelper /*implements ScriptSuiteRegistryH
   }
 
   public static AppleScriptPropertyDefinition getPropertyWithName(String name) {
-    return getCurrentScriptSuiteRegistry().getPropertyWithName(name);
+    return getCurrentScriptSuiteRegistry().findPropertyWithName(name);
   }
 
-  public static AppleScriptClass getClassWithName(String name) {
-    return getCurrentScriptSuiteRegistry().getClassWithName(name);
+  public static AppleScriptClass findClassWithName(String name) {
+    return getCurrentScriptSuiteRegistry().findClassWithName(name);
+  }
+
+  public static AppleScriptClass findClassWithName(String dictionaryName, String name) {
+    return getCurrentScriptSuiteRegistry().findClassWithName(name);
   }
 
   public static DictionaryEnumeration getEnumerationWithName(String name) {
-    return getCurrentScriptSuiteRegistry().getEnumerationWithName(name);
+    return getCurrentScriptSuiteRegistry().findEnumerationWithName(name);
   }
 
   public static void setCurrentScriptSuiteRegistry(@NotNull ScriptSuiteRegistry currentScriptSuiteRegistry) {
@@ -63,11 +72,19 @@ public class ParsableScriptSuiteRegistryHelper /*implements ScriptSuiteRegistryH
   }
 
   public static DictionaryEnumerator getEnumerator(String name) {
-    return getCurrentScriptSuiteRegistry().getEnumerator(name);
+    return getCurrentScriptSuiteRegistry().findEnumerator(name);
   }
 
   public static List<AppleScriptClass> findClassesStartingWithName(String name) {
     return getCurrentScriptSuiteRegistry().findClassesStartingWithName(name);
+  }
+
+  public static List<AppleScriptClass> findClassesStartingWithPluralName(String pluralForm) {
+    return getCurrentScriptSuiteRegistry().findClassesStartingWithPluralName(pluralForm);
+  }
+
+  public static List<AppleScriptPropertyDefinition> findPropertiesStartingWithName(String name) {
+    return getCurrentScriptSuiteRegistry().findPropertiesStartingWithName(name);
   }
 
   public static List<DictionaryEnumerator> findConstantsStartingWithWord(String name) {

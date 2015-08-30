@@ -30,4 +30,9 @@ public interface AppleScriptClass extends DictionaryComponent {
 
   @NotNull
   List<AppleScriptClass> getElements();
+
+  @NotNull
+  String getPluralClassName();
+
+  DictionaryClass setPluralClassName(String pluralClassName);
 }

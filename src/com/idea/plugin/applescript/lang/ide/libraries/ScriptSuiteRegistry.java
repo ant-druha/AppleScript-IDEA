@@ -5,6 +5,7 @@ import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Contract;
@@ -38,6 +39,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
   private Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
   private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
+  private Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
   private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
 
   private Map<String, DictionaryEnumerator> dictionaryEnumeratorMap =
@@ -103,7 +105,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     return applicationDictionaries;
   }
 
-  public CommandDirectParameter getDirectParameterForCommand(String commandName) {
+  public CommandDirectParameter findDirectParameterForCommand(String commandName) {
     AppleScriptCommand command = dictionaryCommandMap.get(commandName);
     if (command != null && command.getDirectParameter() != null) {
       return command.getDirectParameter();
@@ -113,16 +115,16 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
 
   @Override
   @Nullable
-  public AppleScriptCommand getCommandWithName(String name) {
+  public AppleScriptCommand findCommandWithName(String name) {
     return dictionaryCommandMap.get(name);
   }
 
-  public AppleScriptPropertyDefinition getPropertyWithName(String name) {
+  public AppleScriptPropertyDefinition findPropertyWithName(String name) {
     return dictionaryPropertyMap.get(name);
   }
 
   @NotNull
-  public List<AppleScriptCommand> getAllCommandsWithName(String name) {
+  public List<AppleScriptCommand> findAllCommandsWithName(String name) {
     List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>();
     for (AppleScriptCommand command : dictionaryCommandList) {
       if (command.getName().equals(name)) {
@@ -138,6 +140,17 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     for (AppleScriptCommand command : dictionaryCommandList) {
       if (startsWithWord(command.getName(), name)) {
         result.add(command);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public List<AppleScriptClass> findClassesStartingWithPluralName(String pluralForm) {
+    List<AppleScriptClass> result = new ArrayList<AppleScriptClass>();
+    for (AppleScriptClass clazz : dictionaryClassList) {
+      if (startsWithWord(clazz.getPluralClassName(), pluralForm)) {
+        result.add(clazz);
       }
     }
     return result;
@@ -164,15 +177,37 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
     return result;
   }
 
-  public DictionaryEnumerator getEnumerator(String name) {
+  public DictionaryEnumerator findEnumerator(String name) {
     return dictionaryEnumeratorMap.get(name);
   }
 
-  public AppleScriptClass getClassWithName(String name) {
+  @Nullable
+  @Override
+  public AppleScriptClass findClassWithName(String dictionaryName, String className) {
+    if (dictionaryName == null || className == null) return null;
+    ApplicationDictionary dictionary = applicationDictionariesMap.get(dictionaryName);
+    return dictionary != null ? dictionary.findClassByName(className) : null;
+  }
+
+  @Nullable
+  public AppleScriptClass findClassWithName(String name) {
     return dictionaryClassMap.get(name);
   }
 
-  public DictionaryEnumeration getEnumerationWithName(String name) {
+  @Nullable
+  @Override
+  public AppleScriptClass findClassByPluralName(String pluralForm) {
+    if (StringUtil.isEmpty(pluralForm)) return null;
+
+    return dictionaryClassToPluralNameMap.get(pluralForm);
+//    for (AppleScriptClass aClass: dictionaryClassList) {
+//      if (aClass.getPluralClassName().equals(pluralForm)) {
+//        return aClass;
+//      }
+//    }
+  }
+
+  public DictionaryEnumeration findEnumerationWithName(String name) {
     return dictionaryEnumerationMap.get(name);
   }
 
@@ -180,6 +215,17 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   public List<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName) {
     ApplicationDictionary dictionary = applicationDictionariesMap.get(dictionaryName);
     return dictionary != null ? dictionary.getAllCommands() : null;
+  }
+
+  @Override
+  public List<AppleScriptPropertyDefinition> findPropertiesStartingWithName(String name) {
+    List<AppleScriptPropertyDefinition> result = new ArrayList<AppleScriptPropertyDefinition>();
+    for (AppleScriptPropertyDefinition prop : dictionaryPropertyMap.values()) {//todo some faster util method?
+      if (startsWithWord(prop.getName(), name)) {
+        result.add(prop);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -232,6 +278,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   public void addClass(AppleScriptClass aClass) {
     dictionaryClassList.add(aClass);
     dictionaryClassMap.put(aClass.getName(), aClass);
+    dictionaryClassToPluralNameMap.put(aClass.getPluralClassName(), aClass);
     for (AppleScriptPropertyDefinition property : aClass.getProperties()) {
       addProperty(property);
     }

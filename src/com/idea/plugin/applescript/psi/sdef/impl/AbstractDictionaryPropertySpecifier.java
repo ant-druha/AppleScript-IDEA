@@ -74,7 +74,7 @@ public class AbstractDictionaryPropertySpecifier extends AppleScriptPsiElementIm
       ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
       String propName = getCompositeName();
       final AppleScriptPropertyDefinition allPropsWithName = suiteRegistry != null ? suiteRegistry.
-              getPropertyWithName(propName) :
+              findPropertyWithName(propName) :
               ParsableScriptSuiteRegistryHelper.getPropertyWithName(propName);
       final List<PsiElement> results = new ArrayList<PsiElement>();
       results.add(allPropsWithName);

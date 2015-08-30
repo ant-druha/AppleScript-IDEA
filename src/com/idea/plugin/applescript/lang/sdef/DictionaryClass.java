@@ -13,6 +13,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
 
   private List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
   private String parentClassName;
+  @NotNull private String pluralClassName;
   //Application classes have attributes, to-one relationships, and to-many relationships. AppleScript classes
   // in the object model have properties and elements—properties are synonymous with attributes and to-one
   // relationships, while elements are synonymous with to-many relationships. For more information on these and
@@ -26,9 +27,11 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   //<!ELEMENT class ((%implementation;)?, access-group*, type*, (%class-contents;)*)>
 
   public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                         @NotNull XmlTag xmlTagClass, String parentClassName, @Nullable List<String> elementNames) {
+                         @NotNull XmlTag xmlTagClass, String parentClassName, @Nullable List<String> elementNames,
+                         String pluralClassName) {
     super(suite, name, code, xmlTagClass, null);
     this.parentClassName = parentClassName;
+    this.pluralClassName = StringUtil.isEmpty(pluralClassName) ? name + "s" : pluralClassName;
     if (elementNames != null) {
       this.elementNames = elementNames;
     }
@@ -128,5 +131,17 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
       initialized = true;
     }
     return elements;
+  }
+
+  @NotNull
+  public String getPluralClassName() {
+    return pluralClassName;
+  }
+
+  public DictionaryClass setPluralClassName(@NotNull String pluralClassName) {
+    if (!StringUtil.isEmpty(pluralClassName)) {
+      this.pluralClassName = pluralClassName;
+    }
+    return this;
   }
 }

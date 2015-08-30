@@ -79,7 +79,7 @@ public class AppleScriptDocHelper {
     } else if ("suite".equals(typeName)) {
       result = dictionary != null ? dictionary.findSuiteByName(targetName) : null;
     }
-//    result = ParsableScriptSuiteRegistryHelper.getClassWithName(className);
+//    result = ParsableScriptSuiteRegistryHelper.findClassWithName(className);
     return result;
   }
 

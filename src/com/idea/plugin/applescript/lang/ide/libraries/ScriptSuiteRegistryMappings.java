@@ -92,7 +92,7 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
   private List<String> cacheDictionaries(@NotNull LibraryEx libEx) {
     List<String> cachedDictionaryUrls;// = new ArrayList<String>();
     final Map<VirtualFile, String> cachedDictionaryFileUrlMap =
-            serializeDictionaryFilesForLibrary(libEx, OrderRootType.CLASSES, getProject());
+            serializeDictionaryFileNamesForLibrary(libEx, OrderRootType.CLASSES, getProject());
     LibraryEx.ModifiableModelEx modifiableModel = libEx.getModifiableModel();
 
     cachedDictionaryUrls = doCacheDictionaries(cachedDictionaryFileUrlMap, modifiableModel);
@@ -142,6 +142,11 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
   @Override
   protected String getValueAttribute() {
     return "suiteLibrary";
+  }
+
+  @Override
+  protected boolean shouldReparseFiles() {
+    return super.shouldReparseFiles();
   }
 
   @Nullable
@@ -247,8 +252,9 @@ public class ScriptSuiteRegistryMappings extends LanguagePerFileMappings<ScriptS
     return result;
   }
 
-  private static Map<VirtualFile, String> serializeDictionaryFilesForLibrary(LibraryEx libEx, OrderRootType rootType,
-                                                                             Project project) {
+  private static Map<VirtualFile, String> serializeDictionaryFileNamesForLibrary(LibraryEx libEx, OrderRootType
+          rootType,
+                                                                                 Project project) {
     final Map<VirtualFile, String> result = new HashMap<VirtualFile, String>();
     char sep = File.separatorChar;
     final String myCacheDir = CACHED_DICTIONARIES_SYSTEM_FOLDER + sep + project.getName() + sep + libEx.getName();

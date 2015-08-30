@@ -44,16 +44,22 @@ STYLED_TEXT="styled"{WHITE_SPACE}+"text"
 TEXT_ITEM="text"{WHITE_SPACE}+"item"
 FILE_SPECIFICATION="file"{WHITE_SPACE}+"specification"
 INTERNATIONAL_TEXT="international"{WHITE_SPACE}+"text"
+UNICODE_TEXT="unicode"{WHITE_SPACE}+"text"
 RGB_COLOR="rgb"{WHITE_SPACE}+"color"
 STYLED_CLIPBOARD_TEXT="styled"{WHITE_SPACE}+"clipboard"{WHITE_SPACE}+"text"
 LOCATION_SPECIFIER="location"{WHITE_SPACE}+"specifier"
 TEMPERATURE="degrees"{WHITE_SPACE}+("Celsius"|"Fahrenheit"|"Kelvin")
 CUBIC_VOL="cubic"{WHITE_SPACE}+("centimetres"|"centimeters"|"feet"|"inches"|"metres"|"meters"|"yards")
 SQUARE_AREA="square"{WHITE_SPACE}+("feet"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards")
-BUILT_IN_PROPERTY=("class"|"day"|"weekday"|"month"|"year"|"time"|"date string"|"time string"|"length"|"rest"|"reverse"|"contents")
+
+//class name plural form
+BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"|"script"
+BUILT_IN_TYPE_S={BUILT_IN_TYPE}"s"
 
 //built in classes properties
 QUOTED_FORM="quoted"{WHITE_SPACE}+"form"
+BUILT_IN_PROPERTY=("class"|"day"|"weekday"|"month"|"year"|"time"|"date string"|"time string"|"length"|"rest"|"reverse"|"contents"|{QUOTED_FORM})
+
 APART_FROM="apart"{WHITE_SPACE}+"from"
 ASIDE_FROM="aside"{WHITE_SPACE}+"from"
 OUT_OF="out"{WHITE_SPACE}+"of"
@@ -147,6 +153,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "{"                          { return LCURLY; }
   "}"                          { return RCURLY; }
   ":"                          { return COLON; }
+  "script"                     { return SCRIPT; }
   "return"                     { return RETURN; }
   "exit"                       { return EXIT; }
   "repeat"                     { return REPEAT; }
@@ -178,7 +185,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "version"                    { return VERSION; }
   "importing"                  { return IMPORTING; }
   "without"                    { return WITHOUT; }
-  "script"                     { return SCRIPT; }
   "framework"                  { return FRAMEWORK; }
   "using"                      { return USING; }
   "terms"                      { return TERMS; }
@@ -195,7 +201,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "every"                      { return EVERY; }
   "whose"                      { return WHOSE; }
   "where"                      { return WHERE; }
-  "given"                      { return GIVEN; }
   "index"                      { return INDEX; }
   "first"                      { return FIRST; }
   "third"                      { return THIRD; }
@@ -247,6 +252,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "over"                       { return OVER; }
   "since"                      { return SINCE; }
   "under"                      { return UNDER; }
+  "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
   "copy"                       { return COPY; }
   "put"                        { return PUT; }
@@ -276,14 +282,16 @@ RAW_CODE=("<<"[^">>"]*">>")
   {TEXT_ITEM}                  { return TEXT_ITEM; }
   {FILE_SPECIFICATION}         { return FILE_SPECIFICATION; }
   {INTERNATIONAL_TEXT}         { return INTERNATIONAL_TEXT; }
+  {UNICODE_TEXT}               { return UNICODE_TEXT; }
   {RGB_COLOR}                  { return RGB_COLOR; }
   {STYLED_CLIPBOARD_TEXT}      { return STYLED_CLIPBOARD_TEXT; }
   {LOCATION_SPECIFIER}         { return LOCATION_SPECIFIER; }
   {TEMPERATURE}                { return TEMPERATURE; }
   {CUBIC_VOL}                  { return CUBIC_VOL; }
   {SQUARE_AREA}                { return SQUARE_AREA; }
-  {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
   {QUOTED_FORM}                { return QUOTED_FORM; }
+  {BUILT_IN_TYPE_S}            { return BUILT_IN_TYPE_S; }
+  {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
   {APART_FROM}                 { return APART_FROM; }
   {ASIDE_FROM}                 { return ASIDE_FROM; }
   {OUT_OF}                     { return OUT_OF; }

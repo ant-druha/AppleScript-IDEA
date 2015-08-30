@@ -76,11 +76,20 @@ public class AbstractDictionaryClassSpecifier extends AppleScriptPsiElementImpl
               .getProject());
       ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
       String classNameNormalized = getCompositeName();
-      final AppleScriptClass allCommandsWithName = suiteRegistry != null ? suiteRegistry.
-              getClassWithName(classNameNormalized) :
-              ParsableScriptSuiteRegistryHelper.getClassWithName(classNameNormalized);
+      AppleScriptClass allClassesWithName;
+      if (suiteRegistry != null) {
+        allClassesWithName = suiteRegistry.findClassWithName(classNameNormalized);
+        if (allClassesWithName == null) {
+          allClassesWithName = suiteRegistry.findClassByPluralName(classNameNormalized);
+        }
+      } else {
+        allClassesWithName = ParsableScriptSuiteRegistryHelper.findClassWithName(classNameNormalized);
+        if (allClassesWithName == null) {
+          allClassesWithName = ParsableScriptSuiteRegistryHelper.findClassByPluralName(classNameNormalized);
+        }
+      }
       final List<PsiElement> results = new ArrayList<PsiElement>();
-      results.add(allCommandsWithName);
+      results.add(allClassesWithName);
       return AppleScriptResolveUtil.toCandidateInfoArray(results);
     }
 
