@@ -53,28 +53,27 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
     //todo repeating super =(
     sb.append(super.getDocumentation());
-    String type = StringUtil.capitalizeWords(getType(), true);
-    String className = getName();
-//    sb.append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
-    sb.append("<p>").append(type.substring(10)).append(" <b>").append(className).
-            append("</b>");
+//    String type = StringUtil.capitalizeWords(getType(), true);
+//    String className = getName();
+////    sb.append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
+//    sb.append("<p>").append(type.substring(10)).append(" <b>").append(className).
+//            append("</b>");
+//    AppleScriptClass parentClass = getParentClass();
+//    if (parentClass != null) {
+//      sb.append(" [inh. ");
+//      String ext = "";
+//      do {
+//        sb.append(ext);
+//        AppleScriptDocHelper.appendElementLink(sb, parentClass, parentClass.getName());
+//        parentClass = parentClass.getParentClass();
+//        ext = " > ";
+//      } while (parentClass != null);
+//      sb.append(" ]");
+//    }
+//    sb.append(" : ").append(StringUtil.notNullize(getDescription()));
 
-
-    AppleScriptClass parentClass = getParentClass();
-    if (parentClass != null) {
-      sb.append(" [inh. ");
-      String ext = "";
-      do {
-        sb.append(ext);
-        AppleScriptDocHelper.appendElementLink(sb, parentClass, parentClass.getName());
-        parentClass = parentClass.getParentClass();
-        ext = " > ";
-      } while (parentClass != null);
-      sb.append(" ]");
-    }
-    sb.append(" : ").append(StringUtil.notNullize(getDescription()));
     AppleScriptDocHelper.appendClassAttributes(sb, this);
-    parentClass = getParentClass();
+    AppleScriptClass parentClass = getParentClass();
     if (parentClass != null) {
       sb.append("<p>").append(indent).append("INHERITED FROM ").append(parentClass.getName().toUpperCase()).
               append("</p>");

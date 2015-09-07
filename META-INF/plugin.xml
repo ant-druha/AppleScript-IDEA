@@ -103,6 +103,9 @@
         <lang.structureViewExtension
                 implementation="com.idea.plugin.applescript.lang.ide.structure.AppleScriptStructureViewExtension"/>
 
+        <completion.contributor language="AppleScript"
+                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.AppleScriptCommandCompletionContributor"/>
+
     </extensions>
 
     <application-components>

@@ -155,10 +155,31 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
     sb.append("<b>");
     AppleScriptDocHelper.appendElementLink(sb, getDictionary(), getDictionary().getName());
     sb.append("</b> ").append(" Dictionary").append("<br>");
-//    sb.append("<p>");
-//    sb.append(type.substring(10)).append(" <b>").append(name).
-//            append("</b>").append(" : ").append(StringUtil.notNullize(getDescription()));
-//    sb.append("</p>");
+//    if (!(this instanceof DictionaryClass
+//            || this instanceof AppleScriptCommand
+//            || this instanceof Suite)) {
+      sb.append("<p>");
+      sb.append(type.substring(10)).append(" <b>").append(name).
+              append("</b>");
+
+    if (this instanceof AppleScriptClass) {
+      AppleScriptClass parentClass = ((AppleScriptClass)this).getParentClass();
+      if (parentClass != null) {
+        sb.append(" [inh. ");
+        String ext = "";
+        do {
+          sb.append(ext);
+          AppleScriptDocHelper.appendElementLink(sb, parentClass, parentClass.getName());
+          parentClass = parentClass.getParentClass();
+          ext = " > ";
+        } while (parentClass != null);
+        sb.append(" ]");
+      }
+    }
+
+    sb.append(" : ").append(StringUtil.notNullize(getDescription()));
+      sb.append("</p>");
+//    }
     return sb.toString();
   }
 

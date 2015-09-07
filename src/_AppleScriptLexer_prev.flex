@@ -19,7 +19,7 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 %unicode
 
 ONE_NL=(\r|\n|\r\n)
-CC="¬"
+CC="�"
 WHITE_SPACE_CHAR=[\ \t\f]
 WHITE_SPACE={WHITE_SPACE_CHAR}|{CC}({WHITE_SPACE_CHAR})*({ONE_NL})?//|{CC}
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE})*
@@ -33,13 +33,13 @@ IS_CONTAIN=("contain"|"contains")
 
 //todo duplicate variants with and without to/is parts otherwise it is not parsed correctly
 GT=(">"|"is greater than"|"greater than"|"comes after"|"is not less than or equal to"|"is not less than or equal"|"isn't less than or equal to"|"isn't less than or equal")
-LE=("≤"|"<="|"is less than or equal to"|"less than or equal to"|"is less than or equal"|"less than or equal"|"is not greater than"|"isn't greater than"|"does not come after"|"doesn't come after")
-GE=("≥"|">="|"is greater than or equal to"|"greater than or equal to"|"is greater than or equal"|"greater than or equal"|"is not less than"|"isn't less than"|"does not come before"|"doesn't come before")
+LE=("?"|"<="|"is less than or equal to"|"less than or equal to"|"is less than or equal"|"less than or equal"|"is not greater than"|"isn't greater than"|"does not come after"|"doesn't come after")
+GE=("?"|">="|"is greater than or equal to"|"greater than or equal to"|"is greater than or equal"|"greater than or equal"|"is not less than"|"isn't less than"|"does not come before"|"doesn't come before")
 LT=("<"|"is less than"|"less than"|"comes before"|"is not greater than or equal to"|"is not greater than or equal"|"isn't greater than or equal to"|"isn't greater than or equal")
 NE=("isn't equal to"|"isn't equal"|"is not equal to"|"is not equal"|"doesn't equal"|"does not equal"|"is not"|"isn't")
 EQ=("="|"is equal to"|"equal to"|"is"|"equal"|"equals")
 REF_OP=("a reference to"|"a ref to"|"a ref"|"reference to"|"ref")
-DIV=("/"|"÷")
+DIV=("/"|"?")
 STYLED_TEXT="styled"{WHITE_SPACE}+"text"
 TEXT_ITEM="text"{WHITE_SPACE}+"item"
 FILE_SPECIFICATION="file"{WHITE_SPACE}+"specification"
@@ -51,9 +51,8 @@ LOCATION_SPECIFIER="location"{WHITE_SPACE}+"specifier"
 TEMPERATURE="degrees"{WHITE_SPACE}+("Celsius"|"Fahrenheit"|"Kelvin")
 CUBIC_VOL="cubic"{WHITE_SPACE}+("centimetres"|"centimeters"|"feet"|"inches"|"metres"|"meters"|"yards")
 SQUARE_AREA="square"{WHITE_SPACE}+("feet"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards")
-
 //class name plural form
-BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"
+BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"|"script"
 BUILT_IN_TYPE_S={BUILT_IN_TYPE}"s"
 
 //built in classes properties
@@ -153,6 +152,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "{"                          { return LCURLY; }
   "}"                          { return RCURLY; }
   ":"                          { return COLON; }
+  "script"                     { return SCRIPT; }
   "return"                     { return RETURN; }
   "exit"                       { return EXIT; }
   "repeat"                     { return REPEAT; }
@@ -201,7 +201,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "every"                      { return EVERY; }
   "whose"                      { return WHOSE; }
   "where"                      { return WHERE; }
-  "given"                      { return GIVEN; }
   "index"                      { return INDEX; }
   "first"                      { return FIRST; }
   "third"                      { return THIRD; }
@@ -253,6 +252,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "over"                       { return OVER; }
   "since"                      { return SINCE; }
   "under"                      { return UNDER; }
+  "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
   "copy"                       { return COPY; }
   "put"                        { return PUT; }

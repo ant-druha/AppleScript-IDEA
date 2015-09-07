@@ -31,6 +31,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static final Key<List<ApplicationDictionary>> SCRIPT_DICTIONARIES =
           Key.create("applescript.parsing.current.dictionary.stack");
 
+  private static final Key<Boolean> IS_PARSING_POSSESSIVE_FORM =
+          Key.create("applescript.parsing.possessive.form");
+  private static final Key<Boolean> IS_TREE_PREV_CLASS_NAME =
+          Key.create("applescript.tree.prev.class.name");
+  private static final Key<Boolean> IS_PARSING_TELL_SIMPLE_STATEMENT =
+          Key.create("applescript.parsing.tell.simple.statement");
+
 
   enum DeclaredType {
     SDEF_COMMAND_NAME,
@@ -66,7 +73,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   /**
-   * <<< COMMAND_HANDLER_CALL_EXPRESSION >>>
+   * <<< COMMAND_HANDLER_CALL >>>
    */
   // commandName commandParameters?
   public static boolean parseCommandHandlerCallExpression(PsiBuilder b, int l) {
@@ -74,9 +81,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r;
     StringHolder parsedCommandName = new StringHolder();
     r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName);
-    //very un-efficient to call service here
-//    ServiceManager.getService()
-    // usual component then ?
     b.getProject().getComponent(ScriptSuiteRegistry.class);// is it too heavy??
 
 
@@ -96,15 +100,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         break;
       }
     }
-//    r = r && dictionaryCommand != null;
-    if (dictionaryCommand != null) {
-      String qName = dictionaryCommand.getQualifiedPath();
-      qName.toLowerCase();
-    }
-
-//    r = r && dictionaryCommand != null && parseParametersForCommand(b, l + 1, dictionaryCommand); //not
-
-    return r;
+    return r || dictionaryCommand != null;
+//    return r;
   }
 
   // of? directParameterValue? commandParameters?
@@ -127,19 +124,15 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
-  public static boolean isParsingCommandHandlerCallParameters(PsiBuilder b, int l) {
-    return b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) == Boolean.TRUE;
+  public static boolean isHandlerLabeledParametersCallAllowed(PsiBuilder b, int l) {
+    return b.getUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE
+            && b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) != Boolean.TRUE
+            && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
   }
 
   public static boolean isTreePrevSimpleReference(PsiBuilder b, int l) {
-    boolean treePrevSimpleRef = b.getLatestDoneMarker() != null
-            && b.getLatestDoneMarker().getTokenType() == REFERENCE_IDENTIFIER
-            && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
-    boolean treePrevNotLValAssignment =
-            b.getUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE;
-
-    return treePrevSimpleRef && treePrevNotLValAssignment;
-    //return b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) == Boolean.TRUE;
+    return b.getLatestDoneMarker() != null
+            && b.getLatestDoneMarker().getTokenType() == REFERENCE_IDENTIFIER;
   }
 
   public static boolean parseAssignmentStatementInner(PsiBuilder b, int l) {
@@ -148,6 +141,16 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, true);
     r = AppleScriptParser.assignmentStatement(b, l + 1);
     b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, false);
+    return r;
+  }
+
+  public static boolean parseTellSimpleStatementInner(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "tellSimpleStatement")) return false;
+    if (!nextTokenIs(b, TELL)) return false;
+    boolean r;
+    b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, true);
+    r = AppleScriptParser.tellSimpleStatement(b, l + 1);
+    b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, false);
     return r;
   }
 
@@ -197,7 +200,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "parseParameterForCommand")) return false;
     boolean r;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Parameter For Command>");//todo check here if it works
-    //todo here mark as _AND_ ??
     r = parseGivenParameter(b, l + 1, command, parsedParameterSelector);
     //todo and here exit and enter once again if it is true??
     if (!r) r = parseBooleanParameter(b, l + 1, command, parsedParameterSelector);
@@ -232,6 +234,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r;
     r = parseCommandParameterSelector(b, l + 1, command, parsedParameterSelector);
     final CommandParameter parameterDefinition = command.getParameterByName(parsedParameterSelector.value);
+    //todo: parameter value expression could be incorrectly parsed and needed to be rolled backed (__AND__ modifier?)
+    //as in example: mount volume "" in AppleTalk zone ""  (in - parsed as range ref form)
     r = r && parseCommandParameterValue(b, l + 1, parameterDefinition);
     exit_section_(b, l, m, null, r, false, null);
     return r;
@@ -244,7 +248,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
     String parameterTypeSpecifier = parameterDefinition.getTypeSpecifier();
     if ("type".equals(parameterTypeSpecifier)) {
-      r = typeSpecifierD(b, l + 1);
+      r = typeSpecifier(b, l + 1);
+    } else if ("text".equals(parameterTypeSpecifier)) {
+      r = AppleScriptParser.stringLiteralExpression(b, l + 1);
     }
     if (!r) r = AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, null, r, false, null);
@@ -271,14 +277,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   }
 
-  //we need to parse tokens here and get text of the parameter selector and compare with one of possible parameter
-  // names
   private static boolean parseCommandName(PsiBuilder b, int l, StringHolder parsedName) {
     if (!recursion_guard_(b, l, "parseCommandName")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Name>");
     while (consumeTokenForCommandNameAndAppendNameText(b, l + 1, parsedName)) {
-      boolean foundMatch = ParsableScriptSuiteRegistryHelper.findCommandWithName(parsedName.value) != null;
+      boolean foundMatch = parsedName.value.length() > 0 && StringUtil.isJavaIdentifierStart(parsedName.value.charAt(0))
+              && ParsableScriptSuiteRegistryHelper.findCommandWithName(parsedName.value) != null;
 //      boolean foundMatch = ServiceManager.getService(b.getProject(), ParsableScriptSuiteRegistryHelper.class)
 //              .findCommandWithName(parsedName.value) != null;
       String tryLookAheadName = "";
@@ -286,7 +291,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         //todo check if the text of next tokens matches other dictionary command which starts with parsed name
         r = true;
         tryLookAheadName = parsedName.value + " " + b.getTokenText();
-        if (ParsableScriptSuiteRegistryHelper.findCommandsStartingWithName(tryLookAheadName).size() > 0) {
+        if (tryLookAheadName.length() > 0 && StringUtil.isJavaIdentifierStart(tryLookAheadName.charAt(0))
+                && ParsableScriptSuiteRegistryHelper.findCommandsStartingWithName(tryLookAheadName).size() > 0) {
 //          r = false;
           continue;
         }
@@ -305,7 +311,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Direct Parameter Value >");
     String parameterTypeSpecifier = parameter.getTypeSpecifier();
 //    if ("type".equals(parameterTypeSpecifier)) {
-//      r = typeSpecifierD(b, l + 1);
+//      r = typeSpecifier(b, l + 1);
 //    }
     if (!r) r = com.idea.plugin.applescript.lang.parcer.AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, DIRECT_PARAMETER_VAL, r, false, null);
@@ -314,54 +320,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   /* ********************************************************** */
   // singularClassName|pluralClassName
-  static boolean typeSpecifierD(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "typeSpecifierD")) return false;
+  static boolean typeSpecifier(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "typeSpecifier")) return false;
     boolean r;
     PsiBuilder.Marker m = enter_section_(b);
     r = singularClassName(b, l + 1);
 //    if (!r) r = pluralClassName(b, l + 1);
     exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // (builtInClassIdentifierPlural|dictionaryClassIdentifierPlural) ITEM?
-  static boolean pluralClassName(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "pluralClassName")) return false;
-    boolean r;
-    PsiBuilder.Marker m = enter_section_(b);
-    r = pluralClassName_0(b, l + 1);
-    r = r && pluralClassName_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // builtInClassIdentifierPlural|dictionaryClassIdentifierPlural
-  private static boolean pluralClassName_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "pluralClassName_0")) return false;
-    boolean r;
-    PsiBuilder.Marker m = enter_section_(b);
-    r = builtInClassIdentifierPlural(b, l + 1);
-    if (!r) r = dictionaryClassIdentifierPlural(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ITEM?
-  private static boolean pluralClassName_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "pluralClassName_1")) return false;
-    consumeToken(b, ITEM);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // <<parseDictionaryClassIdentifierPluralInner>>
-  public static boolean dictionaryClassIdentifierPlural(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "dictionaryClassIdentifierPlural")) return false;
-    boolean r;
-    PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<dictionary class identifier plural>");
-    r = parseDictionaryClassIdentifierPluralInner(b, l + 1);
-    exit_section_(b, l, m, DICTIONARY_CLASS_IDENTIFIER_PLURAL, r, false, null);
     return r;
   }
 
@@ -412,7 +377,35 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l) {
-    return false;
+    StringHolder parsedCommandName = new StringHolder();
+    return parseDictionaryCommandNameInner(b, l + 1, parsedCommandName);
+//    return false;
+  }
+
+  public static boolean parseIncompleteCommandCall(PsiBuilder b, int l) {
+    StringHolder parsedCommandName = new StringHolder();
+    return parseDictionaryCommandNameInner(b, l + 1, parsedCommandName);
+  }
+
+
+  public static boolean parseObjectReferencePointer(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "objectReferencePointer_0_0")) return false;
+    boolean r1, r2 = false;
+    PsiBuilder.Marker m = enter_section_(b);
+    r1 = consumeToken(b, OF);
+    if (!r1) r1 = consumeToken(b, IN);
+    if (!r1) r2 = consumeToken(b, APS);
+    b.putUserData(IS_PARSING_POSSESSIVE_FORM, r2);
+    exit_section_(b, m, null, r1 || r2);
+    return r1 || r2;
+  }
+
+  public static boolean parseObjectReference(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseObjectReference")) return false;
+    boolean r = AppleScriptParser.objectReference(b, l + 1);
+    b.putUserData(IS_PARSING_POSSESSIVE_FORM, false);
+    b.putUserData(IS_TREE_PREV_CLASS_NAME, false);
+    return r;
   }
 
   private static boolean parseDeclaredNameInner(PsiBuilder b, int l, DeclaredType declaredNameType) {
@@ -463,9 +456,43 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   public static boolean parseDictionaryClassName(PsiBuilder b, int l) {
-//    return parseDeclaredNameInner(b, l, DeclaredType.SDEF_CLASS_NAME);
     return parseDictionaryClassNameInner(b, l, false);
   }
+
+//  public static boolean parseClassNamePrimaryExpression(PsiBuilder b, int l) {
+//    boolean r = AppleScriptParser.classNamePrimaryExpression(b, l + 1);
+//    b.putUserData(IS_TREE_PREV_CLASS_NAME, r);
+//    return r;
+//  }
+
+
+  public static boolean isTreePrevClassName(PsiBuilder b, int l) {
+    IElementType prevElemType;
+
+    int i = -1;
+    prevElemType = b.rawLookup(i--);
+    while (prevElemType == com.intellij.psi.TokenType.WHITE_SPACE) {
+      prevElemType = b.rawLookup(i--);
+    }
+// BUILT_IN_CLASS_IDENTIFIER
+    boolean result = prevElemType == DICTIONARY_CLASS_NAME
+            || prevElemType == BUILT_IN_CLASS_IDENTIFIER
+            || prevElemType == BUILT_IN_TYPE_S
+            || prevElemType == SCRIPTS
+            || prevElemType == DICTIONARY_CLASS_IDENTIFIER_PLURAL;
+//            || prevElemType == VAR_IDENTIFIER;
+    if (!result) {
+      prevElemType = b.getLatestDoneMarker() != null ?
+              b.getLatestDoneMarker().getTokenType() : null;
+      result = prevElemType == DICTIONARY_CLASS_NAME
+              || prevElemType == BUILT_IN_CLASS_IDENTIFIER
+              || prevElemType == BUILT_IN_TYPE_S
+              || prevElemType == SCRIPTS
+              || prevElemType == DICTIONARY_CLASS_IDENTIFIER_PLURAL;
+    }
+    return result;
+  }
+
 
   private static boolean parseDictionaryClassNameInner(PsiBuilder b, int l, final boolean isPluralForm) {
     if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
@@ -506,7 +533,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    int candidatesCount = isPluralForm ?
 //            ParsableScriptSuiteRegistryHelper.findClassesStartingWithPluralName(currentTokenText.value).size() :
 //            ParsableScriptSuiteRegistryHelper.findClassesStartingWithName(currentTokenText.value).size();
-    return findClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm);
+    return currentTokenText.value.length() > 0 && StringUtil.isJavaIdentifierStart(currentTokenText.value.charAt(0))
+            && findClassNameExactMatch(b, l + 1, currentTokenText,
+            isPluralForm);
   }
 
   private static boolean tryToParseDictionaryProperty(PsiBuilder b, int l) {
@@ -829,6 +858,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!r) r = builtInClassIdentifierPlural(b, l + 1);
     if (!r) r = handlerParameterLabel(b, l + 1);
     if (!r) r = consumeToken(b, IN);
+    if (!r) r = consumeToken(b, ZONE);
     if (!r) r = consumeToken(b, COPY); //without one copy
     if (!r) r = consumeToken(b, AFTER);
     if (!r) r = consumeToken(b, BEFORE);
@@ -875,6 +905,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!r) r = builtInClassIdentifierPlural(b, l + 1);
     if (!r) r = handlerParameterLabel(b, l + 1);
     if (!r) r = consumeToken(b, RUN);
+    if (!r) r = consumeToken(b, CURRENT);
     if (!r) r = consumeToken(b, COUNT);
     if (!r) r = consumeToken(b, SCRIPT);
     if (!r) r = consumeToken(b, WITH);//todo check this
@@ -902,14 +933,15 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   /* ********************************************************** */
-  // builtInClassIdentifier"s"|scripts
-  public static boolean builtInClassIdentifierPlural(PsiBuilder b, int l) {
+  // BUILT_IN_TYPE_S|scripts
+  static boolean builtInClassIdentifierPlural(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "builtInClassIdentifierPlural")) return false;
+    if (!nextTokenIs(b, "", BUILT_IN_TYPE_S, SCRIPTS)) return false;
     boolean r;
-//    PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<built in class identifier plural>");
-    r = builtInClassIdentifierPlural_0(b, l + 1);
+    PsiBuilder.Marker m = enter_section_(b);
+    r = consumeToken(b, BUILT_IN_TYPE_S);
     if (!r) r = consumeToken(b, SCRIPTS);
-//    exit_section_(b, l, m, BUILT_IN_CLASS_IDENTIFIER_PLURAL, r, false, null);
+    exit_section_(b, m, null, r);
     return r;
   }
 

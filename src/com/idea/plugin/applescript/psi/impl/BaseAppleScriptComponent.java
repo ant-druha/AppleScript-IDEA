@@ -56,6 +56,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Override
   public PsiElement getOriginalDeclaration() {
     //todo (re)move this to targetReference
+    //todo (re)move this to targetReference
     PsiReference myReference = getReference();
     if (myReference != null) {
       PsiElement myTarget = myReference.resolve();
@@ -114,19 +115,10 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
 
   @Override
   public PsiReference getReference() {
-    final String targetName = getName() != null ? getName() : getNode().getText();
     if (this instanceof AppleScriptTargetVariable) {
-      return new AppleScriptTargetReferenceImpl(this, targetName);
+      return new AppleScriptTargetReferenceImpl(this);
     }
     return null;
-    //todo to think how to better simplify
-//    if (this instanceof AppleScriptHandlerPositionalParametersDefinition || this instanceof AppleScriptHandler
-//            || this instanceof AppleScriptVarDeclarationListPart || this instanceof AppleScriptVarAccessDeclaration
-//            || findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null
-//            ) {
-//      return null;
-//    }
-//    return new AppleScriptTargetReferenceImpl(this, targetName);
   }
 
   @NotNull

@@ -51,9 +51,8 @@ LOCATION_SPECIFIER="location"{WHITE_SPACE}+"specifier"
 TEMPERATURE="degrees"{WHITE_SPACE}+("Celsius"|"Fahrenheit"|"Kelvin")
 CUBIC_VOL="cubic"{WHITE_SPACE}+("centimetres"|"centimeters"|"feet"|"inches"|"metres"|"meters"|"yards")
 SQUARE_AREA="square"{WHITE_SPACE}+("feet"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards")
-
 //class name plural form
-BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"|"script"
+BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"//|"script"
 BUILT_IN_TYPE_S={BUILT_IN_TYPE}"s"
 
 //built in classes properties
@@ -67,7 +66,7 @@ INSTEAD_OF="instead"{WHITE_SPACE}+"of"
 C_WHITE_SPACE="white"{WHITE_SPACE}+"space"
 APP_RESPONSES=("application"{WHITE_SPACE}+"responses"|"app"{WHITE_SPACE}+"responses")
 SCRIPTING_ADDITIONS="scripting"{WHITE_SPACE}+"additions"
-CURRENT_DATE="current"{WHITE_SPACE}+"date"
+//CURRENT_DATE="current"{WHITE_SPACE}+"date"
 CURRENT_APPLICATION="current"{WHITE_SPACE}+"application"
 CURRENT_APP="current"{WHITE_SPACE}+"app"
 TEXT_ITEM_DELIMETERS="text"{WHITE_SPACE}+"item"{WHITE_SPACE}+"delimiters"
@@ -196,7 +195,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "false"                      { return FALSE; }
   "machine"                    { return MACHINE; }
   "zone"                       { return ZONE; }
-  "my"                         { return MY; }
   "some"                       { return SOME; }
   "every"                      { return EVERY; }
   "whose"                      { return WHOSE; }
@@ -216,9 +214,9 @@ RAW_CODE=("<<"[^">>"]*">>")
   "back"                       { return BACK; }
   "middle"                     { return MIDDLE; }
   "named"                      { return NAMED; }
+  "beginning"                  { return BEGINNING; }
   "thru"                       { return THRU; }
   "through"                    { return THROUGH; }
-  "beginning"                  { return BEGINNING; }
   "before"                     { return BEFORE; }
   "after"                      { return AFTER; }
   "behind"                     { return BEHIND; }
@@ -262,6 +260,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "run"                        { return RUN; }
   "set"                        { return SET; }
   "returning"                  { return RETURNING; }
+  "my"                         { return MY; }
 
   {NLS}                        { return NLS; }
   {STARTS_BEGINS_WITH}         { return STARTS_BEGINS_WITH; }
@@ -299,7 +298,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   {C_WHITE_SPACE}              { return C_WHITE_SPACE; }
   {APP_RESPONSES}              { return APP_RESPONSES; }
   {SCRIPTING_ADDITIONS}        { return SCRIPTING_ADDITIONS; }
-  {CURRENT_DATE}               { return CURRENT_DATE; }
+//  {CURRENT_DATE}               { return CURRENT_DATE; }
   {CURRENT_APPLICATION}        { return CURRENT_APPLICATION; }
   {CURRENT_APP}                { return CURRENT_APP; }
   {TEXT_ITEM_DELIMETERS}       { return TEXT_ITEM_DELIMETERS; }

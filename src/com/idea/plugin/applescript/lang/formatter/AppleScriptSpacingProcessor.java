@@ -102,10 +102,10 @@ public class AppleScriptSpacingProcessor {
 
         if (COMMA == type2) return Spacing.createSpacing(0, 0, 0, true, 0);
 
-        if (type1 == APPLICATION_OBJECT_REFERENCE && elementType == TELL_COMPOUND_STATEMENT
-                && node2.getTreePrev().getElementType() != NLS && type2 != NLS) {
-            return addLineBreak();
-        }
+//        if (/*type1 == APPLICATION_OBJECT_REFERENCE &&*/ elementType == TELL_COMPOUND_STATEMENT
+//                && node2.getTreePrev().getElementType() != NLS && type2 != NLS) {
+//            return addLineBreak();
+//        }
 
 
         if (type1 == IDENTIFIER && type2 == HANDLER_PARAMETER_LABEL) {

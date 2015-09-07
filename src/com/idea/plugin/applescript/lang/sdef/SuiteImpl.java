@@ -1,6 +1,5 @@
 package com.idea.plugin.applescript.lang.sdef;
 
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,16 +59,8 @@ public class SuiteImpl extends AbstractDictionaryComponent<ApplicationDictionary
   @Override
   public String getDocumentation() {
     StringBuilder sb = new StringBuilder();
-    String type = StringUtil.capitalizeWords(getType(),true);
-    String name = getName();
-//    sb.append("<b>");
-//    AppleScriptDocHelper.appendElementLink(sb, getDictionary(), getDictionary().getName());
-//    sb.append("</b> ").
-//            append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
     sb.append("<html>");
     sb.append(super.getDocumentation());
-    sb.append("<p>").append(type.substring(10)).append(" <b>").append(name).
-            append("</b>").append(" : ").append(StringUtil.notNullize(getDescription())).append("</p>");
 
     String sep = "  ===================  ";
     sb.append("<p>").append("COMMANDS").append("<br>");

@@ -24,7 +24,7 @@ import java.util.List;
  * Created by Andrey on 16.08.2015.
  */
 public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElementImpl//AppleScriptPsiElementImpl
-        implements AppleScriptCommandHandlerCall, AppleScriptExpression {
+        implements AppleScriptCommandHandlerCall {
 
   public AbstractAppleScriptCommandHandlerCall(ASTNode node) {
     super(node);
@@ -61,13 +61,6 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     return PsiTreeUtil.getChildrenOfTypeAsList(this, AppleScriptCommandHandlerParameter.class);
   }
 
-  //todo do not implement this? - do not define as expression?
-  @Nullable
-  @Override
-  public AppleScriptApplicationObjectReference getApplicationObjectReference() {
-    return null;
-  }
-
   @Nullable
   @Override
   public AppleScriptApplicationReference getApplicationReference() {
@@ -76,13 +69,50 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
 
   @Nullable
   @Override
-  public AppleScriptArbitraryReferenceD getArbitraryReferenceD() {
+  public AppleScriptArbitraryReference getArbitraryReference() {
     return null;
   }
 
   @Nullable
   @Override
-  public AppleScriptEveryElemReferenceD getEveryElemReferenceD() {
+  public AppleScriptBuiltInClassIdentifier getBuiltInClassIdentifier() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptBuiltInClassIdentifierPlural getBuiltInClassIdentifierPlural() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptDictionaryClassIdentifierPlural getDictionaryClassIdentifierPlural() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptDictionaryClassName getDictionaryClassName() {
+    return null;
+  }
+
+
+  @Nullable
+  @Override
+  public AppleScriptDictionaryConstant getDictionaryConstant() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptEveryElemReference getEveryElemReference() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptEveryRangeReference getEveryRangeReference() {
     return null;
   }
 
@@ -91,6 +121,7 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   public List<AppleScriptExpression> getExpressionList() {
     return null;
   }
+
 
   @Nullable
   @Override
@@ -118,37 +149,43 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
 
   @Nullable
   @Override
-  public AppleScriptIndexReferenceD getIndexReferenceD() {
+  public AppleScriptIndexReference getIndexReference() {
     return null;
   }
 
   @Nullable
   @Override
-  public AppleScriptMiddleElemReferenceD getMiddleElemReferenceD() {
+  public AppleScriptIndexReferenceClassForm getIndexReferenceClassForm() {
     return null;
   }
 
   @Nullable
   @Override
-  public AppleScriptNameReferenceD getNameReferenceD() {
+  public AppleScriptMiddleElemReference getMiddleElemReference() {
     return null;
   }
 
   @Nullable
   @Override
-  public AppleScriptObjectRef getObjectRef() {
+  public AppleScriptNameReference getNameReference() {
     return null;
   }
 
   @Nullable
   @Override
-  public AppleScriptPropertyReferenceD getPropertyReferenceD() {
+  public AppleScriptPropertyReference getPropertyReference() {
     return null;
   }
 
   @Nullable
   @Override
-  public AppleScriptRangeReferenceD getRangeReferenceD() {
+  public AppleScriptRangeFromReference getRangeFromReference() {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptRangeIndexReference getRangeIndexReference() {
     return null;
   }
 
@@ -160,9 +197,18 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
 
   @Nullable
   @Override
-  public AppleScriptRelativeReferenceD getRelativeReferenceD() {
+  public AppleScriptRelativeReference getRelativeReference() {
     return null;
   }
+
+  @Nullable
+  @Override
+  public PsiElement getStringLiteral() {
+    return null;
+  }
+
+  //not implement expression ??
+
 
   private class CommandHandlerReference extends AbstractDictionaryReferenceElement implements MultiRangeReference,
           PsiPolyVariantReference {

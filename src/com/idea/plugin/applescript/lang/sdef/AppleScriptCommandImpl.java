@@ -115,12 +115,6 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
     StringBuilder sb = new StringBuilder();
     final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
     sb.append(super.getDocumentation());
-    String type = StringUtil.capitalizeWords(getType(), true);
-    String name = getName();
-    sb.append("<p>");
-    sb.append(type.substring(10)).append(" <b>").append(name).
-            append("</b>").append(" : ").append(StringUtil.notNullize(getDescription()));
-    sb.append("</p>");
 
     CommandDirectParameter p = getDirectParameter();
     List<CommandParameter> parameters = getParameters();

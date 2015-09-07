@@ -17,12 +17,10 @@ public class AppleScriptTargetReferenceImpl extends AppleScriptReferenceElementI
         AppleScriptTargetReference {
 
   @NotNull final private AppleScriptComponent myElement;
-  @NotNull final private String myName;
 
-  public AppleScriptTargetReferenceImpl(@NotNull AppleScriptComponent targetComponent, @NotNull String nameTarget) {
+  public AppleScriptTargetReferenceImpl(@NotNull AppleScriptComponent targetComponent) {
     super(targetComponent.getNode());
     myElement = targetComponent;
-    myName = nameTarget;
   }
 
   @Override
