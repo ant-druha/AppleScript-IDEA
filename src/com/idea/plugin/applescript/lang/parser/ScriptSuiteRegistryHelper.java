@@ -4,6 +4,7 @@ import com.idea.plugin.applescript.lang.sdef.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -45,16 +46,13 @@ public interface ScriptSuiteRegistryHelper {
   AppleScriptClass findClassWithName(String name);
 
   @Nullable
-  AppleScriptClass findClassWithName(String dictionaryName, String name);
-
-  @Nullable
   AppleScriptClass findClassByPluralName(String pluralForm);
 
   @Nullable
   DictionaryEnumeration findEnumerationWithName(String name);
 
   @Nullable
-  List<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName);
+  Collection<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName);
 
   List<AppleScriptCommand> geAllCommandsForSuiteRegistry();
 

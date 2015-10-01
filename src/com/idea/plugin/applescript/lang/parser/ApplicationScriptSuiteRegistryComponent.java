@@ -96,7 +96,8 @@ public class ApplicationScriptSuiteRegistryComponent implements ApplicationCompo
                   }
 
                   currentScriptSuiteRegistry = restoredLibraryForFile != null ? restoredLibraryForFile :
-                          new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, project);
+                          new ScriptSuiteRegistry(newFile, project);
+//                          new ScriptSuiteRegistry(ScriptSuiteRegistry.STD_LIBRARY_NAME, project);
 //                  PsiDocumentManager.getInstance(project).reparseFiles(Arrays.asList(newFile), false);
                 }
 //                FileEditorManager.getInstance(project).getSelectedTextEditor();

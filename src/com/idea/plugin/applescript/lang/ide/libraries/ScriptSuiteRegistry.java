@@ -1,10 +1,11 @@
 package com.idea.plugin.applescript.lang.ide.libraries;
 
-import com.idea.plugin.applescript.lang.parser.ScriptSuiteRegistryHelper;
+import com.idea.plugin.applescript.lang.parser.ScriptSuiteRegistryHelperEx;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -20,7 +21,7 @@ import java.util.*;
 /**
  * Created by Andrey on 08.08.2015.
  */
-public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
+public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelperEx {
 
   private static final String[] STANDARD_DEFINITION_FILES = {"sdef/CocoaStandard.xml", "sdef/StandardAdditions.xml"};
   //todo need to add predefined default library!
@@ -30,27 +31,35 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
           new ScriptSuiteRegistry(STD_LIBRARY_NAME, ProjectManager.getInstance().getDefaultProject());
 
   //mush be unique - this is a library name in IDEA UI
-  @NotNull private String suiteRegistryName;
-  @NotNull private Project project;
+  @NotNull private /*final*/ String suiteRegistryName;
+  @NotNull private final Project project;
   //or only store set of VirtualFiles ? and load Suites
-  private Set<ApplicationDictionary> applicationDictionaries = new HashSet<ApplicationDictionary>();
-  private Map<String, ApplicationDictionary> applicationDictionariesMap = new HashMap<String, ApplicationDictionary>();
-  private List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
-  private List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
-  private Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
-  private Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
-  private Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
-  private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
+  private final Set<ApplicationDictionary> applicationDictionaries = new HashSet<ApplicationDictionary>();
+  private final Map<String, ApplicationDictionary> applicationDictionariesMap = new HashMap<String,
+          ApplicationDictionary>();
+  private final List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
+  private final List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
+  private final Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
+  private final Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
+  private final Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
+  private final Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
 
-  private Map<String, DictionaryEnumerator> dictionaryEnumeratorMap =
+  private final Map<String, DictionaryEnumerator> dictionaryEnumeratorMap =
           new HashMap<String, DictionaryEnumerator>();
 
-  private Map<String, DictionaryEnumeration> dictionaryEnumerationMap =
+  private final Map<String, DictionaryEnumeration> dictionaryEnumerationMap =
           new HashMap<String, DictionaryEnumeration>();
 
-  private Map<String, AppleScriptPropertyDefinition> dictionaryPropertyMap =
+  private final Map<String, AppleScriptPropertyDefinition> dictionaryPropertyMap =
           new HashMap<String, AppleScriptPropertyDefinition>();
+  private /*final*/ VirtualFile scriptFile;
 
+  /**
+   * @param suiteRegistryName
+   * @param project
+   * @param applicationBundleList
+   * @deprecated
+   */
   public ScriptSuiteRegistry(@NotNull String suiteRegistryName, @NotNull Project project, List<VirtualFile>
           applicationBundleList) {
     this.suiteRegistryName = suiteRegistryName;
@@ -63,6 +72,12 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   }
 
 
+  /**
+   * @param suiteRegistryName
+   * @param project
+   * @param applicationDictionaries
+   * @deprecated
+   */
   public ScriptSuiteRegistry(@NotNull String suiteRegistryName, @NotNull Project project, Set<ApplicationDictionary>
           applicationDictionaries) {
     this.suiteRegistryName = suiteRegistryName;
@@ -76,6 +91,21 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
 
   public ScriptSuiteRegistry(@NotNull String libraryName, @NotNull Project project) {
     suiteRegistryName = libraryName;
+    this.project = project;
+    addStandardSuite();
+  }
+
+  public ScriptSuiteRegistry(@NotNull VirtualFile scriptFile, @NotNull Project project, List<VirtualFile>
+          applicationBundleList) {
+    this(scriptFile, project);
+    for (VirtualFile applicationBundle : applicationBundleList) {
+      ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, applicationBundle);
+      addApplicationDictionary(dictionary);
+    }
+  }
+
+  public ScriptSuiteRegistry(@NotNull VirtualFile scriptFile, @NotNull Project project) {
+    this.scriptFile = scriptFile;
     this.project = project;
     addStandardSuite();
   }
@@ -185,8 +215,57 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   @Override
   public AppleScriptClass findClassWithName(String dictionaryName, String className) {
     if (dictionaryName == null || className == null) return null;
-    ApplicationDictionary dictionary = applicationDictionariesMap.get(dictionaryName);
-    return dictionary != null ? dictionary.findClassByName(className) : null;
+    ApplicationDictionary dictionary = loadDictionaryByName(dictionaryName);
+    return dictionary != null ? dictionary.findClassByName(className) : dictionaryClassMap.get(className);
+  }
+
+  private ApplicationDictionary loadDictionaryByName(String dictionaryName) {
+    if (dictionaryName == null) return null;
+    ApplicationDictionary result;
+    result = applicationDictionariesMap.get(dictionaryName);
+    if (result != null) return result;
+    return registerApplicationDictionary(dictionaryName);
+  }
+
+  private ApplicationDictionary registerApplicationDictionary(String dictionaryName) {
+    if (dictionaryName == null || !SystemInfo.isMac) return null;
+
+    ApplicationDictionary loadedDictionary = null;
+    //todo think about better way of determining bundle location
+    final String[] appBundleLocations = {"/Applications/", "/System/Library/CoreServices/",
+            "/System/Library/CoreServices/Applications", "/Library/ScriptingAdditions/"};
+
+    for (String applicationFileLocation : appBundleLocations) {
+
+      final String applicationFilePath = applicationFileLocation + dictionaryName + ".app";
+      final File applicationFile = new File(applicationFilePath);
+      final VirtualFile virtualApplicationFile = LocalFileSystem.getInstance().findFileByIoFile(applicationFile);
+
+      if (virtualApplicationFile != null && virtualApplicationFile.exists()) {
+        loadedDictionary = new ApplicationDictionaryImpl(project, virtualApplicationFile);
+        addApplicationDictionary(loadedDictionary);
+        break;
+      }
+
+    }
+    if (loadedDictionary == null) return null;
+    applicationDictionariesMap.put(dictionaryName, loadedDictionary);
+    return loadedDictionary;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptClass findClassByPluralName(@Nullable String dictionaryName, String pluralForm) {
+    if (StringUtil.isEmpty(pluralForm)) return null;
+    ApplicationDictionary dictionary = loadDictionaryByName(dictionaryName);
+    return dictionary != null ? dictionary.findClassByPluralName(pluralForm) : dictionaryClassToPluralNameMap.get
+            (pluralForm);
+  }
+
+  @Nullable
+  @Override
+  public DictionaryEnumeration findEnumerationWithName(@Nullable String dictionaryName, String name) {
+    return null;
   }
 
   @Nullable
@@ -212,7 +291,7 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   }
 
   @Override
-  public List<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName) {
+  public Collection<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName) {
     ApplicationDictionary dictionary = applicationDictionariesMap.get(dictionaryName);
     return dictionary != null ? dictionary.getAllCommands() : null;
   }
@@ -230,7 +309,14 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
 
   @Override
   public List<AppleScriptCommand> geAllCommandsForSuiteRegistry() {
+
     return dictionaryCommandList;
+  }
+
+  @Override
+  public List<AppleScriptPropertyDefinition> findPropertiesStartingWithName(@Nullable String dictionaryName, String
+          name) {
+    return null;
   }
 
   public void addApplicationDictionary(ApplicationDictionary dictionary) {
@@ -307,6 +393,88 @@ public class ScriptSuiteRegistry implements ScriptSuiteRegistryHelper {
   public ApplicationDictionary findDictionaryByName(String name) {
     if (name == null) return null;
     return applicationDictionariesMap.get(name);
+  }
+
+  @Nullable
+  @Override
+  public List<String> getParameterNamesForCommand(@Nullable String dictionaryName, String name) {
+    ApplicationDictionary dictionary = applicationDictionariesMap.get(dictionaryName);
+    List<String> params = null;
+    if (dictionary != null) {
+      AppleScriptCommand command = dictionary.getDictionaryCommandMap().get(name);
+      params = command != null ? command.getParameterNames() : null;
+    }
+    if (params == null) {
+      AppleScriptCommand command = dictionaryCommandMap.get(name);
+      return command != null ? command.getParameterNames() : null;
+    }
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public CommandDirectParameter findDirectParameterForCommand(@Nullable String dictionaryName, String commandName) {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptCommand findCommandWithName(@Nullable String dictionaryName, String name) {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public AppleScriptPropertyDefinition findPropertyWithName(@Nullable String dictionaryName, String name) {
+    return null;
+  }
+
+  @NotNull
+  @Override
+  public List<AppleScriptCommand> findAllCommandsWithName(@Nullable String dictionaryName, String name) {
+    return null;
+  }
+
+  @NotNull
+  @Override
+  public List<AppleScriptCommand> findCommandsStartingWithName(@Nullable String dictionaryName, String name) {
+    return null;
+  }
+
+  @Override
+  public List<AppleScriptClass> findClassesStartingWithName(@Nullable String dictionaryName, String name) {
+    List<AppleScriptClass> result = new ArrayList<AppleScriptClass>();
+    ApplicationDictionary dictionary = loadDictionaryByName(dictionaryName);
+    if (dictionary != null) {
+      for (AppleScriptClass clazz : dictionary.getDictionaryClassList()) {
+        if (startsWithWord(clazz.getName(), name)) {
+          result.add(clazz);
+        }
+      }
+      return result;
+    }
+    for (AppleScriptClass clazz : dictionaryClassList) {
+      if (startsWithWord(clazz.getName(), name)) {
+        result.add(clazz);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public List<AppleScriptClass> findClassesStartingWithPluralName(@Nullable String dictionaryName, String name) {
+    return null;
+  }
+
+  @Override
+  public List<DictionaryEnumerator> findConstantsStartingWithWord(@Nullable String dictionaryName, String name) {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public DictionaryEnumerator findEnumerator(@Nullable String dictionaryName, String name) {
+    return null;
   }
 
   @Nullable

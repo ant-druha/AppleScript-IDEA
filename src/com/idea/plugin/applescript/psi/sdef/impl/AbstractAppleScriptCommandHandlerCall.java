@@ -62,7 +62,7 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   }
 
   @Nullable
-  @Override
+//  @Override
   public AppleScriptApplicationReference getApplicationReference() {
     return null;
   }

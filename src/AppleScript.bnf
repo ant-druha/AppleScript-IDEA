@@ -473,8 +473,16 @@ private boolean_constant ::= true|false
 // Except for copy , each of these commands can also be implemented by applications.
 //todo using the keyword anywhere in references (other cases perhaps?)
 
-left applicationReference ::= THE_KW? applicationClass STRING_LITERAL [of THE_KW? machine STRING_LITERAL (of THE_KW? zone STRING_LITERAL)?]
-                                |THE_KW? current_application_constant
+private parseReferenceToApplication ::= <<parseApplicationReference>>
+
+//see <<parseApplicationReference>>
+applicationReference ::= THE_KW? applicationClass applicationNameString
+[of THE_KW? machine machineNameString (of THE_KW? zone appleTalkZoneNameString)?] | THE_KW? current_application_constant
+
+private applicationNameString ::= <<pushApplicationNameString>> //STRING_LITERAL
+
+machineNameString ::= STRING_LITERAL
+appleTalkZoneNameString ::= STRING_LITERAL
 
 file_reference ::= THE_KW?(FILE|ALIAS) expression // example p.193
 
@@ -976,8 +984,10 @@ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 
 // todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
 private referenceExpression ::=
-    referenceForm
-  | applicationReference
+//  applicationReference
+  parseReferenceToApplication
+  | referenceForm
+//  | applicationReference
   | file_reference
   | referenceIdentifier
 

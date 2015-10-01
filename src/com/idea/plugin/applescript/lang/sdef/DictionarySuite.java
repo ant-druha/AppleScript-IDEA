@@ -18,4 +18,7 @@ public interface DictionarySuite extends DictionaryComponent {
   boolean addEnumeration(DictionaryEnumeration enumeration);
 
   void addRecord(DictionaryRecord record);
+
+  @Nullable
+  AppleScriptClass findClassByPluralName(String pluralForm);
 }
