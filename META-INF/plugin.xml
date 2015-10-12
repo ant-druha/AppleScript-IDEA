@@ -106,6 +106,12 @@
         <completion.contributor language="AppleScript"
                                 implementationClass="com.idea.plugin.applescript.lang.ide.completion.AppleScriptCommandCompletionContributor"/>
 
+        <defaultLiveTemplatesProvider
+                implementation="com.idea.plugin.applescript.lang.ide.AppleScriptLiveTemplatesProvider"/>
+
+        <liveTemplateContext implementation="com.idea.plugin.applescript.lang.ide.AppleScriptTemplateContextType"/>
+
+
     </extensions>
 
     <application-components>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templateSet group="AppleScript">
+    <template name="useapp" value="use appication &quot;$APP_NAME$&quot;"
+              description="using terms from given application" toReformat="false" toShortenFQNames="true">
+        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="AppleScript" value="true"/>
+        </context>
+    </template>
+    <template name="tellapp" value="tell application &quot;$APP_NAME$&quot;&#10;$SELECTION$&#10;end tell"
+              description="surround with tell statement" toReformat="false" toShortenFQNames="true">
+        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="AppleScript" value="true"/>
+        </context>
+    </template>
+
+</templateSet>
