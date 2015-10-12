@@ -1,11 +1,10 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings;
-import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptPropertyDefinition;
-import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
+import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName;
 import com.intellij.lang.ASTNode;
@@ -18,7 +17,7 @@ import java.util.List;
 /**
  * Created by Andrey on 22.08.2015.
  */
-public class AbstractDictionaryPropertySpecifier extends AppleScriptPsiElementImpl
+public class AbstractDictionaryPropertySpecifier extends DictionaryCompositeNameImpl
         implements DictionaryCompositeElement, DictionaryCompositeName {
 
   public AbstractDictionaryPropertySpecifier(ASTNode node) {
@@ -29,32 +28,6 @@ public class AbstractDictionaryPropertySpecifier extends AppleScriptPsiElementIm
   @Override
   public DictionaryCompositeName getCompositeNameElement() {
     return this;
-  }
-
-  @Override
-  public List<PsiElement> getIdentifiers() {
-    final List<PsiElement> result = new ArrayList<PsiElement>();
-    PsiElement psiChild = getFirstChild();
-    if (psiChild == null) {
-      result.add(this);
-      return result;
-    }
-    while (psiChild != null) {
-      if (psiChild.getNode().getElementType() != TokenType.WHITE_SPACE) {
-        result.add(psiChild);
-      }
-      psiChild = psiChild.getNextSibling();
-    }
-    return result;
-  }
-
-  @Override
-  public String getCompositeName() {
-    StringBuilder sb = new StringBuilder();
-    for (PsiElement id : getIdentifiers()) {
-      sb.append(id.getText()).append(" ");
-    }
-    return sb.toString().trim();
   }
 
   @NotNull
@@ -69,13 +42,32 @@ public class AbstractDictionaryPropertySpecifier extends AppleScriptPsiElementIm
     @NotNull
     @Override
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-      ScriptSuiteRegistryMappings registryMappings = ScriptSuiteRegistryMappings.
-              getInstance(containingFile.getProject());
-      ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
+      AppleScriptProjectDictionaryRegistry dictionaryRegistry = getProject()
+              .getComponent(AppleScriptProjectDictionaryRegistry.class);
+
       String propName = getCompositeName();
-      final AppleScriptPropertyDefinition allPropsWithName = suiteRegistry != null ? suiteRegistry.
-              findPropertyWithName(propName) :
-              ParsableScriptSuiteRegistryHelper.getPropertyWithName(propName);
+      List<String> appNames = AppleScriptPsiImplUtil.getApplicationNameForElementInsideTellStatement(getMyElement());
+      AppleScriptPropertyDefinition allPropsWithName = null;
+      if (dictionaryRegistry != null) {
+        for (String appName : appNames) {
+          if (appName != null) {
+            ApplicationDictionary dictionary = dictionaryRegistry.getDictionary(appName);
+            if (dictionary == null) {
+              dictionary = dictionaryRegistry.createDictionary(appName);
+            }
+            if (dictionary != null) {
+              allPropsWithName = dictionary.findProperty(propName);
+            }
+          }
+          if (allPropsWithName != null) break;
+        }
+        if (allPropsWithName == null) {
+          for (ApplicationDictionary stdDict : dictionaryRegistry.getStandardDictionaries()) {
+            allPropsWithName = stdDict.findProperty(propName);
+            if (allPropsWithName != null) break;
+          }
+        }
+      }
       final List<PsiElement> results = new ArrayList<PsiElement>();
       results.add(allPropsWithName);
       return AppleScriptResolveUtil.toCandidateInfoArray(results);

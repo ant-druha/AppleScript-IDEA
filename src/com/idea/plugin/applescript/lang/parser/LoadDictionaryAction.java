@@ -1,15 +1,14 @@
 package com.idea.plugin.applescript.lang.parser;
 
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings;
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
-import com.idea.plugin.applescript.lang.sdef.impl.ApplicationDictionaryImpl;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
+import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.ide.IdeView;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.util.Consumer;
@@ -33,30 +32,27 @@ public class LoadDictionaryAction extends AnAction {
     FileChooser.chooseFiles(descriptor, project, directoryFile, new Consumer<List<VirtualFile>>() {
       @Override
       public void consume(final List<VirtualFile> files) {
-        ScriptSuiteRegistry currentSuiteRegistry = getCurrentSuiteRegistry();
         for (VirtualFile file : files) {
           if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
-            ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, file);
-            currentSuiteRegistry.addApplicationDictionary(dictionary);
-          }
-        }
-        ScriptSuiteRegistryMappings mappings = ScriptSuiteRegistryMappings.getInstance(project);
-        if (!mappings.getMappings().containsValue(currentSuiteRegistry)) {
-          VirtualFile scriptFile = e.getData(PlatformDataKeys.VIRTUAL_FILE);
-          mappings.associate(scriptFile, currentSuiteRegistry);
 
-//          ApplicationScriptSuiteRegistryComponent suiteRegCmp = ((ApplicationScriptSuiteRegistryComponent)
-//                  ApplicationManager.getApplication().getComponent("ApplicationScriptSuiteRegistryComponent"));
-//          suiteRegCmp.update(project, scriptFile);
+            String applicationName = null;
+            if (!"app".equals(file.getExtension())) {
+              applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
+                      + file.getName(), "Enter application name", null);
+            }
+            if (StringUtil.isEmpty(applicationName)) {
+              return;
+            }
+            AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = project
+                    .getComponent(AppleScriptProjectDictionaryRegistry.class);
+            if (projectDictionaryRegistry != null) {
+              projectDictionaryRegistry.createDictionary(applicationName);
+            }
+          }
         }
       }
     });
 
 
-  }
-
-  private static ScriptSuiteRegistry getCurrentSuiteRegistry() {
-    return ((ApplicationScriptSuiteRegistryComponent) ApplicationManager.getApplication().
-            getComponent("ApplicationScriptSuiteRegistryComponent")).getCurrentScriptSuiteRegistry();
   }
 }

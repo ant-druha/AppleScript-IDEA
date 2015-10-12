@@ -7,11 +7,13 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.SortedList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -65,5 +67,23 @@ public class AppleScriptResolveUtil {
       }
     }
     return result;
+  }
+
+  public static SortedList<PsiElement> getTellStatementResolveScope(PsiElement myElement) {
+    SortedList<PsiElement> resultList = new SortedList<PsiElement>(new Comparator<PsiElement>() {
+      @Override
+      public int compare(PsiElement e1, PsiElement e2) {
+        return e2.getTextOffset() - e1.getTextOffset();
+      }
+    });
+    PsiElement tellStatement = myElement;
+    while (tellStatement != null) {
+      tellStatement = tellStatement.getParent();
+      if (tellStatement instanceof AppleScriptTellSimpleStatement
+              || tellStatement instanceof AppleScriptTellCompoundStatement) {
+        resultList.add(tellStatement);
+      }
+    }
+    return resultList;
   }
 }

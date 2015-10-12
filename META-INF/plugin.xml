@@ -1,8 +1,8 @@
 <idea-plugin version="2">
-    <id>com.yourcompany.unique.plugin.id</id>
+    <id>com.idea.plugin.applescript</id>
     <name>AppleScript for IDEA</name>
     <version>1.0</version>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="andrey.dernov@gmail.com" url="https://twitter.com/ant_druha">Andrey Dernov</vendor>
 
     <description><![CDATA[
       Enter short description for your plugin here.<br>
@@ -27,18 +27,18 @@
     <extensions defaultExtensionNs="com.intellij">
         <!--key="Script Suite Registry"-->
         <!--bundle="messages.LangBundle"-->
-        <projectConfigurable groupId="language"
-                             id="Script Suite Registry"
-                             displayName="AppleScript Suite Registry mappings"
-                             instance="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptSuiteRegistryConfigurable"/>
+        <!--<projectConfigurable groupId="language"-->
+        <!--id="Script Suite Registry"-->
+        <!--displayName="AppleScript Suite Registry mappings"-->
+        <!--instance="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptSuiteRegistryConfigurable"/>-->
 
-        <projectService serviceInterface="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings"
-                        serviceImplementation="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings">
-        </projectService>
+        <!--<projectService serviceInterface="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings"-->
+        <!--serviceImplementation="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings">-->
+        <!--</projectService>-->
 
         <!-- Add your extensions here -->
 
-        <library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>
+        <!--<library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>-->
 
         <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
         <lang.parserDefinition language="AppleScript"
@@ -114,10 +114,19 @@
             <implementation-class>com.idea.plugin.applescript.lang.parser.ApplicationScriptSuiteRegistryComponent
             </implementation-class>
         </component>
+        <component>
+            <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry
+            </implementation-class>
+        </component>
     </application-components>
 
     <project-components>
         <!-- Add your project components here -->
+        <component>
+            <implementation-class>
+                com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry
+            </implementation-class>
+        </component>
     </project-components>
 
     <actions>
@@ -126,11 +135,11 @@
                 text="Load Dictionary" description="testing">
             <add-to-group group-id="FileMenu" anchor="after" relative-to-action="FileOpenGroup"/>
         </action>
-        <action id="ChangeScriptSuiteRegistryAction"
-                class="com.idea.plugin.applescript.lang.ide.libraries.ChangeScriptSuiteRegistryAction"
-                text="Change Script Suite Library" description="Choose Dictionaries for the script">
-            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>
-        </action>
+        <!--<action id="ChangeScriptSuiteRegistryAction"-->
+        <!--class="com.idea.plugin.applescript.lang.ide.libraries.ChangeScriptSuiteRegistryAction"-->
+        <!--text="Change Script Suite Library" description="Choose Dictionaries for the script">-->
+        <!--<add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>-->
+        <!--</action>-->
     </actions>
 
 </idea-plugin>

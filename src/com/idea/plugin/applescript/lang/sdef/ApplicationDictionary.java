@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -13,40 +14,79 @@ import java.util.Map;
  * Created by Andrey on 17.08.2015.
  */
 public interface ApplicationDictionary extends DictionarySuite {
-  //todo add sdef file types as xml
+
+  String[] STD_LIBRARY_NAMES = {"CocoaStandard", "StandardAdditions"};
   List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
+  String[] STANDARD_DEFINITION_FILES = {"sdef/CocoaStandard.xml", "sdef/StandardAdditions.xml"};
+  String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications",
+          "/System/Library/CoreServices", "/System/Library/CoreServices/Applications",
+          "/Library/ScriptingAdditions"};
+
+  @NotNull
+  VirtualFile getCachedLibraryXmlFile();
 
   boolean addSuite(Suite suite);
 
   @NotNull
   VirtualFile getApplicationFile();
 
-  List<DictionaryEnumeration> getDictionaryEnumerationList();
+  @NotNull
+  Map<String, DictionaryEnumeration> getDictionaryEnumerationMap();
 
-  List<DictionaryRecord> getDictionaryRecordList();
+  @NotNull
+  Map<String, DictionaryEnumerator> getDictionaryEnumeratorMap();
 
+  @NotNull
+  Map<String, DictionaryRecord> getDictionaryRecordMap();
+
+  @NotNull
   Map<String, AppleScriptCommand> getDictionaryCommandMap();
 
-  List<AppleScriptCommand> getDictionaryCommandList();
+  @NotNull
+  Map<String, AppleScriptClass> getDictionaryClassMap();
 
-  List<AppleScriptClass> getDictionaryClassList();
-
+  @Nullable
   List<String> getParameterNamesForCommand(String name);
 
-  List<AppleScriptPropertyDefinition> getDictionaryPropertyList();
+  @NotNull
+  String getApplicationName();
 
-  void setDictionaryPropertyList(List<AppleScriptPropertyDefinition> dictionaryPropertyList);
+  void setDisplayName(@NotNull String displayName);
+
+  @Nullable
+  DictionaryEnumerator findEnumerator(String name);
+
+  @Nullable
+  DictionaryEnumeration findEnumeration(String name);
+
+  @Nullable
+  AppleScriptPropertyDefinition findProperty(String name);
+
+  @NotNull
+  String getDisplayName();
+
+  @NotNull
+  Map<String, AppleScriptPropertyDefinition> getDictionaryPropertyMap();
 
   ApplicationDictionary setRootTag(XmlTag myRootTag);
 
   XmlTag getRootTag();
 
   @NotNull
-  List<AppleScriptCommand> getAllCommands();
+  Collection<AppleScriptCommand> getAllCommands();
+
+  @Nullable
+  AppleScriptCommand findCommand(String name);
 
   @Nullable
   Suite findSuiteByCode(String suiteCode);
 
   @Nullable
   Suite findSuiteByName(String suiteCode);
+
+  @Nullable
+  CommandDirectParameter findDirectParameterForCommand(String commandName);
+
+  @NotNull
+  List<AppleScriptCommand> findAllCommandsWithName(String name);
 }

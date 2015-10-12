@@ -27,7 +27,7 @@ public class SDEF_Parser {
         if ("dictionary".equals(rootTag.getName()) && attr != null) {
           String dicTitle = attr.getValue();
           if (!StringUtil.isEmpty(dicTitle)) {
-            parsedDictionary.setName(dicTitle);
+            parsedDictionary.setDisplayName(dicTitle);
           }
         }
         XmlTag[] suiteTags = rootTag.getSubTags();

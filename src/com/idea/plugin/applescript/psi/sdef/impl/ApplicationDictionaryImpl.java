@@ -1,16 +1,14 @@
-package com.idea.plugin.applescript.lang.sdef.impl;
+package com.idea.plugin.applescript.psi.sdef.impl;
 
 import com.idea.plugin.applescript.AppleScriptLanguage;
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.lang.ide.AppleScriptDocHelper;
-import com.idea.plugin.applescript.lang.parser.ScriptSuiteRegistryHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
 import com.idea.plugin.applescript.psi.AppleScriptExpression;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.impl.AppleScriptElementPresentation;
 import com.idea.plugin.applescript.psi.sdef.DictionaryIdentifier;
-import com.idea.plugin.applescript.psi.sdef.impl.DictionaryIdentifierImpl;
 import com.intellij.lang.Language;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.project.Project;
@@ -27,7 +25,8 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import org.jetbrains.annotations.Contract;
+import com.intellij.util.IncorrectOperationException;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,40 +38,41 @@ import java.util.*;
 /**
  * Created by Andrey on 01.07.2015.
  */
-public class ApplicationDictionaryImpl extends FakePsiElement implements ApplicationDictionary,
-        ScriptSuiteRegistryHelper {
+public class ApplicationDictionaryImpl extends FakePsiElement implements ApplicationDictionary {
 
   //todo add suites: several class unique only within a suite !
   @NotNull private final Project project;
   @NotNull private final VirtualFile applicationFile;
-  @NotNull private String name;
+  //cachedLibraryXmlFile is needed for navigation from PSI (getParent()) if dictionary was created from .app bundle
+  @NotNull private VirtualFile cachedLibraryXmlFile;
+  @NotNull private String applicationName;
+  @NotNull private String displayName;
   private XmlTag myRootTag;
 
   private final List<Suite> mySuites = new ArrayList<Suite>();
-  private final List<AppleScriptCommand> dictionaryCommandList = new ArrayList<AppleScriptCommand>();
-  private List<AppleScriptPropertyDefinition> dictionaryPropertyList = new ArrayList<AppleScriptPropertyDefinition>();
   private final Map<String, AppleScriptPropertyDefinition> dictionaryPropertyMap = new HashMap<String,
           AppleScriptPropertyDefinition>();
-  private final List<DictionaryRecord> dictionaryRecordList = new ArrayList<DictionaryRecord>();
-  private final List<DictionaryEnumeration> dictionaryEnumerationList = new ArrayList<DictionaryEnumeration>();
+  private final Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
   private final Map<String, DictionaryEnumerator> dictionaryEnumeratorMap = new HashMap<String, DictionaryEnumerator>();
   private final Map<String, DictionaryEnumeration> dictionaryEnumerationMap = new HashMap<String,
           DictionaryEnumeration>();
   private final Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
-  private final List<AppleScriptClass> dictionaryClassList = new ArrayList<AppleScriptClass>();
   private final Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
   private final Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
   private final Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<String, AppleScriptClass>();
 
-  public ApplicationDictionaryImpl(@NotNull Project project, @NotNull VirtualFile applicationBundleFile) {
+  public ApplicationDictionaryImpl(@NotNull Project project, @NotNull VirtualFile applicationBundleFile,
+                                   @NotNull String applicationName) {
     this.project = project;
     this.applicationFile = applicationBundleFile;
+    this.applicationName = applicationName;
     readDictionaryFromApplicationBundle();
-    if (StringUtil.isEmpty(name))
-      setName(applicationBundleFile.getPath());
-    System.out.println("Dictionary ===" + name + "=== initialized. Commands: " + dictionaryCommandList.size() + ". " +
-            "Classes: " +
-            dictionaryClassList.size() + "\n");
+    if (StringUtil.isEmpty(displayName))
+      displayName = this.applicationName;
+    System.out.println("=== Dictionary [" + displayName + "] for application [" + this.applicationName + "] " +
+            "initialized " +
+            "In project[" + project.getName() + "] " + "====" +
+            " Commands: " + dictionaryCommandMap.size() + ". " + "Classes: " + dictionaryClassMap.size() + "\n");
   }
 
   private void readDictionaryFromApplicationBundle() {
@@ -82,6 +82,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     } else {
       readDictionaryFromApplicationBundle(applicationFile, project);
     }
+  }
+
+  @NotNull
+  @Override
+  public VirtualFile getCachedLibraryXmlFile() {
+    return cachedLibraryXmlFile;
   }
 
   @NotNull
@@ -101,29 +107,33 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return applicationFile;
   }
 
+  @NotNull
   @Override
-  public List<DictionaryEnumeration> getDictionaryEnumerationList() {
-    return dictionaryEnumerationList;
+  public Map<String, DictionaryEnumeration> getDictionaryEnumerationMap() {
+    return dictionaryEnumerationMap;
   }
 
+  @NotNull
   @Override
-  public List<DictionaryRecord> getDictionaryRecordList() {
-    return dictionaryRecordList;
+  public Map<String, DictionaryEnumerator> getDictionaryEnumeratorMap() {
+    return dictionaryEnumeratorMap;
   }
 
+  @NotNull
+  public Map<String, DictionaryRecord> getDictionaryRecordMap() {
+    return dictionaryRecordMap;
+  }
+
+  @NotNull
   @Override
   public Map<String, AppleScriptCommand> getDictionaryCommandMap() {
     return dictionaryCommandMap;
   }
 
+  @NotNull
   @Override
-  public List<AppleScriptCommand> getDictionaryCommandList() {
-    return dictionaryCommandList;
-  }
-
-  @Override
-  public List<AppleScriptClass> getDictionaryClassList() {
-    return dictionaryClassList;
+  public Map<String, AppleScriptClass> getDictionaryClassMap() {
+    return dictionaryClassMap;
   }
 
   private void readDictionaryFromApplicationBundle(@NotNull VirtualFile applicationFile, @NotNull Project project) {
@@ -152,12 +162,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     }
   }
 
-  @Nullable
-  @Override
-  public ApplicationDictionary findDictionaryByName(String name) {
-    return this;
-  }
-
   @Override
   public List<String> getParameterNamesForCommand(String name) {
     AppleScriptCommand command = dictionaryCommandMap.get(name);
@@ -173,13 +177,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @Nullable
   @Override
-  public AppleScriptCommand findCommandWithName(String name) {
-    return dictionaryCommandMap.get(name);
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptPropertyDefinition findPropertyWithName(String name) {
+  public AppleScriptPropertyDefinition findProperty(String name) {
     return dictionaryPropertyMap.get(name);
   }
 
@@ -195,50 +193,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return result;
   }
 
-  @NotNull
-  @Override
-  public List<AppleScriptCommand> findCommandsStartingWithName(String name) {
-    final List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>();
-    for (AppleScriptCommand command : dictionaryCommandMap.values()) {
-      if (startsWithWord(command.getName(), name)) {
-        result.add(command);
-      }
-    }
-    return result;
-  }
-
-  @Override
-  public List<AppleScriptClass> findClassesStartingWithName(String name) {
-    List<AppleScriptClass> result = new ArrayList<AppleScriptClass>();
-    for (AppleScriptClass clazz : dictionaryClassMap.values()) {
-      if (startsWithWord(clazz.getName(), name)) {
-        result.add(clazz);
-      }
-    }
-    return result;
-  }
-
-  @Override
-  public List<AppleScriptClass> findClassesStartingWithPluralName(String pluralForm) {
-    final List<AppleScriptClass> result = new ArrayList<AppleScriptClass>();
-    for (AppleScriptClass clazz : dictionaryClassMap.values()) {
-      if (startsWithWord(clazz.getPluralClassName(), pluralForm)) {
-        result.add(clazz);
-      }
-    }
-    return result;
-  }
-
-  @Override
-  public List<DictionaryEnumerator> findConstantsStartingWithWord(String name) {
-    List<DictionaryEnumerator> result = new ArrayList<DictionaryEnumerator>();
-    for (DictionaryEnumerator constantEnum : dictionaryEnumeratorMap.values()) {
-      if (startsWithWord(constantEnum.getName(), name)) {
-        result.add(constantEnum);
-      }
-    }
-    return result;
-  }
 
   @Nullable
   @Override
@@ -246,11 +200,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return dictionaryEnumeratorMap.get(name);
   }
 
-  @Nullable
-  @Override
-  public AppleScriptClass findClassWithName(String name) {
-    return dictionaryClassMap.get(name);
-  }
 
   @Nullable
   @Override
@@ -260,48 +209,24 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @Nullable
   @Override
-  public DictionaryEnumeration findEnumerationWithName(String name) {
+  public DictionaryEnumeration findEnumeration(String name) {
     return dictionaryEnumerationMap.get(name);
-  }
-
-  @NotNull
-  @Override
-  public Collection<AppleScriptCommand> getAllCommandsFromDictionary(String dictionaryName) {
-    return dictionaryCommandMap.values();
-  }
-
-  @Override
-  public List<AppleScriptCommand> geAllCommandsForSuiteRegistry() {
-    return null;
-  }
-
-  @Override
-  public List<AppleScriptPropertyDefinition> findPropertiesStartingWithName(String name) {
-    final List<AppleScriptPropertyDefinition> result = new ArrayList<AppleScriptPropertyDefinition>();
-    for (AppleScriptPropertyDefinition prop : dictionaryPropertyMap.values()) {//todo some faster util method?
-      if (startsWithWord(prop.getName(), name)) {
-        result.add(prop);
-      }
-    }
-    return result;
   }
 
   @Override
   public boolean addCommand(AppleScriptCommand command) {
-    dictionaryCommandMap.put(command.getName(), command);
-    dictionaryCommandList.add(command);
-    return true;
+    return dictionaryCommandMap.put(command.getName(), command) == null;
   }
 
   @Override
   public boolean addClass(AppleScriptClass appleScriptClass) {
-    dictionaryClassMap.put(appleScriptClass.getName(), appleScriptClass);
+    Object val = dictionaryClassMap.put(appleScriptClass.getName(), appleScriptClass);
     dictionaryClassByCodeMap.put(appleScriptClass.getCode(), appleScriptClass);
     dictionaryClassToPluralNameMap.put(appleScriptClass.getPluralClassName(), appleScriptClass);
     for (AppleScriptPropertyDefinition property : appleScriptClass.getProperties()) {
       addProperty(property);
     }
-    return dictionaryClassList.add(appleScriptClass);
+    return val == null;
   }
 
   @Nullable
@@ -330,24 +255,23 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @Override
   public boolean addProperty(AppleScriptPropertyDefinition property) {
-    dictionaryPropertyMap.put(property.getName(), property);
-    return dictionaryPropertyList.add(property);
+    return dictionaryPropertyMap.put(property.getName(), property) == null;
   }
 
   @Override
   public boolean addEnumeration(DictionaryEnumeration enumeration) {
-    dictionaryEnumerationMap.put(enumeration.getName(), enumeration);
+    Object val = dictionaryEnumerationMap.put(enumeration.getName(), enumeration);
     for (DictionaryEnumerator enumerator : enumeration.getEnumerators()) {
       dictionaryEnumeratorMap.put(enumerator.getName(), enumerator);
     }
-    return dictionaryEnumerationList.add(enumeration);
+    return val == null;
   }
 
   @NotNull
   @Override
   public String getDocumentation() {
     StringBuilder sb = new StringBuilder();
-    sb.append(getType()).append(" <b>").append(getName()).append("</b>");
+    sb.append(getType()).append(" <b>").append(getDisplayName()).append("</b>");
     sb.append("<p>");
     for (Suite suite : mySuites) {
       sb.append("<br>    <b>");
@@ -417,15 +341,39 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return null;
   }
 
+  @Override
   @NotNull
   public String getName() {
-    return name;
+    return getDisplayName();
+  }
+
+  @Override
+  @NotNull
+  public String getApplicationName() {
+    return applicationName;
+  }
+
+  @Override
+  public void setDisplayName(@NotNull String displayName) {
+    this.displayName = displayName;
+  }
+
+  @Override
+  @NotNull
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  @Override
+  public PsiElement setName(@NonNls @NotNull String name) throws IncorrectOperationException {
+    displayName = name;
+    return this;
   }
 
   @NotNull
   @Override
   public List<String> getNameIdentifiers() {
-    return Arrays.asList(name.split(" "));
+    return Arrays.asList(applicationName.split("\\s+"));
   }
 
   @NotNull
@@ -452,38 +400,21 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return AppleScriptLanguage.INSTANCE;
   }
 
-  public PsiElement setName(@NotNull String name) {
-    if (name.contains("/")) {
-//      String[] paths = name.split("/");
-      int start = name.lastIndexOf("/") + 1;
-      int end = name.lastIndexOf(".");
-      end = end > 0 ? end : name.length();
-      name = name.substring(start, end);//paths[paths.length > 0 ? paths.length - 1 : 0];
-
-    }
-    this.name = name;
-    return this;
-  }
-
+  @NotNull
   @Override
-  public List<AppleScriptPropertyDefinition> getDictionaryPropertyList() {
-    return dictionaryPropertyList;
-  }
-
-  @Override
-  public void setDictionaryPropertyList(List<AppleScriptPropertyDefinition> dictionaryPropertyList) {
-    this.dictionaryPropertyList = dictionaryPropertyList;
+  public Map<String, AppleScriptPropertyDefinition> getDictionaryPropertyMap() {
+    return dictionaryPropertyMap;
   }
 
   @Override
   public void addRecord(DictionaryRecord record) {
-    dictionaryRecordList.add(record);
+    dictionaryRecordMap.put(record.getName(), record);
   }
 
 
   @Override
   public PsiElement getParent() {
-    return PsiManager.getInstance(getProject()).findFile(applicationFile);
+    return PsiManager.getInstance(getProject()).findFile(cachedLibraryXmlFile);
   }
 
   @Nullable
@@ -522,7 +453,8 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
       if (xmlFile != null && xmlFile.isValid()) {
         setRootTag(xmlFile.getRootTag());
         SDEF_Parser.parse(xmlFile, this);
-        System.out.println("dictionary loaded");
+        cachedLibraryXmlFile = virtualFile;
+        System.out.println("dictionary loaded. Virtual file: " + virtualFile);
       }
     }
   }
@@ -540,10 +472,10 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     if (titleAttr != null) {
       XmlAttributeValue attrValue = titleAttr.getValueElement();
       if (attrValue != null) {
-        myIdentifier = new DictionaryIdentifierImpl(this, getName(), attrValue);
+        myIdentifier = new DictionaryIdentifierImpl(this, getDisplayName(), attrValue);
       }
     }
-    return myIdentifier != null ? myIdentifier : new DictionaryIdentifierImpl(this, getName(), myRootTag);
+    return myIdentifier != null ? myIdentifier : new DictionaryIdentifierImpl(this, getDisplayName(), myRootTag);
   }
 
   @Nullable
@@ -586,15 +518,15 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return null;
   }
 
-  @NotNull
+  @Nullable
   @Override
-  public List<AppleScriptCommand> getAllCommands() {
-    return dictionaryCommandList;
+  public AppleScriptCommand findCommand(String name) {
+    return dictionaryCommandMap.get(name);
   }
 
-  @Contract("_, null -> false")
-  private static boolean startsWithWord(@NotNull String string, @Nullable String prefix) {
-    return prefix != null && string.startsWith(prefix) && (prefix.length() == string.length() || " ".equals(string
-            .substring(prefix.length(), prefix.length() + 1)));
+  @NotNull
+  @Override
+  public Collection<AppleScriptCommand> getAllCommands() {
+    return dictionaryCommandMap.values();
   }
 }

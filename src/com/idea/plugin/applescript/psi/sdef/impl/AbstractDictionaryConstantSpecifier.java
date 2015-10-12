@@ -1,11 +1,11 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings;
-import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.lang.sdef.DictionaryEnumerator;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
+import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName;
 import com.intellij.lang.ASTNode;
@@ -71,13 +71,31 @@ public class AbstractDictionaryConstantSpecifier extends AppleScriptPsiElementIm
     @NotNull
     @Override
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-      ScriptSuiteRegistryMappings registryMappings = ScriptSuiteRegistryMappings.getInstance(containingFile
-              .getProject());
-      ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
+
       String enumeratorName = getCompositeName();
-      final DictionaryEnumerator allEnumeratorsWithName = suiteRegistry != null ? suiteRegistry.
-              findEnumerator(enumeratorName) :
-              ParsableScriptSuiteRegistryHelper.getEnumerator(enumeratorName);
+      List<String> applicationNames = AppleScriptPsiImplUtil
+              .getApplicationNameForElementInsideTellStatement(getMyElement());
+      AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = getProject()
+              .getComponent(AppleScriptProjectDictionaryRegistry.class);
+      DictionaryEnumerator allEnumeratorsWithName = null;
+      if (projectDictionaryRegistry != null) {
+        for (String appName : applicationNames) {
+          ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(appName);
+          if (dictionary == null) {
+            dictionary = projectDictionaryRegistry.createDictionary(appName);
+          }
+          if (dictionary != null) {
+            allEnumeratorsWithName = dictionary.findEnumerator(enumeratorName);
+          }
+          if (allEnumeratorsWithName != null) break;
+        }
+        if (allEnumeratorsWithName == null) {
+          for (ApplicationDictionary stdDic : projectDictionaryRegistry.getStandardDictionaries()) {
+            allEnumeratorsWithName = stdDic.findEnumerator(enumeratorName);
+            if (allEnumeratorsWithName != null) break;
+          }
+        }
+      }
       final List<PsiElement> results = new ArrayList<PsiElement>();
       results.add(allEnumeratorsWithName);
       return AppleScriptResolveUtil.toCandidateInfoArray(results);

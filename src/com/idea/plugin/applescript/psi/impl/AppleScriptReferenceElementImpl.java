@@ -1,10 +1,11 @@
 package com.idea.plugin.applescript.psi.impl;
 
-import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptComponentScopeResolver;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.lang.util.ScopeUtil;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElementFactory;
@@ -140,17 +141,34 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
             ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptComponentScopeResolver
                     .INSTANCE, true, true);
     //here we should add elements from parsed dictionaries (commands, classes etc.. which are the most relevant)
-    List<AppleScriptCommand> availableCommands = ParsableScriptSuiteRegistryHelper.geAllCommandsForSuiteRegistry();
+    List<AppleScriptCommand> allCommandsWithName = null;
+
+    List<String> applicationNames = AppleScriptPsiImplUtil
+            .getApplicationNameForElementInsideTellStatement(this);
+    AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = getProject()
+            .getComponent(AppleScriptProjectDictionaryRegistry.class);
+    allCommandsWithName = new ArrayList<AppleScriptCommand>();
+    if (projectDictionaryRegistry != null) {
+      for (ApplicationDictionary stdDictionary : projectDictionaryRegistry.getStandardDictionaries()) {
+        allCommandsWithName.addAll(stdDictionary.getAllCommands());
+      }
+      for (String appName : applicationNames) {
+        ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(appName);
+        if (dictionary == null) {
+          dictionary = projectDictionaryRegistry.createDictionary(appName);
+        }
+        if (dictionary != null) {
+          allCommandsWithName.addAll(dictionary.getAllCommands());
+        }
+      }
+    }
 
     List<PsiElement> result = new ArrayList<PsiElement>();
-    if (availableCommands!=null)
-      result.addAll(availableCommands);
+    result.addAll(allCommandsWithName);
     if (elements!=null)
       result.addAll(elements);
 
     return !result.isEmpty() ? result.toArray() : LookupElement.EMPTY_ARRAY;
-//    !elements.isEmpty() ? elements.toArray() : ParsableScriptSuiteRegistryHelper.
-//            findCommandsStartingWithName("display").toArray();
   }
 
   @Override

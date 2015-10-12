@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.ide;
 
-import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
 import com.intellij.codeInsight.documentation.DocumentationManagerProtocol;
@@ -59,8 +59,12 @@ public class AppleScriptDocHelper {
 
     int dicNameIdxEnt = link.indexOf(TYPE_SEPARATOR) > 0 ? link.indexOf(TYPE_SEPARATOR) : link.length();
     final String dictionaryName = link.substring("dictionary".length() + 1, dicNameIdxEnt);
-    ApplicationDictionary dictionary = ParsableScriptSuiteRegistryHelper.findDictionaryByName(dictionaryName);
-
+    AppleScriptProjectDictionaryRegistry dictionaryRegistry = context.getProject()
+            .getComponent(AppleScriptProjectDictionaryRegistry.class);
+    ApplicationDictionary dictionary = null;
+    if (dictionaryRegistry != null) {
+      dictionary = dictionaryRegistry.getDictionary(dictionaryName);
+    }
     int typeIndexStart = link.lastIndexOf(TYPE_SEPARATOR);
     int hashIndex = link.indexOf("#");
     String typeName = link.substring(typeIndexStart + TYPE_SEPARATOR.length(), hashIndex);

@@ -1,12 +1,12 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistry;
-import com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings;
-import com.idea.plugin.applescript.lang.parser.ParsableScriptSuiteRegistryHelper;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
+import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
@@ -116,11 +116,17 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     return null;
   }
 
-  @NotNull
+  @Nullable
   @Override
-  public List<AppleScriptExpression> getExpressionList() {
+  public AppleScriptExpression getExpression() {
     return null;
   }
+
+//  @NotNull
+//  @Override
+//  public List<AppleScriptExpression> getExpressionList() {
+//    return null;
+//  }
 
 
   @Nullable
@@ -226,13 +232,41 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     @NotNull
     @Override
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-      ScriptSuiteRegistryMappings registryMappings = ScriptSuiteRegistryMappings.getInstance(containingFile
-              .getProject());
-      ScriptSuiteRegistry suiteRegistry = registryMappings.getMapping(containingFile.getVirtualFile());
       String commandName = getCommandName();
-      final List<AppleScriptCommand> allCommandsWithName = suiteRegistry != null ? suiteRegistry.
-              findAllCommandsWithName(commandName) :
-              ParsableScriptSuiteRegistryHelper.getAllCommandsWithName(commandName);
+      List<AppleScriptCommand> allCommandsWithName = null;
+      List<String> applicationNames = AppleScriptPsiImplUtil
+              .getApplicationNameForElementInsideTellStatement(getMyElement());
+      AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = getProject()
+              .getComponent(AppleScriptProjectDictionaryRegistry.class);
+      ApplicationDictionary appDictionary = null;
+      for (String appName : applicationNames) {
+
+        if (appName != null) {
+          if (projectDictionaryRegistry != null) {
+            appDictionary = projectDictionaryRegistry.getDictionary(appName);
+            if (appDictionary == null) {
+              appDictionary = projectDictionaryRegistry.createDictionary(appName);
+            }
+          }
+          if (appDictionary != null) {
+            if (allCommandsWithName == null)
+              allCommandsWithName = appDictionary.findAllCommandsWithName(commandName);
+            else
+              allCommandsWithName.addAll(appDictionary.findAllCommandsWithName(commandName));
+          }
+        }
+      }
+      if (allCommandsWithName == null || allCommandsWithName.isEmpty()) {
+        allCommandsWithName = new ArrayList<AppleScriptCommand>();
+        if (projectDictionaryRegistry != null) {
+          for (ApplicationDictionary stdDictionary : projectDictionaryRegistry.getStandardDictionaries()) {
+            List<AppleScriptCommand> commandList = stdDictionary.findAllCommandsWithName(commandName);
+            allCommandsWithName.addAll(commandList);
+          }
+        }
+      }
+      if (allCommandsWithName.isEmpty()) return ResolveResult.EMPTY_ARRAY;
+
       final List<PsiElement> results = new ArrayList<PsiElement>();
       for (AppleScriptCommand command : allCommandsWithName) {
         if (resolveCommandInner(command)) {

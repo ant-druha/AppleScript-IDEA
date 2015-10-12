@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.psi.impl;
 
+import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.Pair;
@@ -7,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.SmartList;
+import com.intellij.util.containers.SortedList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -230,6 +232,26 @@ public class AppleScriptPsiImplUtil {
 
   public static boolean isBefore(@NotNull final PsiElement e1, @NotNull final PsiElement e2, boolean strict) {
     return strict ? e1.getTextOffset() < e2.getTextOffset() : e1.getTextOffset() <= e2.getTextOffset();
+  }
+
+  public static List<String> getApplicationNameForElementInsideTellStatement(PsiElement element) {
+    SortedList<PsiElement> resolveScope = AppleScriptResolveUtil.getTellStatementResolveScope(element);
+    List<String> result = new ArrayList<String>();
+    for (PsiElement tellStatement : resolveScope) {
+
+      //todo: could be not only application but any class of the application (process "Mail", etc)
+      PsiElement appRef = PsiTreeUtil.findChildOfType(tellStatement, AppleScriptApplicationReference.class);
+      if (appRef != null) {
+        String text = appRef.getText();
+        int from = text.indexOf('"') + 1;
+        int to = text.indexOf('"', from);
+        if (from >= 0 && from <= text.length() && to >= 0 && to <= text.length()) {
+          String appName = text.substring(from, to);
+          result.add(appName);
+        }
+      }
+    }
+    return result;
   }
 
 }

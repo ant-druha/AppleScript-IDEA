@@ -286,12 +286,14 @@ private resultListVar ::= referenceIdentifier
 private expectedTypeVar ::= referenceIdentifier
 
 //todo: Using it, me, and my in Tell Statements ! p.242
-private tellStatement ::= parseTellSimpleStatement|tellCompoundStatement
+private tellStatement ::= parseTellSimpleStatement|parseTellCompoundStatement// |tellCompoundStatement
 // it - ref to object, me - ref to current script
 
 private applicationClass ::= APPLICATION|app
 
+private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
 //object_specifier_statement is a reference to an application object, system object, or script object.
+//see <<parseTellCompoundStatementInner>>
 tellCompoundStatement ::= tell objectReferenceWrapper nls //todo not to count Ø -| and CRLF char as a sep
                                         blockBody? nls
                           end [tell] {pin=6}
@@ -489,12 +491,16 @@ file_reference ::= THE_KW?(FILE|ALIAS) expression // example p.193
 //left applicationObjectReference ::= (of|in) THE_KW? applicationReference
 
 private handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier ::= handlerInterleavedParametersCall |
-propertyReference | (referenceIdentifier handlerPositionalParametersCallExpression?)
+propertyReference
+//| (referenceIdentifier handlerPositionalParametersCallExpression?)
+| handlerPositionalParametersCallExpression | referenceIdentifier
 
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
 
 dictionaryPropertyName ::= <<parseDictionaryPropertyName>>
+{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
+implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 private dictionaryPropertyNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel|script
 
@@ -529,7 +535,7 @@ indexReference ::=  (integerLiteralExpression('st'|'rd'|'th') (typeSpecifier|use
 //things like: "message id of message" and "item i of EmailAddresses" _property_(1st) vs _index_(2nd) forms
 // mailbox "Name string" detected as a 'mailbox' propertyReference
 //todo: custom parsing. To think how more efficient handle propertyName vs className detection
-private classNamePrimaryExpression ::= !(propertyReference (of| !([index] indexValueExpression) ) ) typeSpecifier
+private classNamePrimaryExpression ::= !(propertyReference (of| !([index] indexValueExpression|nameReferenceString) ) ) typeSpecifier
 // to think how better parse properties & class names
 //private parseClassNameExpression ::= <<parseClassNamePrimaryExpression>>  //!(propertyReference (of| !([index] indexValueExpression)) ) typeSpecifier
 //see <<parseClassNamePrimaryExpression>>
@@ -766,7 +772,8 @@ handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParam
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 
-left handlerPositionalParametersCallExpression ::= LPAREN argumentList? RPAREN
+handlerPositionalParametersCallExpression ::= &(referenceIdentifier LPAREN) referenceIdentifier LPAREN argumentList? RPAREN
+//left handlerPositionalParametersCallExpression ::= LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
 { methods = [getFormalParameters] }
@@ -970,9 +977,10 @@ private primaryExpression ::=
      literalExpression
  |   dictionaryCommandHandlerCallExpression
 // |   incompleteCommandHandlerCall
+ |   handlerPositionalParametersCallExpression
  | ( referenceExpression
      ( <<isTreePrevSimpleReference>>
-       (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCall )
+       (  /*handlerPositionalParametersCallExpression |*/ <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCall )
      )?
    )
  |   parenthesizedExpression
