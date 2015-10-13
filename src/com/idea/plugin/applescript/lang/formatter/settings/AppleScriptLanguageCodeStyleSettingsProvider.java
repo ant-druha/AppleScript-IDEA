@@ -37,19 +37,21 @@ public class AppleScriptLanguageCodeStyleSettingsProvider extends LanguageCodeSt
     @Override
     public String getCodeSample(@NotNull SettingsType settingsType) {
         return "searchFiles for ff of minimumValue(2, 3) for \"LeChateau\"\n" +
-                "text from word (copy 5 to c) to word 4 of \"We're all in this together\"\n" +
+                "text from word(copy 5 to c) to word 4 of \"We're all in this together\"\n" +
                 "minimumValue(2, maximumValue(x, y))\n" +
                 "if file_type comes before \"APPL\" then copy 5 to c\n" +
-                "on point({x, y})\n" +
+                "on myPoint({x, y})\n" +
                 "  display dialog(\"x = \" & x & \", y = \" & y)\n" +
-                "end point\n\n" +
+                "end myPoint\n" +
+                "\n" +
                 "if reportsToPrint > 0 then\n" +
-                "    tell application \"ReportWizard\"\n" +
-                "    -- Statements to print the reports.\n" +
-                "    end tell\n" +
+                "  tell application \"ReportWizard\"\n" +
+                "  -- Statements to print the reports.\n" +
+                "  end tell\n" +
                 "end if ## had some reports to print\n" +
                 "{\"this\", \"is\", 1 + 1, \"cool\"} + 8\n" +
-                "point({x, y})\n\n" +
+                "myPoint({x, y})\n" +
+                "\n" +
                 "if (x > y) then\n" +
                 "  set myMessage to \" is greater than \"\n" +
                 "else if (x < y) then\n" +

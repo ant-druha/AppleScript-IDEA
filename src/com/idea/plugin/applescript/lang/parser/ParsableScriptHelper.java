@@ -9,55 +9,56 @@ import java.util.List;
 public interface ParsableScriptHelper {
 
   // Application classes
-  boolean isClassExist(@NotNull String name);
+  boolean isStdLibClass(@NotNull String name);
 
-  boolean isClassExist(@NotNull String applicationName, @NotNull String className);
+  boolean isApplicationClass(@NotNull String applicationName, @NotNull String className);
 
-  boolean isClassWithPluralNameExist(@NotNull String pluralName);
+  boolean isStdLibClassPluralName(@NotNull String pluralName);
 
-  boolean isClassWithPluralNameExist(@NotNull String applicationName, @NotNull String pluralClassName);
+  boolean isApplicationClassPluralName(@NotNull String applicationName, @NotNull String pluralClassName);
 
-  int countClassesStartingWithName(@NotNull String namePrefix);
+  int countStdClassesStartingWithName(@NotNull String namePrefix);
 
-  int countClassesStartingWithName(@NotNull String applicationName, @NotNull String classNamePrefix);
+  int countApplicationClassesStartingWithName(@NotNull String applicationName, @NotNull String classNamePrefix);
 
-  int countClassesStartingWithPluralName(@NotNull String namePrefix);
+  int countStdClassesStartingWithPluralName(@NotNull String namePrefix);
 
-  int countClassesStartingWithPluralName(@NotNull String applicationName, @NotNull String pluralClassNamePrefix);
+  int countApplicationClassesStartingWithPluralName(@NotNull String applicationName,
+                                                    @NotNull String pluralClassNamePrefix);
 
   // Application commands
-  boolean isCommandExist(@NotNull String name);
+  boolean isStdCommand(@NotNull String name);
 
-  boolean isCommandExist(@NotNull String applicationName, @NotNull String commandName);
+  boolean isApplicationCommand(@NotNull String applicationName, @NotNull String commandName);
 
-  int countCommandsStartingWithName(@NotNull String namePrefix);
+  int countStdCommandsStartingWithName(@NotNull String namePrefix);
 
-  int countCommandsStartingWithName(@NotNull String applicationName, @NotNull String commandNamePrefix);
-
-  @NotNull
-  List<AppleScriptCommand> findCommands(@NotNull Project project, @NotNull String commandName);
+  int countApplicationCommandsStartingWithName(@NotNull String applicationName, @NotNull String commandNamePrefix);
 
   @NotNull
-  List<AppleScriptCommand> findCommands(@NotNull Project project, @NotNull String applicationName,
-                                        @NotNull String commandName);
+  List<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName);
+
+  @NotNull
+  List<AppleScriptCommand> findApplicationCommands(@NotNull Project project, @NotNull String applicationName,
+                                                   @NotNull String commandName);
 
   // Application properties
-  boolean isPropertyExist(@NotNull String name);
+  boolean isStdProperty(@NotNull String name);
 
-  boolean isPropertyExist(@NotNull String applicationName, @NotNull String propertyName);
+  boolean isApplicationProperty(@NotNull String applicationName, @NotNull String propertyName);
 
-  int countPropertiesStartingWithName(@NotNull String namePrefix);
+  int countStdPropertiesStartingWithName(@NotNull String namePrefix);
 
-  int countPropertiesStartingWithName(@NotNull String applicationName, @NotNull String propertyNamePrefix);
+  int countApplicationPropertiesStartingWithName(@NotNull String applicationName, @NotNull String propertyNamePrefix);
 
 
   // Application constants (enumerators)
-  boolean isConstantExist(@NotNull String name);
+  boolean isStdConstant(@NotNull String name);
 
-  boolean isConstantExist(@NotNull String applicationName, @NotNull String constantName);
+  boolean isApplicationConstant(@NotNull String applicationName, @NotNull String constantName);
 
-  int countConstantStartingWithName(@NotNull String namePrefix);
+  int countStdConstantStartingWithName(@NotNull String namePrefix);
 
-  int countConstantStartingWithName(@NotNull String applicationName, @NotNull String constantNamePrefix);
+  int countApplicationConstantStartingWithName(@NotNull String applicationName, @NotNull String constantNamePrefix);
 
 }

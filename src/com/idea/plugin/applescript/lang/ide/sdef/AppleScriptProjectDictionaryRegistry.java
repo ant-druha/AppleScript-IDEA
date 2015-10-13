@@ -47,7 +47,13 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
   @Nullable
   public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName) {
     ApplicationDictionary newDictionary = dictionaryMap.get(applicationName);
-    String cachedDictionaryFile = systemDictionaryRegistry.getCachedDictionaryFileUrl(applicationName);
+    String cachedDictionaryFile = systemDictionaryRegistry.getGeneratedDictionaryFilePath(applicationName);
+
+    if (cachedDictionaryFile == null) {
+      System.out.println("WARNING: no initialized dictionary found for application: [" + applicationName + "] +" +
+              "Caching it now...");
+      cachedDictionaryFile = systemDictionaryRegistry.initializeDictionaryForApplication(applicationName);
+    }
 
     if (cachedDictionaryFile != null) {
       //todo initialize map to virtualFile?

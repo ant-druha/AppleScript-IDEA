@@ -535,7 +535,8 @@ indexReference ::=  (integerLiteralExpression('st'|'rd'|'th') (typeSpecifier|use
 //things like: "message id of message" and "item i of EmailAddresses" _property_(1st) vs _index_(2nd) forms
 // mailbox "Name string" detected as a 'mailbox' propertyReference
 //todo: custom parsing. To think how more efficient handle propertyName vs className detection
-private classNamePrimaryExpression ::= !(propertyReference (of| !([index] indexValueExpression|nameReferenceString) ) ) typeSpecifier
+private classNamePrimaryExpression ::= !(propertyReference (of| !([index] indexValueExpression|nameReferenceString
+|rangeReferenceFormWithClassPrefix) ) ) typeSpecifier
 // to think how better parse properties & class names
 //private parseClassNameExpression ::= <<parseClassNamePrimaryExpression>>  //!(propertyReference (of| !([index] indexValueExpression)) ) typeSpecifier
 //see <<parseClassNamePrimaryExpression>>
@@ -560,7 +561,7 @@ private nameStringExpression ::= stringLiteralExpression//|parenthesized_express
 
 //rangeReference ::= everyRangeReference | rangeReferenceFormWithClassPrefix
 private rangeReferenceFormWithClassPrefix ::= rangeFromReference | rangeIndexReference
-rangeFromReference ::= /*(pluralClassName|userClassName)*/ from (beginning|expression) to (end|expression)
+rangeFromReference ::= /*(pluralClassName|userClassName)*/ from [THE_KW] (beginning|expression) to [THE_KW](end|expression)
 rangeIndexReference ::= /*(typeSpecifier|userClassName)*/  startIndex (thru|through) stopIndex
 everyRangeReference ::= every (singularClassName|userClassName) from (beginning|expression) to (end|expression)
 
@@ -783,7 +784,7 @@ private formalParameterListPart ::= formalParameterListPartPattern {recoverWhile
 //private formalParameterListPart ::= targetVariablePattern {recoverWhile="argument_list_part_recover"}
 private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argListRecover"}
 private argListRecover ::= !(RPAREN)
-private argumentListPart ::= expression {recoverWhile="argListPartRecover"}
+private argumentListPart ::= statement | expression {recoverWhile="argListPartRecover"}
 private argListPartRecover ::= !(RPAREN|COMMA)
 
 private formalParameterListPartPattern ::= simpleFormalParameter|listFormalParameter|recordFormalParameter

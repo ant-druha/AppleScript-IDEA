@@ -57,7 +57,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, StringHolder parsedName) {
     if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
-    boolean r;
+    boolean r = false;
     parsedName.value = "";
 //    PsiBuilder.Marker m = enter_section_(b, l, _COLLAPSE_, "<parse ApplicationDictionary Command Name>");
     Stack<String> appNamesStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
@@ -65,26 +65,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (appNamesStack != null && !appNamesStack.isEmpty()) {
       appName = appNamesStack.peek();
     }
-//    if (!StringUtil.isEmpty(appName)) {
-//      r = parseCommandNameForApplication(b, l + 1, parsedName, appName);
-//    }
-    r = parseCommandName(b, l + 1, parsedName);
+    if (!StringUtil.isEmpty(appName)) {
+      r = parseCommandNameForApplication(b, l + 1, parsedName, appName);
+    }
+    if (!r) r = parseStdLibCommandName(b, l + 1, parsedName);
 //    exit_section_(b, l, m, DICTIONARY_COMMAND_NAME, r, false, null);
     return r;
   }
-
-//  private static boolean parseDeclaredNameInner(PsiBuilder b, int l, DeclaredType dictionaryDeclaredType, IElementType
-//          tokenType, StringHolder parsedName) {
-//    if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
-//    boolean r;
-//    r = tryToParseDeclaredName(b, l + 1, dictionaryDeclaredType, parsedName);
-//    return r;
-//  }
-
-
-//  public static boolean parseDictionaryCommandName(PsiBuilder b, int l) {
-//    return parseDeclaredNameInner(b, l, DeclaredType.SDEF_COMMAND_NAME);
-//  }
 
   /**
    * <<< COMMAND_HANDLER_CALL >>>
@@ -96,35 +83,27 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     StringHolder parsedCommandName = new StringHolder();
     Stack<String> applicationNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
     List<AppleScriptCommand> allCommandsWithName;
-//    String applicationName = null;
-//    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
-//      applicationName = applicationNameStack.peek();
-//    }
-//    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, applicationName);
+    String applicationName = null;
+    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
+      applicationName = applicationNameStack.peek();
+    }
     PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parseCommandHandlerCallExpression>");
     r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName);
     exit_section_(b, l, mComName, null, r, false, null);
     if (r) {
       PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parseCommandHandlerCallExpression>");
       r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName);
-//      r = consumeToken(b, parsedCommandName.value);
       exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
 
     }
 
     if (!r) return false;
 
-    allCommandsWithName = ParsableScriptSuiteRegistryHelper.findCommands(b.getProject(), parsedCommandName.value);
-//    if (applicationName != null) {
-//      allCommandsWithName = ParsableScriptSuiteRegistryHelper.findCommands(b.getProject(), applicationName,
-//              parsedCommandName.value);
-//    } else {
-//      allCommandsWithName = ParsableScriptSuiteRegistryHelper.findCommands(b.getProject(), parsedCommandName.value);
-//    }
-//    if (allCommandsWithName!=null && allCommandsWithName.size() == 0) {
-//      allCommandsWithName = ParsableScriptSuiteRegistryHelper.getAllCommandsWithName(parsedCommandName.value);
-//      //fall back to  ParsableScriptSuiteRegistryHelper.findCommands(b.getProject(), parsedCommandName.value);
-//    }
+    allCommandsWithName = ParsableScriptSuiteRegistryHelper.findStdCommands(b.getProject(), parsedCommandName.value);
+    if (!StringUtil.isEmpty(applicationName)) {
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+              .findApplicationCommands(b.getProject(), applicationName, parsedCommandName.value));
+    }
 
     for (AppleScriptCommand command : allCommandsWithName) {
       PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse command handler call Expression>");
@@ -140,42 +119,25 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     boolean incompleteHandlerCall = !r && allCommandsWithName.size() > 0 && b.getTokenType() == NLS;
     return r || incompleteHandlerCall;
-//    return r;
   }
-
-//  private static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, StringHolder parsedCommandName,
-//                                                         @NotNull String applicationName) {
-//    if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
-//    boolean r = false;
-//    PsiBuilder.Marker m = enter_section_(b, l, _COLLAPSE_, "<parse ApplicationDictionary Command Name>");
-////    PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse ApplicationDictionary Command Name>");
-//    if (applicationName!=null) {
-//      r = parseCommandNameForApplication(b, l + 1, parsedCommandName, applicationName);
-//    }
-//    if (!r) r = parseCommandName(b, l + 1, parsedCommandName);
-//
-//    exit_section_(b, l, m, DICTIONARY_COMMAND_NAME, r, false, null);
-////    exit_section_(b, l, m, null, r, false, null);
-//    return r;
-//  }
 
   private static boolean parseCommandNameForApplication(PsiBuilder b, int l, StringHolder parsedName,
                                                         @NotNull String applicationName) {
     if (!recursion_guard_(b, l, "parseCommandNameForApplication")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Name>");
+    parsedName.value = "";
     while (consumeTokenForCommandNameAndAppendNameText(b, l + 1, parsedName)) {
       boolean validId = parsedName.value.length() > 0 && StringUtil.isJavaIdentifierStart(parsedName.value.charAt(0));
       boolean foundMatch = validId && ParsableScriptSuiteRegistryHelper
-              .isCommandExist(applicationName, parsedName.value);
+              .isApplicationCommand(applicationName, parsedName.value);
       String tryLookAheadName = "";
       if (foundMatch) {
         r = true;
         tryLookAheadName = parsedName.value + " " + b.getTokenText();
         if (tryLookAheadName.length() > 0 && StringUtil.isJavaIdentifierStart(tryLookAheadName.charAt(0))
                 && ParsableScriptSuiteRegistryHelper
-                .countCommandsStartingWithName(applicationName, tryLookAheadName) > 0) {
-//                .findCommandsStartingWithName(applicationName, tryLookAheadName).size() > 0) {
+                .countApplicationCommandsStartingWithName(applicationName, tryLookAheadName) > 0) {
           continue;
         }
         break;
@@ -441,13 +403,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   }
 
-  private static boolean parseCommandName(PsiBuilder b, int l, StringHolder parsedName) {
+  private static boolean parseStdLibCommandName(PsiBuilder b, int l, StringHolder parsedName) {
     if (!recursion_guard_(b, l, "parseCommandNameForApplication")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Name>");
+    parsedName.value = "";
     while (consumeTokenForCommandNameAndAppendNameText(b, l + 1, parsedName)) {
       boolean foundMatch = parsedName.value.length() > 0 && StringUtil.isJavaIdentifierStart(parsedName.value.charAt(0))
-              && ParsableScriptSuiteRegistryHelper.isCommandExist(parsedName.value);
+              && ParsableScriptSuiteRegistryHelper.isStdCommand(parsedName.value);
 //      boolean foundMatch = ServiceManager.getService(b.getProject(), ParsableScriptSuiteRegistryHelper.class)
 //              .findCommandWithName(parsedName.value) != null;
       String tryLookAheadName = "";
@@ -456,7 +419,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         r = true;
         tryLookAheadName = parsedName.value + " " + b.getTokenText();
         if (tryLookAheadName.length() > 0 && StringUtil.isJavaIdentifierStart(tryLookAheadName.charAt(0))
-                && ParsableScriptSuiteRegistryHelper.countCommandsStartingWithName(tryLookAheadName) > 0) {
+                && ParsableScriptSuiteRegistryHelper.countStdCommandsStartingWithName(tryLookAheadName) > 0) {
 //          r = false;
           continue;
         }
@@ -719,11 +682,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
-    int candidatesCount = ParsableScriptSuiteRegistryHelper.countPropertiesStartingWithName(currentTokenText.value);
+    int candidatesCount = ParsableScriptSuiteRegistryHelper.countStdPropertiesStartingWithName(currentTokenText.value);
     //find the longest lexeme
     while (b.getTokenText() != null && candidatesCount > 0) {
       if (candidatesCount == 1) {
-        if (ParsableScriptSuiteRegistryHelper.isPropertyExist(currentTokenText.value)) {
+        if (ParsableScriptSuiteRegistryHelper.isStdProperty(currentTokenText.value)) {
           r = identifier(b, l + 1);
           if (!r) r = builtInClassIdentifier(b, l + 1);
           if (!r) b.advanceLexer(); //advance lexer in any case
@@ -735,16 +698,16 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         if (!r) b.advanceLexer(); //advance lexer in any case
 
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countPropertiesStartingWithName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdPropertiesStartingWithName(currentTokenText.value);
 
       } else {
-        boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isPropertyExist(currentTokenText.value);
+        boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdProperty(currentTokenText.value);
         r = identifier(b, l + 1);
         if (!r) r = builtInClassIdentifier(b, l + 1);
         if (!r) b.advanceLexer(); //advance lexer in any case
 
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countPropertiesStartingWithName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdPropertiesStartingWithName(currentTokenText.value);
         if (candidatesCount == 0) {
           return foundExactMatch;
         }
@@ -759,7 +722,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
     int candidatesCount = ParsableScriptSuiteRegistryHelper
-            .countPropertiesStartingWithName(applicationName, currentTokenText.value);
+            .countApplicationPropertiesStartingWithName(applicationName, currentTokenText.value);
 //            .findPropertiesStartingWithName(applicationName, currentTokenText.value).size();
 //    if (candidatesCount > 0) {
     //find the longest lexeme
@@ -768,21 +731,21 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       if (!r) r = builtInClassIdentifier(b, l + 1);
       if (!r) b.advanceLexer(); //advance lexer in any case
       if (candidatesCount == 1) {
-        if (ParsableScriptSuiteRegistryHelper.isPropertyExist(applicationName, currentTokenText.value)) {
+        if (ParsableScriptSuiteRegistryHelper.isApplicationProperty(applicationName, currentTokenText.value)) {
           return true;
         }
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
         candidatesCount = ParsableScriptSuiteRegistryHelper
-                .countPropertiesStartingWithName(applicationName, currentTokenText.value);
+                .countApplicationPropertiesStartingWithName(applicationName, currentTokenText.value);
 //                .findPropertiesStartingWithName(applicationName, currentTokenText.value).size();
 
       } else {
         boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
-                .isPropertyExist(applicationName, currentTokenText.value);
+                .isApplicationProperty(applicationName, currentTokenText.value);
 //                .getPropertyWithName(applicationName, currentTokenText.value) != null;
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
         candidatesCount = ParsableScriptSuiteRegistryHelper
-                .countPropertiesStartingWithName(applicationName, currentTokenText.value);
+                .countApplicationPropertiesStartingWithName(applicationName, currentTokenText.value);
 //                .findPropertiesStartingWithName(applicationName, currentTokenText.value).size();
         if (candidatesCount == 0) {
           return foundExactMatch;
@@ -791,25 +754,25 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
 //    }
 //  else {//searching in standard additions
-    candidatesCount = ParsableScriptSuiteRegistryHelper.countPropertiesStartingWithName(currentTokenText.value);
+    candidatesCount = ParsableScriptSuiteRegistryHelper.countStdPropertiesStartingWithName(currentTokenText.value);
     while (b.getTokenText() != null && candidatesCount > 0) {
       r = identifier(b, l + 1);
       if (!r) r = builtInClassIdentifier(b, l + 1);
       if (!r) b.advanceLexer(); //advance lexer in any case
       if (candidatesCount == 1) {
-        if (ParsableScriptSuiteRegistryHelper.isPropertyExist(currentTokenText.value)) {
+        if (ParsableScriptSuiteRegistryHelper.isStdProperty(currentTokenText.value)) {
           return true;
         }
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
         candidatesCount = ParsableScriptSuiteRegistryHelper
-                .countPropertiesStartingWithName(currentTokenText.value);
+                .countStdPropertiesStartingWithName(currentTokenText.value);
 //                .findPropertiesStartingWithName(currentTokenText.value).size();
 
       } else {
-        boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isPropertyExist(currentTokenText.value);
+        boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdProperty(currentTokenText.value);
 
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countPropertiesStartingWithName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdPropertiesStartingWithName(currentTokenText.value);
         if (candidatesCount == 0) {
           return foundExactMatch;
         }
@@ -828,27 +791,27 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     if (isPluralForm) {
       int candidatesCount = ParsableScriptSuiteRegistryHelper
-              .countClassesStartingWithName(currentTokenText.value);
+              .countStdClassesStartingWithName(currentTokenText.value);
       while (b.getTokenText() != null && candidatesCount > 0) {
         boolean r = identifier(b, l + 1);
         if (!r) r = builtInClassIdentifier(b, l + 1);
         if (!r) b.advanceLexer(); //advance lexer in any case
         if (candidatesCount == 1) {
-          if (ParsableScriptSuiteRegistryHelper.isClassWithPluralNameExist(currentTokenText.value)) {
+          if (ParsableScriptSuiteRegistryHelper.isStdLibClassPluralName(currentTokenText.value)) {
             return true;
           }
 
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
           candidatesCount = ParsableScriptSuiteRegistryHelper
-                  .countClassesStartingWithPluralName(currentTokenText.value);
+                  .countStdClassesStartingWithPluralName(currentTokenText.value);
 
         } else {
           boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
-                  .isClassWithPluralNameExist(currentTokenText.value);
+                  .isStdLibClassPluralName(currentTokenText.value);
 
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
           candidatesCount = ParsableScriptSuiteRegistryHelper
-                  .countClassesStartingWithPluralName(currentTokenText.value);
+                  .countStdClassesStartingWithPluralName(currentTokenText.value);
           if (candidatesCount == 0) {
             return foundExactMatch;
           }
@@ -857,26 +820,26 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       return false;
     } else {
       int candidatesCount = ParsableScriptSuiteRegistryHelper
-              .countClassesStartingWithName(currentTokenText.value);
+              .countStdClassesStartingWithName(currentTokenText.value);
       while (b.getTokenText() != null && candidatesCount > 0) {
         boolean r = identifier(b, l + 1);
         if (!r) r = builtInClassIdentifier(b, l + 1);
         if (!r) b.advanceLexer(); //advance lexer in any case
         if (candidatesCount == 1) {
-          if (ParsableScriptSuiteRegistryHelper.isClassExist(currentTokenText.value)) {
+          if (ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value)) {
             return true;
           }
 
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
           candidatesCount = ParsableScriptSuiteRegistryHelper
-                  .countClassesStartingWithName(currentTokenText.value);
+                  .countStdClassesStartingWithName(currentTokenText.value);
 
         } else {
-          boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isClassExist(currentTokenText.value);
+          boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value);
 
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
           candidatesCount = ParsableScriptSuiteRegistryHelper
-                  .countClassesStartingWithName(currentTokenText.value);
+                  .countStdClassesStartingWithName(currentTokenText.value);
           if (candidatesCount == 0) {
             return foundExactMatch;
           }
@@ -891,26 +854,27 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
                                                  final boolean isPluralForm, @NotNull String applicationName) {
     if (isPluralForm) {
       int candidatesCount = ParsableScriptSuiteRegistryHelper
-              .countClassesStartingWithPluralName(applicationName, currentTokenText.value);
+              .countApplicationClassesStartingWithPluralName(applicationName, currentTokenText.value);
       if (candidatesCount > 0) {//checking in this application's dictionary
         while (b.getTokenText() != null) {
           boolean r = identifier(b, l + 1);
           if (!r) r = builtInClassIdentifier(b, l + 1);
           if (!r) b.advanceLexer(); //advance lexer in any case
           if (candidatesCount == 1) {
-            if (ParsableScriptSuiteRegistryHelper.isClassWithPluralNameExist(applicationName, currentTokenText.value)) {
+            if (ParsableScriptSuiteRegistryHelper.isApplicationClassPluralName(applicationName, currentTokenText
+                    .value)) {
               return true;
             }
 
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-            candidatesCount = ParsableScriptSuiteRegistryHelper.countClassesStartingWithPluralName(applicationName,
+            candidatesCount = ParsableScriptSuiteRegistryHelper.countApplicationClassesStartingWithPluralName(applicationName,
                     currentTokenText.value);
 
           } else {
-            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isClassWithPluralNameExist(applicationName,
+            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isApplicationClassPluralName(applicationName,
                     currentTokenText.value);
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-            candidatesCount = ParsableScriptSuiteRegistryHelper.countClassesStartingWithPluralName(applicationName,
+            candidatesCount = ParsableScriptSuiteRegistryHelper.countApplicationClassesStartingWithPluralName(applicationName,
                     currentTokenText.value);
             if (candidatesCount == 0) {
               return foundExactMatch;
@@ -918,26 +882,26 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
           }
         }
       } else {
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countClassesStartingWithPluralName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdClassesStartingWithPluralName(currentTokenText.value);
         while (b.getTokenText() != null && candidatesCount > 0) {//checking in standard definitions
           boolean r = identifier(b, l + 1);
           if (!r) r = builtInClassIdentifier(b, l + 1);
           if (!r) b.advanceLexer(); //advance lexer in any case
           if (candidatesCount == 1) {
-            if (ParsableScriptSuiteRegistryHelper.isClassWithPluralNameExist(currentTokenText.value)) {
+            if (ParsableScriptSuiteRegistryHelper.isStdLibClassPluralName(currentTokenText.value)) {
               return true;
             }
 
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
             candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countClassesStartingWithPluralName(currentTokenText.value);
+                    .countStdClassesStartingWithPluralName(currentTokenText.value);
           } else {
             boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
-                    .isClassWithPluralNameExist(currentTokenText.value);
+                    .isStdLibClassPluralName(currentTokenText.value);
 
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
             candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countClassesStartingWithPluralName(currentTokenText.value);
+                    .countStdClassesStartingWithPluralName(currentTokenText.value);
             if (candidatesCount == 0) {
               return foundExactMatch;
             }
@@ -946,7 +910,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       }
       return false;
     } else {
-      int candidatesCount = ParsableScriptSuiteRegistryHelper.countClassesStartingWithName(applicationName,
+      int candidatesCount = ParsableScriptSuiteRegistryHelper.countApplicationClassesStartingWithName(applicationName,
               currentTokenText.value);
       if (candidatesCount > 0) { //if there are classes exist in this application's dictionary
 
@@ -956,43 +920,43 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
           if (!r) b.advanceLexer(); //advance lexer in any case
 
           if (candidatesCount == 1) {
-            if (ParsableScriptSuiteRegistryHelper.isClassExist(applicationName, currentTokenText.value)) {
+            if (ParsableScriptSuiteRegistryHelper.isApplicationClass(applicationName, currentTokenText.value)) {
               return true;
             }
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
             candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countClassesStartingWithName(applicationName, currentTokenText.value);
+                    .countApplicationClassesStartingWithName(applicationName, currentTokenText.value);
 
           } else {
             boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
-                    .isClassExist(applicationName, currentTokenText.value);
+                    .isApplicationClass(applicationName, currentTokenText.value);
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
             candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countClassesStartingWithName(applicationName, currentTokenText.value);
+                    .countApplicationClassesStartingWithName(applicationName, currentTokenText.value);
             if (candidatesCount == 0) {
               return foundExactMatch;
             }
           }
         }
       } else {//else if there were no classes found in application dictionary searching in standard definitions
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countClassesStartingWithName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdClassesStartingWithName(currentTokenText.value);
         while (b.getTokenText() != null && candidatesCount > 0) {
           boolean r = identifier(b, l + 1);
           if (!r) r = builtInClassIdentifier(b, l + 1);
           if (!r) b.advanceLexer(); //advance lexer in any case
 
           if (candidatesCount == 1) {
-            if (ParsableScriptSuiteRegistryHelper.isClassExist(currentTokenText.value)) {
+            if (ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value)) {
               return true;
             }
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
             candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countClassesStartingWithName(currentTokenText.value);
+                    .countStdClassesStartingWithName(currentTokenText.value);
           } else {
-            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isClassExist(currentTokenText.value);
+            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value);
             currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
             candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countClassesStartingWithName(currentTokenText.value);
+                    .countStdClassesStartingWithName(currentTokenText.value);
             if (candidatesCount == 0) {
               return foundExactMatch;
             }
@@ -1018,6 +982,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         //todo how not to make it check twice?
         PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
         r = tryToParseDictionaryConstant(b, l + 1, appName);
+//        if (r)
+//          r = !AppleScriptParser.handlerLabeledParametersCall(b, l + 1);//unbalanced tree error..
         exit_section_(b, l, m, null, r, false, null);
         if (r) {
           r = tryToParseDictionaryConstant(b, l + 1, appName);
@@ -1027,6 +993,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     } else {
       PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
       r = tryToParseDictionaryConstant(b, l + 1);
+//      if (r)
+      //checking that there is not a user handler call further
+//        r = !AppleScriptParser.handlerLabeledParametersCall(b, l + 1);
       exit_section_(b, l, m, null, r, false, null);
       if (r) {
         r = tryToParseDictionaryConstant(b, l + 1);
@@ -1042,23 +1011,23 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = "";
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
-    int candidatesCount = ParsableScriptSuiteRegistryHelper.countConstantStartingWithName(currentTokenText.value);
+    int candidatesCount = ParsableScriptSuiteRegistryHelper.countStdConstantStartingWithName(currentTokenText.value);
 //    int candidatesCount = ParsableScriptSuiteRegistryHelper.findConstantsStartingWithWord(currentTokenText.value)
 //            .size();
     while (b.getTokenText() != null && candidatesCount > 0) {
       if (candidatesCount == 1) {
-        if (ParsableScriptSuiteRegistryHelper.isConstantExist(currentTokenText.value)) {
+        if (ParsableScriptSuiteRegistryHelper.isStdConstant(currentTokenText.value)) {
           b.advanceLexer();
           return true;
         }
         b.advanceLexer();
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countConstantStartingWithName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdConstantStartingWithName(currentTokenText.value);
       } else {
-        boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isConstantExist(currentTokenText.value);
+        boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdConstant(currentTokenText.value);
         b.advanceLexer();
         currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countConstantStartingWithName(currentTokenText.value);
+        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdConstantStartingWithName(currentTokenText.value);
         if (candidatesCount == 0) {
           return foundExactMatch;
         }
@@ -1069,30 +1038,30 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   private static boolean tryToParseDictionaryConstant(PsiBuilder b, int l, @NotNull String applicationName) {
-    if (!recursion_guard_(b, l, "tryToParseDictionaryClass")) return false;
+    if (!recursion_guard_(b, l, "tryToParseDictionaryConstant")) return false;
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = "";
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
     int candidatesCount = ParsableScriptSuiteRegistryHelper
-            .countConstantStartingWithName(applicationName, currentTokenText.value);
+            .countApplicationConstantStartingWithName(applicationName, currentTokenText.value);
 //            .findConstantsStartingWithWord(applicationName,currentTokenText.value).size();
     if (candidatesCount > 0) {
       while (b.getTokenText() != null) {
         b.advanceLexer();
         if (candidatesCount == 1) {
-          if (ParsableScriptSuiteRegistryHelper.isConstantExist(applicationName, currentTokenText.value)) {
+          if (ParsableScriptSuiteRegistryHelper.isApplicationConstant(applicationName, currentTokenText.value)) {
             return true;
           }
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
           candidatesCount = ParsableScriptSuiteRegistryHelper
-                  .countConstantStartingWithName(applicationName, currentTokenText.value);
+                  .countApplicationConstantStartingWithName(applicationName, currentTokenText.value);
 //                  .findConstantsStartingWithWord(applicationName,currentTokenText.value).size();
         } else {
           boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
-                  .isConstantExist(applicationName, currentTokenText.value);
+                  .isApplicationConstant(applicationName, currentTokenText.value);
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
           candidatesCount = ParsableScriptSuiteRegistryHelper
-                  .countConstantStartingWithName(applicationName, currentTokenText.value);
+                  .countApplicationConstantStartingWithName(applicationName, currentTokenText.value);
 //                  .findConstantsStartingWithWord(applicationName,currentTokenText.value).size();
           if (candidatesCount == 0) {
             return foundExactMatch;
@@ -1101,19 +1070,19 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
       }
     } else {
-      candidatesCount = ParsableScriptSuiteRegistryHelper.countConstantStartingWithName(currentTokenText.value);
+      candidatesCount = ParsableScriptSuiteRegistryHelper.countStdConstantStartingWithName(currentTokenText.value);
       while (b.getTokenText() != null && candidatesCount > 0) {
         b.advanceLexer();
         if (candidatesCount == 1) {
-          if (ParsableScriptSuiteRegistryHelper.isConstantExist(currentTokenText.value)) {
+          if (ParsableScriptSuiteRegistryHelper.isStdConstant(currentTokenText.value)) {
             return true;
           }
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-          candidatesCount = ParsableScriptSuiteRegistryHelper.countConstantStartingWithName(currentTokenText.value);
+          candidatesCount = ParsableScriptSuiteRegistryHelper.countStdConstantStartingWithName(currentTokenText.value);
         } else {
-          boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isConstantExist(currentTokenText.value);
+          boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdConstant(currentTokenText.value);
           currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-          candidatesCount = ParsableScriptSuiteRegistryHelper.countConstantStartingWithName(currentTokenText.value);
+          candidatesCount = ParsableScriptSuiteRegistryHelper.countStdConstantStartingWithName(currentTokenText.value);
           if (candidatesCount == 0) {
             return foundExactMatch;
           }

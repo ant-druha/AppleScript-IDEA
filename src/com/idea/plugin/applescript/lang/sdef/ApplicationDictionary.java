@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public interface ApplicationDictionary extends DictionarySuite {
 
-  String[] STD_LIBRARY_NAMES = {"CocoaStandard", "StandardAdditions"};
+  List<String> STD_LIBRARY_NAMES = Arrays.asList("CocoaStandard", "StandardAdditions");
   List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
   String[] STANDARD_DEFINITION_FILES = {"sdef/CocoaStandard.xml", "sdef/StandardAdditions.xml"};
   String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications",

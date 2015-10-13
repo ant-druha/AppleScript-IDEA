@@ -5,7 +5,6 @@ import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,96 +22,101 @@ public class ParsableScriptSuiteRegistryHelper {
     return scriptHelper;
   }
 
-  public static boolean isClassExist(@NotNull String name) {
-    return getParsableScriptHelper().isClassExist(name);
+  public static boolean isStdLibClass(@NotNull String name) {
+    return getParsableScriptHelper().isStdLibClass(name);
   }
 
-  public static boolean isClassExist(@NotNull String applicationName, @NotNull String className) {
-    return getParsableScriptHelper().isClassExist(applicationName, className);
+  public static boolean isApplicationClass(@NotNull String applicationName, @NotNull String className) {
+    return getParsableScriptHelper().isApplicationClass(applicationName, className);
   }
 
-  public static boolean isClassWithPluralNameExist(@NotNull String pluralName) {
-    return getParsableScriptHelper().isClassWithPluralNameExist(pluralName);
+  public static boolean isStdLibClassPluralName(@NotNull String pluralName) {
+    return getParsableScriptHelper().isStdLibClassPluralName(pluralName);
   }
 
-  public static boolean isClassWithPluralNameExist(@NotNull String applicationName, @NotNull String pluralClassName) {
-    return getParsableScriptHelper().isClassWithPluralNameExist(applicationName, pluralClassName);
+  public static boolean isApplicationClassPluralName(@NotNull String applicationName, @NotNull String pluralClassName) {
+    return getParsableScriptHelper().isApplicationClassPluralName(applicationName, pluralClassName);
   }
 
-  public static int countClassesStartingWithName(@NotNull String namePrefix) {
-    return getParsableScriptHelper().countClassesStartingWithName(namePrefix);
+  public static int countStdClassesStartingWithName(@NotNull String namePrefix) {
+    return getParsableScriptHelper().countStdClassesStartingWithName(namePrefix);
   }
 
-  public static int countClassesStartingWithName(@NotNull String applicationName, @NotNull String classNamePrefix) {
-    return getParsableScriptHelper().countClassesStartingWithName(applicationName, classNamePrefix);
+  public static int countApplicationClassesStartingWithName(@NotNull String applicationName,
+                                                            @NotNull String classNamePrefix) {
+    return getParsableScriptHelper().countApplicationClassesStartingWithName(applicationName, classNamePrefix);
   }
 
-  public static int countClassesStartingWithPluralName(@NotNull String namePrefix) {
-    return getParsableScriptHelper().countClassesStartingWithPluralName(namePrefix);
+  public static int countStdClassesStartingWithPluralName(@NotNull String namePrefix) {
+    return getParsableScriptHelper().countStdClassesStartingWithPluralName(namePrefix);
   }
 
-  public static int countClassesStartingWithPluralName(@NotNull String applicationName, @NotNull String
-          pluralClassNamePrefix) {
-    return getParsableScriptHelper().countClassesStartingWithPluralName(applicationName, pluralClassNamePrefix);
+  public static int countApplicationClassesStartingWithPluralName(@NotNull String applicationName,
+                                                                  @NotNull String pluralClassNamePrefix) {
+    return getParsableScriptHelper().countApplicationClassesStartingWithPluralName(applicationName,
+            pluralClassNamePrefix);
   }
 
-  public static boolean isCommandExist(@NotNull String name) {
-    return getParsableScriptHelper().isCommandExist(name);
+  public static boolean isStdCommand(@NotNull String name) {
+    return getParsableScriptHelper().isStdCommand(name);
   }
 
-  public static boolean isCommandExist(@NotNull String applicationName, @NotNull String commandName) {
-    return getParsableScriptHelper().isCommandExist(applicationName, commandName);
+  public static boolean isApplicationCommand(@NotNull String applicationName, @NotNull String commandName) {
+    return getParsableScriptHelper().isApplicationCommand(applicationName, commandName);
   }
 
-  public static int countCommandsStartingWithName(@NotNull String namePrefix) {
-    return getParsableScriptHelper().countCommandsStartingWithName(namePrefix);
+  public static int countStdCommandsStartingWithName(@NotNull String namePrefix) {
+    return getParsableScriptHelper().countStdCommandsStartingWithName(namePrefix);
   }
 
-  public static int countCommandsStartingWithName(@NotNull String applicationName, @NotNull String commandNamePrefix) {
-    return getParsableScriptHelper().countCommandsStartingWithName(applicationName, commandNamePrefix);
+  public static int countApplicationCommandsStartingWithName(@NotNull String applicationName,
+                                                             @NotNull String commandNamePrefix) {
+    return getParsableScriptHelper().countApplicationCommandsStartingWithName(applicationName, commandNamePrefix);
   }
 
-  @Nullable
-  public static List<AppleScriptCommand> findCommands(@NotNull Project project, @NotNull String commandName) {
-    return getParsableScriptHelper().findCommands(project, commandName);
+  @NotNull
+  public static List<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
+    return getParsableScriptHelper().findStdCommands(project, commandName);
   }
 
-  @Nullable
-  public static List<AppleScriptCommand> findCommands(@NotNull Project project, @NotNull String applicationName,
-                                                      @NotNull String commandName) {
-    return getParsableScriptHelper().findCommands(project, applicationName, commandName);
+  @NotNull
+  public static List<AppleScriptCommand> findApplicationCommands(@NotNull Project project,
+                                                                 @NotNull String applicationName,
+                                                                 @NotNull String commandName) {
+    return getParsableScriptHelper().findApplicationCommands(project, applicationName, commandName);
   }
 
-  public static boolean isPropertyExist(@NotNull String name) {
-    return getParsableScriptHelper().isPropertyExist(name);
+  public static boolean isStdProperty(@NotNull String name) {
+    return getParsableScriptHelper().isStdProperty(name);
   }
 
-  public static boolean isPropertyExist(@NotNull String applicationName, @NotNull String propertyName) {
-    return getParsableScriptHelper().isPropertyExist(applicationName, propertyName);
+  public static boolean isApplicationProperty(@NotNull String applicationName, @NotNull String propertyName) {
+    return getParsableScriptHelper().isApplicationProperty(applicationName, propertyName);
   }
 
-  public static int countPropertiesStartingWithName(@NotNull String namePrefix) {
-    return getParsableScriptHelper().countPropertiesStartingWithName(namePrefix);
+  public static int countStdPropertiesStartingWithName(@NotNull String namePrefix) {
+    return getParsableScriptHelper().countStdPropertiesStartingWithName(namePrefix);
   }
 
-  public static int countPropertiesStartingWithName(@NotNull String applicationName, @NotNull String
-          propertyNamePrefix) {
-    return getParsableScriptHelper().countPropertiesStartingWithName(applicationName, propertyNamePrefix);
+  public static int countApplicationPropertiesStartingWithName(@NotNull String applicationName,
+                                                               @NotNull String propertyNamePrefix) {
+    return getParsableScriptHelper().countApplicationPropertiesStartingWithName(applicationName, propertyNamePrefix);
   }
 
-  public static boolean isConstantExist(@NotNull String name) {
-    return getParsableScriptHelper().isConstantExist(name);
+  public static boolean isStdConstant(@NotNull String name) {
+    return getParsableScriptHelper().isStdConstant(name);
   }
 
-  public static boolean isConstantExist(@NotNull String applicationName, @NotNull String constantName) {
-    return getParsableScriptHelper().isConstantExist(applicationName, constantName);
+  public static boolean isApplicationConstant(@NotNull String applicationName, @NotNull String constantName) {
+    return getParsableScriptHelper().isApplicationConstant(applicationName, constantName);
   }
 
-  public static int countConstantStartingWithName(@NotNull String namePrefix) {
-    return getParsableScriptHelper().countConstantStartingWithName(namePrefix);
+  public static int countStdConstantStartingWithName(@NotNull String namePrefix) {
+    return getParsableScriptHelper().countStdConstantStartingWithName(namePrefix);
   }
 
-  public static int countConstantStartingWithName(@NotNull String applicationName, @NotNull String constantNamePrefix) {
-    return getParsableScriptHelper().countConstantStartingWithName(applicationName, constantNamePrefix);
+  public static int countApplicationConstantStartingWithName(@NotNull String applicationName,
+                                                             @NotNull String constantNamePrefix) {
+    return getParsableScriptHelper().countApplicationConstantStartingWithName(applicationName, constantNamePrefix);
   }
 }

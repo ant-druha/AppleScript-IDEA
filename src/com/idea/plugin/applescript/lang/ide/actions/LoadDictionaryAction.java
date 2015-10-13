@@ -1,4 +1,4 @@
-package com.idea.plugin.applescript.lang.parser;
+package com.idea.plugin.applescript.lang.ide.actions;
 
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
@@ -35,10 +35,12 @@ public class LoadDictionaryAction extends AnAction {
         for (VirtualFile file : files) {
           if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
 
-            String applicationName = null;
+            String applicationName;
             if (!"app".equals(file.getExtension())) {
               applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
                       + file.getName(), "Enter application name", null);
+            } else {
+              applicationName = file.getNameWithoutExtension();
             }
             if (StringUtil.isEmpty(applicationName)) {
               return;

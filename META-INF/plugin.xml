@@ -117,10 +117,6 @@
     <application-components>
         <!-- Add your application components here -->
         <component>
-            <implementation-class>com.idea.plugin.applescript.lang.parser.ApplicationScriptSuiteRegistryComponent
-            </implementation-class>
-        </component>
-        <component>
             <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry
             </implementation-class>
         </component>
@@ -137,7 +133,7 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="LoadDictionary" class="com.idea.plugin.applescript.lang.parser.LoadDictionaryAction"
+        <action id="LoadDictionary" class="com.idea.plugin.applescript.lang.ide.actions.LoadDictionaryAction"
                 text="Load Dictionary" description="testing">
             <add-to-group group-id="FileMenu" anchor="after" relative-to-action="FileOpenGroup"/>
         </action>
