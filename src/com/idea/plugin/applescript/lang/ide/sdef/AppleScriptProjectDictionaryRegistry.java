@@ -44,15 +44,42 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
     return result;
   }
 
+  /**
+   * Creates Dictionary psi class for specified application for Project. Previously cached dictionary files and Standard
+   * <br> application paths are checked
+   *
+   * @param applicationName Name of the application
+   * @return Dictionary psi class for application, given or null if creation failed
+   */
   @Nullable
-  public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName) {
+  public ApplicationDictionary createDictionary(@NotNull String applicationName) {
+    return createDictionary(applicationName, null);
+  }
+
+  /**
+   * Creates Dictionary psi class for specified application for Project. If dictionary was not initialized previously
+   * IDE <br> caches generated dictionary file and initializes it's structure for later use by
+   * {@link com.idea.plugin.applescript.lang.sdef.ApplicationDictionary} psi class.
+   *
+   * @param applicationName Name of the application
+   * @param applicationFile VirtualFile of the application
+   * @return Dictionary psi class for application, given or null if creation failed
+   */
+  @Nullable
+  public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
+                                                             @Nullable VirtualFile applicationFile) {
     ApplicationDictionary newDictionary = dictionaryMap.get(applicationName);
     String cachedDictionaryFile = systemDictionaryRegistry.getGeneratedDictionaryFilePath(applicationName);
 
     if (cachedDictionaryFile == null) {
-      System.out.println("WARNING: no initialized dictionary found for application: [" + applicationName + "] +" +
+      System.out.println("WARNING: no pre-initialized dictionary found for application: [" + applicationName + "] " +
               "Caching it now...");
-      cachedDictionaryFile = systemDictionaryRegistry.initializeDictionaryForApplication(applicationName);
+      if (applicationFile != null) {
+        cachedDictionaryFile = systemDictionaryRegistry
+                .initializeDictionaryFromApplicationFile(applicationFile, applicationName);
+      } else { //if file is null, searching in standard paths
+        cachedDictionaryFile = systemDictionaryRegistry.initializeDictionaryForApplication(applicationName);
+      }
     }
 
     if (cachedDictionaryFile != null) {

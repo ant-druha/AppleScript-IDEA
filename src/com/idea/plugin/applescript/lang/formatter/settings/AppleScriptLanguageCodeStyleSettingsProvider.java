@@ -58,7 +58,36 @@ public class AppleScriptLanguageCodeStyleSettingsProvider extends LanguageCodeSt
                 "  set myMessage to \" is less than \"\n" +
                 "else\n" +
                 "  set myMessage to \" is equal to \"\n" +
-                "end if";
+                "end if\n" +
+                "on MoveToEndOfContent()\n" +
+                "  tell application \"System Events\"\n" +
+                "    tell process \"Mail\"\n" +
+                "      keystroke \"a\" using command down\n" +
+                "      key code 124 -- right arrow\n" +
+                "      keystroke return\n" +
+                "      keystroke return\n" +
+                "    end tell\n" +
+                "  end tell\n" +
+                "end MoveToEndOfContent\n" +
+                "\n" +
+                "-- Send a message using application \"Mail\"\n" +
+                "set recipientName to \"WhiteHat\"\n" +
+                "set recipientAddress to \"someemail@here.com\"\n" +
+                "set theSubject to \"Type your subject here!\"\n" +
+                "set theContent to \"Type your message content here!\"\n" +
+                "\n" +
+                "tell application \"Mail\"\n" +
+                "##Create the message\n" +
+                "  set theMessage to make new outgoing message with properties {subject:theSubject, " +
+                "content:theContent, visible:true}\n" +
+                "  ##Set a recipient\n" +
+                "  tell theMessage\n" +
+                "    make new to recipient with properties {name:recipientName, address:recipientAddress}\n" +
+                "    display dialog \"Dialog title\"\n" +
+                "    ##Send the Message\n" +
+                "    send\n" +
+                "  end tell\n" +
+                "end tell\n";
     }
 
     @Override

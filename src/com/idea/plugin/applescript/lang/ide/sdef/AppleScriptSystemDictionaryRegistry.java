@@ -4,6 +4,7 @@ import com.idea.plugin.applescript.lang.parser.ParsableScriptHelper;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
@@ -41,7 +42,9 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   public static final String APPLICATION_NAME_ELEMENT = "applicationName";
   public static final String DICTIONARY_GENERATED_FILE_URL = "generatedFileUrl";
 
-  private Map<String, String> applicationNameToGeneratedDictionaryPathMap = new HashMap<String, String>();
+  private final Map<String, String> applicationNameToGeneratedDictionaryPathMap = new HashMap<String, String>();
+
+  private final List<String> allSystemApplicationNames = new ArrayList<String>();
 
   public static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
 
@@ -126,11 +129,15 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     for (Map.Entry<String, String> stringPair : classToDictionariesMap.entrySet()) {
       List<String> applicationNames = new ArrayList<String>();
       for (String applicationName : stringPair.getValue().split(",")) {
-        if (!StringUtil.isEmpty(applicationName)) {
+        if (!StringUtil.isEmpty(applicationName)
+                && !ApplicationDictionary.STD_LIBRARY_NAMES.contains(applicationName)) {//if std class was saved somehow
+          //do not add it here - other map for std classes is used
           applicationNames.add(applicationName);
         }
       }
-      classNameToApplicationNameListMap.put(stringPair.getKey(), applicationNames);
+      if (!applicationNames.isEmpty()) {
+        classNameToApplicationNameListMap.put(stringPair.getKey(), applicationNames);
+      }
     }
   }
 
@@ -139,6 +146,22 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   public void initComponent() {
     initStandardSuite();
     initOSXApplicationsDictionary();
+    initSystemApplicationNames();
+  }
+
+  private void initSystemApplicationNames() {
+
+    for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
+      VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
+      if (appsDirVFile != null && appsDirVFile.exists()) {
+        for (VirtualFile appVFile : appsDirVFile.getChildren()) {
+          if (ApplicationDictionaryImpl.extensionSupported(appVFile.getExtension())) {
+            allSystemApplicationNames.add(appVFile.getNameWithoutExtension());
+          }
+        }
+      }
+    }
+    System.out.println("List of installed applications initialized. Count: " + allSystemApplicationNames.size());
   }
 
   // === parsing helper interface ===
@@ -353,24 +376,35 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
 
   private void initOSXApplicationsDictionary() {
-    //todo: change this
     Collection<String> myCachedApplications = applicationNameToGeneratedDictionaryPathMap.keySet();
+    //init from previously generated files
+    for (Map.Entry<String, String> appNameToFile : applicationNameToGeneratedDictionaryPathMap.entrySet()) {
+      VirtualFile dictionaryVFile = LocalFileSystem.getInstance().findFileByPath(appNameToFile.getValue());
+      if (dictionaryVFile != null && dictionaryVFile.exists()) {
+        if (initializeDictionaryFromApplicationFile(dictionaryVFile, appNameToFile.getKey()) == null)
+          System.out.println("WARNING: failed to initialize dictionary for application: " + appNameToFile.getKey());
+      } else {
+        System.out.println("WARNING: failed to initialize dictionary for application: " + appNameToFile.getKey() +
+                "Dictionary file " + appNameToFile.getValue() + " is not valid");
+      }
+    }
     List<String> myDefaultApplicationList = Arrays.asList("Mail", "BBEdit", "Satimage", "Finder", "System Events",
             "TextEdit", "Smile");
     List<String> allApplications = new ArrayList<String>(myCachedApplications.size());
     allApplications.addAll(myCachedApplications);
     for (String defaultApp : myDefaultApplicationList) {
       if (!allApplications.contains(defaultApp)) {
-        allApplications.add(defaultApp);
+        if (initializeDictionaryForApplication(defaultApp) == null)
+          System.out.println("WARNING: failed to initialize dictionary for application: " + defaultApp);
       }
     }
-    for (String specifiedAppName : allApplications) {
-      initializeDictionaryForApplication(specifiedAppName);
-    }
-
   }
 
   /**
+   * Initializes dictionary information for given application and caches generated dictionary file for later use <br>
+   * by {@link com.idea.plugin.applescript.lang.sdef.ApplicationDictionary} psi class. Standard application paths are
+   * checked
+   *
    * @param applicationName Name of the Mac OS application
    * @return File path of generated and cached dictionary for application
    */
@@ -389,7 +423,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   private File getApplicationBundleFile(@NotNull String applicationName) {
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
       for (String ext : ApplicationDictionary.SUPPORTED_EXTENSIONS) {
-        String appBundleFilePath = applicationsDirectory + File.separator + applicationName + "." + ext;
+        String appBundleFilePath = applicationsDirectory + "/" + applicationName + "." + ext;
         File applicationFile = new File(appBundleFilePath);
         if (applicationFile.exists()) return applicationFile;
       }
@@ -397,8 +431,16 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     return null;
   }
 
-  private String initializeDictionaryFromApplicationFile(@NotNull VirtualFile applicationVFile,
-                                                         @NotNull String applicationName) {
+  /**
+   * Initializes dictionary information for given application and caches generated dictionary file for later use <br>
+   * by {@link com.idea.plugin.applescript.lang.sdef.ApplicationDictionary} psi class
+   *
+   * @param applicationVFile Path to the application bundle file (.app, .xml, osax extensions are supported)
+   * @param applicationName  Name of the Mac OS X application
+   * @return File path String of generated and initialized dictionary for application
+   */
+  public synchronized String initializeDictionaryFromApplicationFile(@NotNull VirtualFile applicationVFile,
+                                                                     @NotNull String applicationName) {
     if (!ApplicationDictionaryImpl.extensionSupported(applicationVFile.getExtension()))
       return null;
 
@@ -437,9 +479,10 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   }
 
   @Nullable
-  private String generateDictionaryFileForApplication(@NotNull String applicationName,
-                                                      @NotNull VirtualFile virtualApplicationFile) {
-    if (!SystemInfo.isMac) return null;
+  private String generateDictionaryFileForApplication(@NotNull final String applicationName,
+                                                      @NotNull final VirtualFile virtualApplicationFile) {
+    if (!SystemInfo.isMac && !"xml".equals(virtualApplicationFile.getExtension()))
+      return null;
 
     System.out.println("=== Caching Dictionary for application [" + applicationName + "] ===");
     final String cachedDictionaryPath = serializeDictionaryPathForApplication(applicationName);
@@ -456,35 +499,81 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
       targetFile.getParentFile().mkdirs();
     }
     if (targetFile.getParentFile().exists()) {
-      final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFileFinalPath + "\" > " +
-              cachedDictionaryPath};
-      System.out.println("executing command: " + Arrays.toString(shellCommand));
-      long execStart = System.currentTimeMillis();
-      int exitCode = 0;
-      try {
-        exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
+      if (!SystemInfo.isMac && "xml".equals(virtualApplicationFile.getExtension())) {
+
+        final VirtualFile vAppFileDir = LocalFileSystem.getInstance().findFileByIoFile(targetFile.getParentFile());
+        if (vAppFileDir != null && (vAppFileDir.findChild(targetFile.getName()) == null)) {
+          final VirtualFile[] movedFile = new VirtualFile[1];
+          ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            @Override
+            public void run() {
+              try {
+                movedFile[0] = virtualApplicationFile.copy(this, vAppFileDir, targetFile.getName());
+              } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("WARNING: Failed to move file " + virtualApplicationFile + " to caching directory:" +
+                        " " +
+                        targetFile);
+                if (targetFile.delete())
+                  System.out.println("File deleted.");
+              }
+            }
+          });
+          if (movedFile[0] != null && movedFile[0].exists()) {
+            System.out.println("Application file moved to " + vAppFileDir + "directory");
+            applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
+            return cachedDictionaryPath;
+          }
+        }
+
+      } else {
+        final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFileFinalPath + "\" " +
+                "> " +
+
+                cachedDictionaryPath};
+        System.out.println("executing command: " + Arrays.toString(shellCommand));
+        long execStart = System.currentTimeMillis();
+        int exitCode = 0;
+        try {
+          exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
+          long execEnd = System.currentTimeMillis();
+          System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+          if (exitCode == 0) {
+            applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
+            return cachedDictionaryPath;
+          }
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        System.out.println("WARNING: Command failed: exit code!=0. Dictionary was not generated");
+        if (targetFile.delete())
+          System.out.println("Generated file was deleted");
       }
-      long execEnd = System.currentTimeMillis();
-      System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
-      applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
-      return cachedDictionaryPath;
     }
     return null;
   }
 
   private String serializeDictionaryPathForApplication(@NotNull String applicationName) {
     char sep = File.separatorChar;
-    String unescaped = GENERATED_DICTIONARIES_SYSTEM_FOLDER + sep + applicationName + "_generated.xml";
+    String unescaped = GENERATED_DICTIONARIES_SYSTEM_FOLDER + "/" + applicationName + "_generated.xml";
     return unescaped.replaceAll(" ", "_");
   }
 
   @Nullable
   public String getGeneratedDictionaryFilePath(@Nullable String applicationName) {
     return applicationNameToGeneratedDictionaryPathMap.get(applicationName);
+  }
+
+  @NotNull
+  public Collection<String> getCachedApplicationNames() {
+    return applicationNameToGeneratedDictionaryPathMap.keySet();
+  }
+
+  @NotNull
+  public List<String> getAllSystemApplicationNames() {
+    return allSystemApplicationNames;
   }
 
   @Override

@@ -48,7 +48,7 @@ public class LoadDictionaryAction extends AnAction {
             AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = project
                     .getComponent(AppleScriptProjectDictionaryRegistry.class);
             if (projectDictionaryRegistry != null) {
-              projectDictionaryRegistry.createDictionary(applicationName);
+              projectDictionaryRegistry.createDictionary(applicationName, file);
             }
           }
         }

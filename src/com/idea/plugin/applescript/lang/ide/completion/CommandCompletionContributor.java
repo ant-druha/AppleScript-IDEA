@@ -20,14 +20,14 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 /**
  * Created by Andrey on 31.08.2015.
  */
-public class AppleScriptCommandCompletionContributor extends CompletionContributor {
+public class CommandCompletionContributor extends CompletionContributor {
 
   @Override
   public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
     super.fillCompletionVariants(parameters, result);
   }
 
-  public AppleScriptCommandCompletionContributor() {
+  public CommandCompletionContributor() {
     final PsiElementPattern.Capture<PsiElement> idInExpression =
             psiElement().withSuperParent(1, AppleScriptIdentifier.class).
                     withSuperParent(2, AppleScriptCommandHandlerCall.class);

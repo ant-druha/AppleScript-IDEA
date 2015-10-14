@@ -104,8 +104,10 @@
                 implementation="com.idea.plugin.applescript.lang.ide.structure.AppleScriptStructureViewExtension"/>
 
         <completion.contributor language="AppleScript"
-                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.AppleScriptCommandCompletionContributor"/>
+                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.CommandCompletionContributor"/>
 
+        <completion.contributor language="AppleScript"
+                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.ApplicationNameCompletionContributor"/>
         <defaultLiveTemplatesProvider
                 implementation="com.idea.plugin.applescript.lang.ide.AppleScriptLiveTemplatesProvider"/>
 
