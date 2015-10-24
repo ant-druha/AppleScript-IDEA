@@ -2,6 +2,7 @@ package com.idea.plugin.applescript.lang.ide.completion;
 
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry;
 import com.idea.plugin.applescript.psi.AppleScriptApplicationReference;
+import com.idea.plugin.applescript.psi.AppleScriptUseStatement;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.application.ApplicationManager;
@@ -29,7 +30,8 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
     final PsiElementPattern.Capture<AppleScriptApplicationReference> inApplicationReferenceString =
             psiElement(AppleScriptApplicationReference.class);//.withParent(AppleScriptApplicationReference.class);
     final PsiElementPattern.Capture<PsiElement> inAppReferenceString =
-            psiElement().withSuperParent(1, AppleScriptApplicationReference.class);
+            psiElement().andOr(psiElement().withSuperParent(1, AppleScriptApplicationReference.class),
+                    psiElement().withSuperParent(1, AppleScriptUseStatement.class));
 
     final PsiElementPattern.Capture<PsiElement> any =
             psiElement();

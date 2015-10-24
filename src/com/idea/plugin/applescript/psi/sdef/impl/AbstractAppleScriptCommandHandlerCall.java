@@ -116,17 +116,11 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     return null;
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public AppleScriptExpression getExpression() {
+  public List<AppleScriptExpression> getExpressionList() {
     return null;
   }
-
-//  @NotNull
-//  @Override
-//  public List<AppleScriptExpression> getExpressionList() {
-//    return null;
-//  }
 
 
   @Nullable
@@ -232,6 +226,13 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
     @NotNull
     @Override
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
+
+//      final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(getCommandName());
+//      PsiTreeUtil.treeWalkUp(resolveProcessor, getMyElement(), null, ResolveState.initial());
+//      final List<PsiElement> results = new ArrayList<PsiElement>();
+//      results.add(resolveProcessor.getResult());
+//      return AppleScriptResolveUtil.toCandidateInfoArray(results);
+
       String commandName = getCommandName();
       List<AppleScriptCommand> allCommandsWithName = null;
       List<String> applicationNames = AppleScriptPsiImplUtil

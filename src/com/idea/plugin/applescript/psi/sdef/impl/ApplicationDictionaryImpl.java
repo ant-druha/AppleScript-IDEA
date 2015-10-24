@@ -11,6 +11,7 @@ import com.idea.plugin.applescript.psi.impl.AppleScriptElementPresentation;
 import com.idea.plugin.applescript.psi.sdef.DictionaryIdentifier;
 import com.intellij.lang.Language;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
@@ -39,6 +40,8 @@ import java.util.*;
  * Created by Andrey on 01.07.2015.
  */
 public class ApplicationDictionaryImpl extends FakePsiElement implements ApplicationDictionary {
+
+  public static final Logger LOG = Logger.getInstance("#" + ApplicationDictionaryImpl.class.getName());
 
   //todo add suites: several class unique only within a suite !
   @NotNull private final Project project;
@@ -70,6 +73,10 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     if (StringUtil.isEmpty(displayName))
       displayName = this.applicationName;
     System.out.println("=== Dictionary [" + displayName + "] for application [" + this.applicationName + "] " +
+            "initialized " +
+            "In project[" + project.getName() + "] " + "====" +
+            " Commands: " + dictionaryCommandMap.size() + ". " + "Classes: " + dictionaryClassMap.size() + "\n");
+    LOG.info("=== Dictionary [" + displayName + "] for application [" + this.applicationName + "] " +
             "initialized " +
             "In project[" + project.getName() + "] " + "====" +
             " Commands: " + dictionaryCommandMap.size() + ". " + "Classes: " + dictionaryClassMap.size() + "\n");
@@ -147,10 +154,15 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
             finalFilePath};
     try {
       System.out.println("executing command: " + Arrays.toString(shellCommand));
+      LOG.info("executing command: " + Arrays.toString(shellCommand));
+
       long execStart = System.currentTimeMillis();
       int exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
       long execEnd = System.currentTimeMillis();
+
       System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+      LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+
       File finalXmlFile = new File(finalFilePath);
       VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
       readDictionaryFromXmlFile(virtualXmlFile);
@@ -454,7 +466,9 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
         setRootTag(xmlFile.getRootTag());
         SDEF_Parser.parse(xmlFile, this);
         cachedLibraryXmlFile = virtualFile;
+
         System.out.println("dictionary loaded. Virtual file: " + virtualFile);
+        LOG.info("Dictionary loaded. Virtual file: " + virtualFile);
       }
     }
   }

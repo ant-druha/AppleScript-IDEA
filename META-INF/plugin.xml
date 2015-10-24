@@ -41,6 +41,11 @@
         <!--<library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>-->
 
         <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
+
+        <internalFileTemplate name="AppleScript File.scpt"/>
+
+        <!--<createFromTemplateHandler implementation="com.idea.plugin.applescript.lang.ide.actions.AppleScriptCreateFromTemplateHandler"/>-->
+
         <lang.parserDefinition language="AppleScript"
                                implementationClass="com.idea.plugin.applescript.lang.parser.AppleScriptParserDefinition"/>
         <lang.syntaxHighlighterFactory key="AppleScript"
@@ -113,6 +118,11 @@
 
         <liveTemplateContext implementation="com.idea.plugin.applescript.lang.ide.AppleScriptTemplateContextType"/>
 
+        <!-- Run Configuration-->
+        <configurationType implementation="com.idea.plugin.applescript.lang.ide.run.AppleScriptConfigurationType"/>
+        <runConfigurationProducer
+                implementation="com.idea.plugin.applescript.lang.ide.run.AppleScriptConfigurationProducer"/>
+
 
     </extensions>
 
@@ -133,11 +143,17 @@
         </component>
     </project-components>
 
+
     <actions>
         <!-- Add your actions here -->
         <action id="LoadDictionary" class="com.idea.plugin.applescript.lang.ide.actions.LoadDictionaryAction"
                 text="Load Dictionary" description="testing">
             <add-to-group group-id="FileMenu" anchor="after" relative-to-action="FileOpenGroup"/>
+        </action>
+
+        <action id="NewAppleScriptFile"
+                class="com.idea.plugin.applescript.lang.ide.actions.CreateAppleScriptFileAction">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
         <!--<action id="ChangeScriptSuiteRegistryAction"-->
         <!--class="com.idea.plugin.applescript.lang.ide.libraries.ChangeScriptSuiteRegistryAction"-->

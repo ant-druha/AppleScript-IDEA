@@ -21,6 +21,7 @@ public class AppleScriptSyntaxHighlighterColors {
     private static final String APPLE_SCRIPT_STRING = "APPLE_SCRIPT_STRING";
     private static final String APPLE_SCRIPT_OPERATION_SIGN = "APPLE_SCRIPT_OPERATION_SIGN";
     private static final String APPLE_SCRIPT_COMMENT = "APPLE_SCRIPT_COMMENT";
+  private static final String DICTIONARY_COMMAND = "DICTIONARY_COMMAND";
     @NonNls
     private static final String UNRESOLVED_ACCESS_ID = "Unresolved reference access";
 
@@ -45,6 +46,8 @@ public class AppleScriptSyntaxHighlighterColors {
             createTextAttributesKey(APPLE_SCRIPT_COMMENT, DefaultLanguageHighlighterColors.LINE_COMMENT);
     public static final TextAttributesKey UNRESOLVED_REFERENCE =
             createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
+  public static final TextAttributesKey DICTIONARY_COMMAND_ATTR =
+          createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL);
 
 
 }

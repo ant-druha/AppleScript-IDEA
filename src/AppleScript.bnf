@@ -213,7 +213,8 @@ private handlerDefinition ::= handlerLabeledParametersDefinition|handlerPosition
 returnStatement ::= return [expression]
 
 private controlStatement ::= ifStatement | tryStatement | tellStatement | repeatStatement | exitStatement
-|consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|useStatement
+|consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|
+<<parseUseStatement useStatement>>
 
 exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
@@ -324,7 +325,7 @@ withTransactionStatement ::= with transaction [sessionSpecificator] nls
 private sessionSpecificator ::= referenceIdentifier
 
 //todo may define just single 'use' statement?
-useStatement ::= useAppleScriptStatement|useScriptingAdditionsStatement|useApplicationOrScriptStatement
+useStatement ::= useAppleScriptStatement|/*useScriptingAdditionsStatement|*/useApplicationOrScriptStatement
 |useFrameworkStatement|usingTermsFromStatement
 //todo 'considering numeric strings'
 
@@ -333,9 +334,24 @@ private useAppleScriptStatement ::= use 'AppleScript' [version stringLiteralExpr
 private useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
                                    [((with importing)|(without importing)|importing) expression ] {pin=2}
 
-private useApplicationOrScriptStatement ::= use [referenceIdentifier COLON] (script|applicationClass) dataSpecifier
-                                       [version stringLiteralExpression ]
-                                       [((with importing)|(without importing)|importing) expression ] {pin=3}
+//private parseUseApplicationOrScriptStatement ::= <<parseUseApplicationOrScriptStatementInner>>
+
+//see <<parseUseApplicationOrScriptStatementInner>>
+private useApplicationOrScriptStatement ::= use [referenceIdentifier COLON]
+                    (
+                     (   <<parseUsedApplicationNameExternal withDictionaryImportPredicate>>
+                      |
+                         dataSpecifier
+                      |
+                        (script dataSpecifier)
+                     )
+                        [version stringLiteralExpression] [(with importing)|(without importing)|(importing expression)]
+                    )
+
+private withDictionaryImportPredicate ::= &([version stringLiteralExpression ] [(with importing)|(importing true)])
+
+//useApplicationStatement ::=
+
 private dataSpecifier ::= referenceExpression|stringLiteralExpression
 
 private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
@@ -355,14 +371,14 @@ private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 
 ifSimpleStatement ::= if expression then (/*!(ifCompoundStatement)*/ (statement|expression) )
 //                                    {pin=4}
-
-ifCompoundStatement ::= if expression [then] sep
+//todo: neew to fix issue with detection simple vs compound statement
+ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep
                                        blockBody? nls
                                    (else if expression [then] nls
                                        blockBody? nls )*
                                    (else nls
                                         blockBody? nls)?
-                                   end [if] {pin=10}
+                                   end [if] {pin=9}
 
 // value class types
 private literalExpression ::=
@@ -492,8 +508,8 @@ file_reference ::= THE_KW?(FILE|ALIAS) expression // example p.193
 
 private handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier ::= handlerInterleavedParametersCall |
 propertyReference
-//| (referenceIdentifier handlerPositionalParametersCallExpression?)
-| handlerPositionalParametersCallExpression | referenceIdentifier
+| (referenceIdentifier handlerPositionalParametersCallExpression?)
+//| handlerPositionalParametersCallExpression | referenceIdentifier //does not work in case when disk (expr) ->detected as handler call
 
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
@@ -773,8 +789,8 @@ handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParam
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 
-handlerPositionalParametersCallExpression ::= &(referenceIdentifier LPAREN) referenceIdentifier LPAREN argumentList? RPAREN
-//left handlerPositionalParametersCallExpression ::= LPAREN argumentList? RPAREN
+//handlerPositionalParametersCallExpression ::= &(referenceIdentifier LPAREN) referenceIdentifier LPAREN argumentList? RPAREN
+left handlerPositionalParametersCallExpression ::= LPAREN argumentList? RPAREN
 
 formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
 { methods = [getFormalParameters] }
@@ -978,10 +994,10 @@ private primaryExpression ::=
      literalExpression
  |   dictionaryCommandHandlerCallExpression
 // |   incompleteCommandHandlerCall
- |   handlerPositionalParametersCallExpression
+// |   handlerPositionalParametersCallExpression
  | ( referenceExpression
      ( <<isTreePrevSimpleReference>>
-       (  /*handlerPositionalParametersCallExpression |*/ <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCall )
+       (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCall )
      )?
    )
  |   parenthesizedExpression

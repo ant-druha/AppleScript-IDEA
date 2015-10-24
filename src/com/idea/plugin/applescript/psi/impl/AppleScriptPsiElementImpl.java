@@ -25,8 +25,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
   }
 
   public static boolean processDeclarationsImpl(@Nullable PsiElement context, PsiScopeProcessor processor,
-                                                ResolveState state, @Nullable
-                                                PsiElement lastParent, @Nullable final PsiElement referencingElement) {
+                                                ResolveState state, @Nullable PsiElement lastParent,
+                                                @Nullable final PsiElement referencingElement) {
     if (context == null) {
       return true;
     }

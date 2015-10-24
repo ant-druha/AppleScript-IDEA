@@ -238,20 +238,24 @@ public class AppleScriptPsiImplUtil {
     SortedList<PsiElement> resolveScope = AppleScriptResolveUtil.getTellStatementResolveScope(element);
     List<String> result = new ArrayList<String>();
     for (PsiElement tellStatement : resolveScope) {
-
-      //todo: could be not only application but any class of the application (process "Mail", etc)
-      PsiElement appRef = PsiTreeUtil.findChildOfType(tellStatement, AppleScriptApplicationReference.class);
-      if (appRef != null) {
-        String text = appRef.getText();
-        int from = text.indexOf('"') + 1;
-        int to = text.indexOf('"', from);
-        if (from >= 0 && from <= text.length() && to >= 0 && to <= text.length()) {
-          String appName = text.substring(from, to);
-          result.add(appName);
-        }
-      }
+      String appRef = findApplicationNameFromTellStatement(tellStatement);
+      result.add(appRef);
     }
     return result;
+  }
+
+  public static String findApplicationNameFromTellStatement(PsiElement tellStatement) {
+    //todo: could be not only application but any class of the application (process "Mail", etc)
+    PsiElement appRef = PsiTreeUtil.findChildOfType(tellStatement, AppleScriptApplicationReference.class);
+    if (appRef != null) {
+      String text = appRef.getText();
+      int from = text.indexOf('"') + 1;
+      int to = text.indexOf('"', from);
+      if (from >= 0 && from <= text.length() && to >= 0 && to <= text.length()) {
+        return text.substring(from, to);
+      }
+    }
+    return null;
   }
 
 }

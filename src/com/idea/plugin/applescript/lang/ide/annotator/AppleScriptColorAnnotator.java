@@ -1,16 +1,20 @@
 package com.idea.plugin.applescript.lang.ide.annotator;
 
 import com.idea.plugin.applescript.highlighter.AppleScriptSyntaxHighlighterColors;
+import com.idea.plugin.applescript.lang.ide.intentions.AddApplicationDictionaryQuickFix;
 import com.idea.plugin.applescript.lang.ide.intentions.RenameParameterLabelQuickFix;
-import com.idea.plugin.applescript.psi.AppleScriptHandlerArgument;
-import com.idea.plugin.applescript.psi.AppleScriptHandlerCall;
-import com.idea.plugin.applescript.psi.AppleScriptHandlerParameterLabel;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry;
+import com.idea.plugin.applescript.psi.*;
+import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,6 +53,23 @@ public class AppleScriptColorAnnotator implements Annotator {
                     AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
           }
         } else createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
+      }
+    }
+    if (element instanceof AppleScriptDictionaryCommandName) {
+      createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
+    } else if (element instanceof AppleScriptTellSimpleStatement
+            || element instanceof AppleScriptTellCompoundStatement) {
+      String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);
+      AppleScriptSystemDictionaryRegistry systemDictionaryRegistry = ApplicationManager.getApplication()
+              .getComponent(AppleScriptSystemDictionaryRegistry.class);
+      if (systemDictionaryRegistry != null) {
+        if (!StringUtil.isEmpty(appName) && !systemDictionaryRegistry.isApplicationKnown(appName)) {
+
+          AppleScriptApplicationReference appRef = PsiTreeUtil
+                  .findChildOfType(element, AppleScriptApplicationReference.class);
+          holder.createWarningAnnotation(appRef != null ? appRef : element, "Application \"" + appName + "\" not found")
+                  .registerFix(new AddApplicationDictionaryQuickFix(appName));
+        }
       }
     }
     // duplicated labels

@@ -31,12 +31,14 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                 new AttributesDescriptor("String", STRING),
                 new AttributesDescriptor("Operator", OPERATION_SIGN),
                 new AttributesDescriptor("Comment", COMMENT),
+                new AttributesDescriptor("Dictionary command", DICTIONARY_COMMAND_ATTR),
         };
 
         ourTags.put("keyword", KEYWORD);
         ourTags.put("string", STRING);
         ourTags.put("operator", OPERATION_SIGN);
         ourTags.put("comment", COMMENT);
+      ourTags.put("command", DICTIONARY_COMMAND_ATTR);
     }
 
 

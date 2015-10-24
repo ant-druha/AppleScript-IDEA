@@ -7,6 +7,7 @@ import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.*;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
@@ -35,6 +36,9 @@ import java.util.*;
         storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml")})
 public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent,
         PersistentStateComponent<AppleScriptSystemDictionaryRegistry.State>, ParsableScriptHelper {
+
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistry.class.getName());
+
 
   public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistry";
 
@@ -161,7 +165,9 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
         }
       }
     }
-    System.out.println("List of installed applications initialized. Count: " + allSystemApplicationNames.size());
+    System.out.println("System.out: List of installed applications initialized. Count: " + allSystemApplicationNames
+            .size());
+    LOG.info("List of installed applications initialized. Count: " + allSystemApplicationNames.size());
   }
 
   // === parsing helper interface ===
@@ -381,11 +387,16 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     for (Map.Entry<String, String> appNameToFile : applicationNameToGeneratedDictionaryPathMap.entrySet()) {
       VirtualFile dictionaryVFile = LocalFileSystem.getInstance().findFileByPath(appNameToFile.getValue());
       if (dictionaryVFile != null && dictionaryVFile.exists()) {
-        if (initializeDictionaryFromApplicationFile(dictionaryVFile, appNameToFile.getKey()) == null)
+        if (initializeDictionaryFromApplicationFile(dictionaryVFile, appNameToFile.getKey()) == null) {
           System.out.println("WARNING: failed to initialize dictionary for application: " + appNameToFile.getKey());
+          LOG.warn("Failed to initialize dictionary for application: " + appNameToFile.getKey());
+        }
       } else {
         System.out.println("WARNING: failed to initialize dictionary for application: " + appNameToFile.getKey() +
                 "Dictionary file " + appNameToFile.getValue() + " is not valid");
+        LOG.warn("Failed to initialize dictionary for application: " + appNameToFile.getKey() +
+                "Dictionary file " + appNameToFile.getValue() + " is not valid");
+
       }
     }
     List<String> myDefaultApplicationList = Arrays.asList("Mail", "BBEdit", "Satimage", "Finder", "System Events",
@@ -394,8 +405,10 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     allApplications.addAll(myCachedApplications);
     for (String defaultApp : myDefaultApplicationList) {
       if (!allApplications.contains(defaultApp)) {
-        if (initializeDictionaryForApplication(defaultApp) == null)
+        if (initializeDictionaryForApplication(defaultApp) == null) {
           System.out.println("WARNING: failed to initialize dictionary for application: " + defaultApp);
+          LOG.warn("Failed to initialize dictionary for application: " + defaultApp);
+        }
       }
     }
   }
@@ -485,6 +498,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
       return null;
 
     System.out.println("=== Caching Dictionary for application [" + applicationName + "] ===");
+    LOG.info("=== Caching Dictionary for application [" + applicationName + "] ===");
     final String cachedDictionaryPath = serializeDictionaryPathForApplication(applicationName);
     String cmdName;
     if ("xml".equals(virtualApplicationFile.getExtension())) {
@@ -511,16 +525,20 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
                 movedFile[0] = virtualApplicationFile.copy(this, vAppFileDir, targetFile.getName());
               } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("WARNING: Failed to move file " + virtualApplicationFile + " to caching directory:" +
-                        " " +
-                        targetFile);
-                if (targetFile.delete())
+                System.out.println("WARNING: Failed to move file " + virtualApplicationFile + " to caching directory: "
+                        + targetFile);
+                LOG.error("Failed to move file " + virtualApplicationFile + " to caching directory: "
+                        + targetFile);
+                if (targetFile.delete()) {
                   System.out.println("File deleted.");
+                  LOG.info("File deleted.");
+                }
               }
             }
           });
           if (movedFile[0] != null && movedFile[0].exists()) {
             System.out.println("Application file moved to " + vAppFileDir + "directory");
+            LOG.info("Application file moved to " + vAppFileDir + "directory");
             applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
             return cachedDictionaryPath;
           }
@@ -532,12 +550,14 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
                 cachedDictionaryPath};
         System.out.println("executing command: " + Arrays.toString(shellCommand));
+        LOG.info("executing command: " + Arrays.toString(shellCommand));
         long execStart = System.currentTimeMillis();
         int exitCode = 0;
         try {
           exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
           long execEnd = System.currentTimeMillis();
           System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+          LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
           if (exitCode == 0) {
             applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
             return cachedDictionaryPath;
@@ -548,8 +568,11 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
           e.printStackTrace();
         }
         System.out.println("WARNING: Command failed: exit code!=0. Dictionary was not generated");
-        if (targetFile.delete())
+        LOG.warn("Command failed: exit code!=0. Dictionary was not generated");
+        if (targetFile.delete()) {
           System.out.println("Generated file was deleted");
+          LOG.info("Generated file was deleted");
+        }
       }
     }
     return null;
@@ -574,6 +597,11 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   @NotNull
   public List<String> getAllSystemApplicationNames() {
     return allSystemApplicationNames;
+  }
+
+  public boolean isApplicationKnown(String applicationName) {
+    return allSystemApplicationNames.contains(applicationName)
+            || applicationNameToGeneratedDictionaryPathMap.containsKey(applicationName);
   }
 
   @Override

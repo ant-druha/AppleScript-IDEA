@@ -101,7 +101,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @NotNull
   @Override
   public List<String> getNameIdentifiers() {
-    return Arrays.asList(name.split(" "));
+    return Arrays.asList(name.split("\\s+"));
   }
 
   @NotNull
@@ -159,7 +159,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
 //            || this instanceof AppleScriptCommand
 //            || this instanceof Suite)) {
       sb.append("<p>");
-      sb.append(type.substring(10)).append(" <b>").append(name).
+    sb.append(type.substring(10)).append(" <b>").append(name).//todo remove 10 !!
               append("</b>");
 
     if (this instanceof AppleScriptClass) {

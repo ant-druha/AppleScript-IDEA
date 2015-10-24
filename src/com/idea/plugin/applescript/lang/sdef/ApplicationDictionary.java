@@ -20,7 +20,7 @@ public interface ApplicationDictionary extends DictionarySuite {
   String[] STANDARD_DEFINITION_FILES = {"sdef/CocoaStandard.xml", "sdef/StandardAdditions.xml"};
   String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications",
           "/System/Library/CoreServices", "/System/Library/CoreServices/Applications",
-          "/Library/ScriptingAdditions"};
+          "/Library/ScriptingAdditions", "/Applications/Utilities/"};
 
   @NotNull
   VirtualFile getCachedLibraryXmlFile();

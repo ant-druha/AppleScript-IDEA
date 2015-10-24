@@ -3,6 +3,7 @@ package com.idea.plugin.applescript.lang.ide.sdef;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -18,6 +19,9 @@ import java.util.Map;
 public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
 
   public static final String COMPONENT_NAME = "AppleScriptProjectDictionaryRegistry";
+
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptProjectDictionaryRegistry.class.getName());
+
 
   @NotNull private final Project project;
   @NotNull private final AppleScriptSystemDictionaryRegistry systemDictionaryRegistry;
@@ -73,6 +77,8 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
 
     if (cachedDictionaryFile == null) {
       System.out.println("WARNING: no pre-initialized dictionary found for application: [" + applicationName + "] " +
+              "Caching it now...");
+      LOG.warn("No pre-initialized dictionary found for application: [" + applicationName + "] " +
               "Caching it now...");
       if (applicationFile != null) {
         cachedDictionaryFile = systemDictionaryRegistry

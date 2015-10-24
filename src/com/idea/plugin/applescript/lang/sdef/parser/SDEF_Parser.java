@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
 import com.idea.plugin.applescript.lang.sdef.*;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlDocument;
@@ -14,8 +15,12 @@ import java.util.List;
 
 public class SDEF_Parser {
 
+  public static final Logger LOG = Logger.getInstance("#" + SDEF_Parser.class.getName());
+
   public static void parse(@NotNull XmlFile file, @NotNull ApplicationDictionary parsedDictionary) {
     System.out.println("Start parsing xml file --- " + file.toString() + " ---");
+    LOG.info("Start parsing xml file --- " + file.toString() + " ---");
+
     if (parsedDictionary.getRootTag() == null) {
       parsedDictionary.setRootTag(file.getRootTag());
     }
@@ -76,6 +81,7 @@ public class SDEF_Parser {
       }
     }
     System.out.println("parsing completed for file.");
+    LOG.info("parsing completed for file.");
   }
 
   private static Suite parseSuiteTag(XmlTag suiteTag, ApplicationDictionary dictionary) {

@@ -12,12 +12,12 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.*;
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.COMMENT;
+import static com.idea.plugin.applescript.psi.AppleScriptTypes.DICTIONARY_COMMAND_NAME;
 
 public class AppleScriptSyntaxHighlighter extends SyntaxHighlighterBase {
 
@@ -26,16 +26,19 @@ public class AppleScriptSyntaxHighlighter extends SyntaxHighlighterBase {
   static {
     fillMap(ATTRIBUTES, OPERATORS, AppleScriptSyntaxHighlighterColors.OPERATION_SIGN);
     fillMap(ATTRIBUTES, KEYWORDS, AppleScriptSyntaxHighlighterColors.KEYWORD);
+    fillMap(ATTRIBUTES, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR, DICTIONARY_COMMAND_NAME);
+    fillMap(ATTRIBUTES, DICTIONARY_COMMAND_NAMES, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
     fillMap(ATTRIBUTES, STRINGS, AppleScriptSyntaxHighlighterColors.STRING);
     fillMap(ATTRIBUTES, NUMBERS, AppleScriptSyntaxHighlighterColors.NUMBER);
     ATTRIBUTES.put(COMMENT, AppleScriptSyntaxHighlighterColors.COMMENT);
+//    ATTRIBUTES.put(DICTIONARY_COMMAND_NAME, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
   }
 
 
   @NotNull
   @Override
   public Lexer getHighlightingLexer() {
-    return new FlexAdapter(new _AppleScriptLexer((Reader) null));
+    return new FlexAdapter(new _AppleScriptLexer(null));
   }
 
   @NotNull

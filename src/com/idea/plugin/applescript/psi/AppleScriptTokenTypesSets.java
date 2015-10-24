@@ -49,7 +49,7 @@ public interface AppleScriptTokenTypesSets {
 // set,seventh,since,
 //    sixth,some,tell,tenth,that,the,then,third,through,thru,timeout,times,to,transaction,true,try,until,where,while,
 // whose,with,without
-
+TokenSet DICTIONARY_COMMAND_NAMES = TokenSet.create(DICTIONARY_COMMAND_NAME);
   TokenSet STRINGS = TokenSet.create(STRING_LITERAL);
   TokenSet WHITE_SPACES_SET = TokenSet.create(NLS, com.intellij.psi.TokenType.WHITE_SPACE);
   TokenSet COMMENT_OR_WHITE_SPACE = TokenSet.create(NLS, com.intellij.psi.TokenType.WHITE_SPACE, COMMENT);

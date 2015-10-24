@@ -2,8 +2,10 @@ package com.idea.plugin.applescript.lang.ide.completion;
 
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.idea.plugin.applescript.lang.sdef.CommandParameter;
+import com.idea.plugin.applescript.psi.AppleScriptDirectParameterVal;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
+import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -25,6 +27,11 @@ public class CommandCompletionContributor extends CompletionContributor {
   @Override
   public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
     super.fillCompletionVariants(parameters, result);
+  }
+
+  @Override
+  public void beforeCompletion(@NotNull CompletionInitializationContext context) {
+    super.beforeCompletion(context);
   }
 
   public CommandCompletionContributor() {
@@ -71,6 +78,13 @@ public class CommandCompletionContributor extends CompletionContributor {
                                             @NotNull CompletionResultSet result) {
                 AppleScriptCommandHandlerCall handlerCallExpression =
                         PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptCommandHandlerCall.class);
+                AppleScriptDirectParameterVal directParameter =
+                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptDirectParameterVal.class);
+                //todo here to get commandParameterSelector name (to be implemented) and get appropriate variants for
+                //completion based on type of the commandParameterValue
+                AppleScriptCommandHandlerParameter commandParameter =
+                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptCommandHandlerParameter.class);
+                PsiElement prevLeaf = PsiTreeUtil.prevVisibleLeaf(parameters.getPosition());
                 if (handlerCallExpression == null) {
 
                   PsiElement appId = PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptIdentifier.class);

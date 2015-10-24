@@ -28,33 +28,39 @@ public class LoadDictionaryAction extends AnAction {
     if (project == null) return;
 
     VirtualFile directoryFile = currentDirectory != null ? currentDirectory.getVirtualFile() : project.getBaseDir();
+    openLoadDirectoryDialog(project, directoryFile, null);
+
+
+  }
+
+  public static void openLoadDirectoryDialog(final Project project, VirtualFile directoryFile, final String appName) {
     FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, true);
     FileChooser.chooseFiles(descriptor, project, directoryFile, new Consumer<List<VirtualFile>>() {
       @Override
       public void consume(final List<VirtualFile> files) {
         for (VirtualFile file : files) {
           if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
-
-            String applicationName;
-            if (!"app".equals(file.getExtension())) {
-              applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
-                      + file.getName(), "Enter application name", null);
+            if (StringUtil.isEmpty(appName)) {
+              String applicationName;
+              if (!"app".equals(file.getExtension())) {
+                applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
+                        + file.getName(), "Enter application name", null);
+              } else {
+                applicationName = file.getNameWithoutExtension();
+              }
+              if (StringUtil.isEmpty(applicationName)) {
+                return;
+              }
             } else {
-              applicationName = file.getNameWithoutExtension();
-            }
-            if (StringUtil.isEmpty(applicationName)) {
-              return;
-            }
-            AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = project
-                    .getComponent(AppleScriptProjectDictionaryRegistry.class);
-            if (projectDictionaryRegistry != null) {
-              projectDictionaryRegistry.createDictionary(applicationName, file);
+              AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = project
+                      .getComponent(AppleScriptProjectDictionaryRegistry.class);
+              if (projectDictionaryRegistry != null) {
+                projectDictionaryRegistry.createDictionary(appName, file);
+              }
             }
           }
         }
       }
     });
-
-
   }
 }

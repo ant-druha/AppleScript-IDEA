@@ -1,24 +1,25 @@
 package com.idea.plugin.applescript.psi.impl;
 
+import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptComponentScopeResolver;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
+import com.idea.plugin.applescript.lang.sdef.AppleScriptClass;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.lang.util.ScopeUtil;
 import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElementFactory;
 import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.UnfairTextRange;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiPolyVariantReference;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.ResolveResult;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.source.resolve.ResolveCache;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Andrey on 13.04.2015.
@@ -141,34 +143,67 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
             ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptComponentScopeResolver
                     .INSTANCE, true, true);
     //here we should add elements from parsed dictionaries (commands, classes etc.. which are the most relevant)
-    List<AppleScriptCommand> allCommandsWithName = null;
 
     List<String> applicationNames = AppleScriptPsiImplUtil
             .getApplicationNameForElementInsideTellStatement(this);
     AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = getProject()
             .getComponent(AppleScriptProjectDictionaryRegistry.class);
-    allCommandsWithName = new ArrayList<AppleScriptCommand>();
+    List<AppleScriptCommand> stdCommandsWithName = new ArrayList<AppleScriptCommand>();
+    List<AppleScriptClass> stdClassesWithName = new ArrayList<AppleScriptClass>();
+    List<DictionaryComponent> dictionaryComponents = new ArrayList<DictionaryComponent>();
     if (projectDictionaryRegistry != null) {
       for (ApplicationDictionary stdDictionary : projectDictionaryRegistry.getStandardDictionaries()) {
-        allCommandsWithName.addAll(stdDictionary.getAllCommands());
+        Map<String, AppleScriptCommand> stdCommandsMap = stdDictionary.getDictionaryCommandMap();
+        Map<String, AppleScriptClass> stdClassMap = stdDictionary.getDictionaryClassMap();
+        stdCommandsWithName.addAll(stdCommandsMap.values());
+        stdClassesWithName.addAll(stdClassMap.values());
       }
-      for (String appName : applicationNames) {
-        ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(appName);
-        if (dictionary == null) {
-          dictionary = projectDictionaryRegistry.createDictionary(appName);
+      if (!applicationNames.isEmpty()) {
+        for (String appName : applicationNames) {
+          ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(appName);
+          if (dictionary == null) {
+            dictionary = projectDictionaryRegistry.createDictionary(appName);
+          }
+          if (dictionary != null) {
+            Map<String, AppleScriptCommand> dictionaryCommandsMap = dictionary.getDictionaryCommandMap();
+            stdCommandsWithName.addAll(dictionaryCommandsMap.values());
+            for (AppleScriptCommand stdCmd : stdCommandsWithName) {//filtering the same std commands
+              if (!dictionaryCommandsMap.containsKey(stdCmd.getName())) {
+                dictionaryComponents.add(stdCmd);
+              }
+            }
+            dictionaryComponents.addAll(dictionaryCommandsMap.values());
+            dictionaryComponents.addAll(dictionary.getDictionaryClassMap().values());
+            dictionaryComponents.addAll(dictionary.getDictionaryPropertyMap().values());
+          }
         }
-        if (dictionary != null) {
-          allCommandsWithName.addAll(dictionary.getAllCommands());
+      } else {
+        dictionaryComponents.addAll(stdCommandsWithName);
+        dictionaryComponents.addAll(stdClassesWithName);
+      }
+    }
+    List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+    for (DictionaryComponent dictionaryTerm : dictionaryComponents) {
+      LookupElementBuilder builder = LookupElementBuilder.create(dictionaryTerm)
+              .withTypeText(dictionaryTerm.getType(), dictionaryTerm.getIcon(0), true);
+      lookupElements.add(builder);
+    }
+    if (elements != null) {
+      for (PsiElement el : elements) {
+        LookupElementBuilder builder;
+        if (el instanceof PsiNamedElement) {
+          builder = LookupElementBuilder.create((PsiNamedElement) el);
+        } else {
+          builder = LookupElementBuilder.create(el);
         }
+        AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
+        String typeText = componentType != null ? componentType.toString() : null;
+        builder = builder.withTypeText(typeText, el.getIcon(0), true);
+        lookupElements.add(builder);
       }
     }
 
-    List<PsiElement> result = new ArrayList<PsiElement>();
-    result.addAll(allCommandsWithName);
-    if (elements!=null)
-      result.addAll(elements);
-
-    return !result.isEmpty() ? result.toArray() : LookupElement.EMPTY_ARRAY;
+    return !lookupElements.isEmpty() ? lookupElements.toArray() : LookupElement.EMPTY_ARRAY;
   }
 
   @Override

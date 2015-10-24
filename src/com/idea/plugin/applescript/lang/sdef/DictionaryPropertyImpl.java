@@ -64,6 +64,11 @@ public class DictionaryPropertyImpl extends AbstractDictionaryComponent<Dictiona
     this.accessType = accessType;
   }
 
+  @Override
+  public boolean isObjectProperty() {
+    return true;
+  }
+
   @NotNull
   @Override
   public Suite getSuite() {
