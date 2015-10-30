@@ -74,7 +74,7 @@ public class AppleScriptColorAnnotator implements Annotator {
     }
     // duplicated labels
     if (elementType == HANDLER_LABELED_PARAMETERS_DEFINITION ||
-            elementType == HANDLER_LABELED_PARAMETERS_CALL) {
+            elementType == HANDLER_LABELED_PARAMETERS_CALL_EXPRESSION) {
       PsiElement[] childElements = element.getChildren();
       ArrayList<String> labelNames = new ArrayList<String>();
       for (PsiElement childElement : childElements) {

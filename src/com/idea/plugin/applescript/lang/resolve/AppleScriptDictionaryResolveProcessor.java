@@ -277,9 +277,15 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
             dictionaryComponents.add(cmd);
           }
         }
+        for (AppleScriptPropertyDefinition prop : importedDict.getDictionaryPropertyMap().values()) {
+          if (cocoaStandard.findCommand(prop.getName()) == null) {
+            dictionaryComponents.add(prop);
+          }
+        }
       }
     } else {
       dictionaryComponents.addAll(importedDict.getDictionaryEnumeratorMap().values());
+      dictionaryComponents.addAll(importedDict.getDictionaryPropertyMap().values());
       dictionaryComponents.addAll(importedDict.getDictionaryClassMap().values());
       dictionaryComponents.addAll(importedDict.getAllCommands());
     }

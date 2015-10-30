@@ -109,6 +109,11 @@ public class SDEF_Parser {
     AppleScriptClass parentClass = dictionary.findClass(parentClassName);
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
     String pluralName = classExtensionTag.getAttributeValue("plural");
+    //todo parent class code could be NULL!! need to parse included dictionary in this case looks like...
+    if (parentClassCode == null && parentClassName != null) {
+      int l = parentClassName.length();
+      parentClassCode = parentClassName.substring(l >= 4 ? 4 : l - 1);
+    }
     if (parentClassName == null || parentClassCode == null) return null;
 
     List<String> elementNames = initClassElements(classExtensionTag);
@@ -287,9 +292,9 @@ public class SDEF_Parser {
       boolean isOptional = isOptionalAttr != null && "yes".equals(isOptionalAttr.getValue());
       if (typeVal != null) {
         if (paramDescription != null) {
-          directParameter = new CommandDirectParameter(typeVal, paramDescription.getValue(), isOptional);
+          directParameter = new CommandDirectParameter(command, typeVal, paramDescription.getValue(), isOptional);
         } else {
-          directParameter = new CommandDirectParameter(typeVal, null, isOptional);
+          directParameter = new CommandDirectParameter(command, typeVal, null, isOptional);
         }
       }
     }

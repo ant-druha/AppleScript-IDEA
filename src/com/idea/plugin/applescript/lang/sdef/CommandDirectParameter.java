@@ -12,15 +12,19 @@ public class CommandDirectParameter {
   @Nullable
   private String description;
   private boolean optional;
+  @NotNull AppleScriptCommand myCommand;
 
-  public CommandDirectParameter(@NotNull String typeSpecifier, @Nullable String description, boolean optional) {
+  public CommandDirectParameter(@NotNull AppleScriptCommand myCommand, @NotNull String typeSpecifier,
+                                @Nullable String description, boolean optional) {
+    this.myCommand = myCommand;
     this.typeSpecifier = typeSpecifier;
     this.description = description;
     this.optional = optional;
   }
 
-  public CommandDirectParameter(@NotNull String typeSpecifier, @Nullable String description) {
-    this(typeSpecifier, description, false);
+  public CommandDirectParameter(@NotNull AppleScriptCommand myCommand, @NotNull String typeSpecifier,
+                                @Nullable String description) {
+    this(myCommand, typeSpecifier, description, false);
   }
 
   @NotNull
@@ -36,4 +40,11 @@ public class CommandDirectParameter {
   public String getDescription() {
     return description;
   }
+
+  @NotNull
+  public AppleScriptCommand getCommand() {
+    return myCommand;
+  }
+
+
 }

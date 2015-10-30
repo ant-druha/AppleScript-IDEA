@@ -1,7 +1,7 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
-import com.idea.plugin.applescript.psi.*;
-import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
+import com.idea.plugin.applescript.psi.AppleScriptDirectParameterVal;
+import com.idea.plugin.applescript.psi.impl.AppleScriptExpressionImpl;
 import com.idea.plugin.applescript.psi.sdef.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by Andrey on 16.08.2015.
  */
-public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElementImpl//AppleScriptPsiElementImpl
+public class AbstractAppleScriptCommandHandlerCall extends AppleScriptExpressionImpl//AppleScriptPsiElementImpl
         implements AppleScriptCommandHandlerCall {
 
   public AbstractAppleScriptCommandHandlerCall(ASTNode node) {
@@ -50,153 +50,6 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   public List<AppleScriptCommandHandlerParameter> getCommandParameters() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, AppleScriptCommandHandlerParameter.class);
   }
-
-  @Nullable
-//  @Override
-  public AppleScriptApplicationReference getApplicationReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptArbitraryReference getArbitraryReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptBuiltInClassIdentifier getBuiltInClassIdentifier() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptBuiltInClassIdentifierPlural getBuiltInClassIdentifierPlural() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptDictionaryClassIdentifierPlural getDictionaryClassIdentifierPlural() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptDictionaryClassName getDictionaryClassName() {
-    return null;
-  }
-
-
-  @Nullable
-  @Override
-  public AppleScriptDictionaryConstant getDictionaryConstant() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptEveryElemReference getEveryElemReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptEveryRangeReference getEveryRangeReference() {
-    return null;
-  }
-
-  @NotNull
-  @Override
-  public List<AppleScriptExpression> getExpressionList() {
-    return null;
-  }
-
-
-  @Nullable
-  @Override
-  public AppleScriptFileReference getFileReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptFilterReference getFilterReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptHandlerInterleavedParametersCall getHandlerInterleavedParametersCall() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptHandlerLabeledParametersCall getHandlerLabeledParametersCall() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptIndexReference getIndexReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptIndexReferenceClassForm getIndexReferenceClassForm() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptMiddleElemReference getMiddleElemReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptNameReference getNameReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptPropertyReference getPropertyReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptRangeFromReference getRangeFromReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptRangeIndexReference getRangeIndexReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptReferenceIdentifier getReferenceIdentifier() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public AppleScriptRelativeReference getRelativeReference() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public PsiElement getStringLiteral() {
-    return null;
-  }
-
   //not implement expression ??
 
 

@@ -1,7 +1,6 @@
 package com.idea.plugin.applescript.lang.resolve;
 
 import com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart;
-import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
 import com.intellij.codeInsight.TargetElementEvaluatorEx2;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
@@ -32,13 +31,14 @@ public class AppleScriptTargetElementEvaluator extends TargetElementEvaluatorEx2
   @Override
   public ThreeState isAcceptableReferencedElement(@Nullable PsiElement element, @Nullable PsiElement
           referenceOrReferencedElement) {
-//    return ThreeState.YES;
-    return element instanceof AppleScriptReferenceElement ? ThreeState.YES : ThreeState.NO;
+    return super.isAcceptableReferencedElement(element, referenceOrReferencedElement);
+//    return element instanceof AppleScriptReferenceElement ? ThreeState.YES : ThreeState.NO;
   }
 
   @Override
   public boolean includeSelfInGotoImplementation(@NotNull PsiElement element) {
-    return false;
+    return super.includeSelfInGotoImplementation(element);
+//    return false;
   }
 
   @Nullable

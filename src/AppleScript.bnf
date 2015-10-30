@@ -727,7 +727,7 @@ private handlerNameStrict ::=(referenceIdentifier !handlerParameterLabel)*
 //todo may be include these keywords on the top level script only not for the all the expressions...??
 //todo should we made it left associative with identifier only??
 //handlerLabeledParametersCall ::= handlerWithDirectLabeledParametersCall|handlerNoDirectLabeledParametersCall
-left handlerLabeledParametersCall ::=
+left handlerLabeledParametersCallExpression ::=
    (
    (of|in)? directParameterVal
    (
@@ -1010,7 +1010,7 @@ private primaryExpression ::=
 // |   handlerPositionalParametersCallExpression
  | ( referenceExpression
      ( <<isTreePrevSimpleReference>>
-       (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCall )
+       (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCallExpression )
      )?
    )
  |   parenthesizedExpression

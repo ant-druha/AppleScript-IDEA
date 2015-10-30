@@ -21,9 +21,10 @@ public class AppleScriptPsiElementFactory {
     String newLabelName = labelName != null && !labelName.isEmpty() ? labelName : "to";
     builder.append("dummyHandlerName ").append(newLabelName).append(" \"some sting val\"");
     AppleScriptFile file = createFile(project, builder.toString());
-    file.findChildByClass(AppleScriptHandlerLabeledParametersCall.class);
-//    file.getFirstChild().findChildByClass(AppleScriptHandlerLabeledParametersCall.class);
-    AppleScriptHandlerLabeledParametersCall handlerCall = (AppleScriptHandlerLabeledParametersCall) file
+    file.findChildByClass(AppleScriptHandlerLabeledParametersCallExpression.class);
+//    file.getFirstChild().findChildByClass(AppleScriptHandlerLabeledParametersCallExpression.class);
+    AppleScriptHandlerLabeledParametersCallExpression handlerCall =
+            (AppleScriptHandlerLabeledParametersCallExpression) file
             .getFirstChild();
 
     AppleScriptHandlerParameterLabel psiLabelNode = PsiTreeUtil.getChildOfType(file, AppleScriptHandlerParameterLabel
