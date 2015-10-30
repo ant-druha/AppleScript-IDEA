@@ -28,8 +28,8 @@ public class AppleScriptFile extends PsiFileBase implements AppleScriptPsiElemen
                                      @NotNull ResolveState state,
                                      PsiElement lastParent,
                                      @NotNull PsiElement place) {
-    return AppleScriptPsiElementImpl.processDeclarationsImpl(this, processor, state, lastParent, place) &&
-            super.processDeclarations(processor, state, lastParent, place);
+    return AppleScriptPsiElementImpl.processDeclarationsImpl(this, processor, state, lastParent, place)
+            && super.processDeclarations(processor, state, lastParent, place);
   }
 
   @NotNull

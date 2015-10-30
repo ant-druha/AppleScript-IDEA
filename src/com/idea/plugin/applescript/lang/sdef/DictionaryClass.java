@@ -12,7 +12,7 @@ import java.util.List;
 public class DictionaryClass extends AbstractDictionaryComponent<Suite> implements AppleScriptClass {
 
   private List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
-  private String parentClassName;
+  @Nullable private String parentClassName;
   @NotNull private String pluralClassName;
   //Application classes have attributes, to-one relationships, and to-many relationships. AppleScript classes
   // in the object model have properties and elements—properties are synonymous with attributes and to-one
@@ -27,7 +27,8 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   //<!ELEMENT class ((%implementation;)?, access-group*, type*, (%class-contents;)*)>
 
   public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                         @NotNull XmlTag xmlTagClass, String parentClassName, @Nullable List<String> elementNames,
+                         @NotNull XmlTag xmlTagClass, @Nullable String parentClassName, @Nullable List<String>
+                                 elementNames,
                          String pluralClassName) {
     super(suite, name, code, xmlTagClass, null);
     this.parentClassName = parentClassName;
@@ -39,7 +40,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
 
   public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
                          List<AppleScriptPropertyDefinition> properties, @NotNull XmlTag xmlTagClass,
-                         String description, String parentClassName) {
+                         String description, @Nullable String parentClassName) {
     super(suite, name, code, xmlTagClass, description);
     this.properties = properties;
     this.parentClassName = parentClassName;
@@ -53,25 +54,6 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
     //todo repeating super =(
     sb.append(super.getDocumentation());
-//    String type = StringUtil.capitalizeWords(getType(), true);
-//    String className = getName();
-////    sb.append(StringUtil.capitalize(getDictionary().getType())).append("<br>");
-//    sb.append("<p>").append(type.substring(10)).append(" <b>").append(className).
-//            append("</b>");
-//    AppleScriptClass parentClass = getParentClass();
-//    if (parentClass != null) {
-//      sb.append(" [inh. ");
-//      String ext = "";
-//      do {
-//        sb.append(ext);
-//        AppleScriptDocHelper.appendElementLink(sb, parentClass, parentClass.getName());
-//        parentClass = parentClass.getParentClass();
-//        ext = " > ";
-//      } while (parentClass != null);
-//      sb.append(" ]");
-//    }
-//    sb.append(" : ").append(StringUtil.notNullize(getDescription()));
-
     AppleScriptDocHelper.appendClassAttributes(sb, this);
     AppleScriptClass parentClass = getParentClass();
     if (parentClass != null) {
@@ -105,12 +87,13 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     return myParent;
   }
 
+  @Nullable
   public String getParentClassName() {
     return parentClassName;
   }
 
   public AppleScriptClass getParentClass() {
-    return getDictionary().findClassByName(getParentClassName());
+    return getDictionary().findClass(getParentClassName());
   }
 
   @NotNull
@@ -122,7 +105,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   public List<AppleScriptClass> getElements() {
     if (!initialized && !elementNames.isEmpty()) {
       for (String className : elementNames) {
-        AppleScriptClass cls = getDictionary().findClassByName(className);
+        AppleScriptClass cls = getDictionary().findClass(className);
         if (cls != null) {
           elements.add(cls);
         }

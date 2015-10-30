@@ -30,8 +30,8 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
     final PsiElementPattern.Capture<AppleScriptApplicationReference> inApplicationReferenceString =
             psiElement(AppleScriptApplicationReference.class);//.withParent(AppleScriptApplicationReference.class);
     final PsiElementPattern.Capture<PsiElement> inAppReferenceString =
-            psiElement().andOr(psiElement().withSuperParent(1, AppleScriptApplicationReference.class),
-                    psiElement().withSuperParent(1, AppleScriptUseStatement.class));
+            psiElement().andOr(psiElement().withSuperParent(2, AppleScriptApplicationReference.class),
+                    psiElement().withSuperParent(2, AppleScriptUseStatement.class));
 
     final PsiElementPattern.Capture<PsiElement> any =
             psiElement();

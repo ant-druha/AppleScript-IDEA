@@ -52,6 +52,12 @@ public class SDEF_Parser {
             parsedDictionary.addClass(appleScriptClass);
             suite.addClass(appleScriptClass);
           }
+          XmlTag[] suiteValueTypes = suiteTag.findSubTags("value-type");
+          for (XmlTag valueTypeTag : suiteValueTypes) {
+            AppleScriptClass simpleClass = parseClassTag(valueTypeTag, suite);
+            parsedDictionary.addClass(simpleClass);
+            suite.addClass(simpleClass);
+          }
 
           XmlTag[] suiteClassExtensions = suiteTag.findSubTags("class-extension");
           for (XmlTag classExtensionTag : suiteClassExtensions) {
@@ -100,7 +106,7 @@ public class SDEF_Parser {
   private static AppleScriptClass parseClassExtensionTag(XmlTag classExtensionTag, ApplicationDictionary dictionary,
                                                          Suite suite) {
     String parentClassName = classExtensionTag.getAttributeValue("extends");
-    AppleScriptClass parentClass = dictionary.findClassByName(parentClassName);
+    AppleScriptClass parentClass = dictionary.findClass(parentClassName);
     String parentClassCode = parentClass != null ? parentClass.getCode() : null;
     String pluralName = classExtensionTag.getAttributeValue("plural");
     if (parentClassName == null || parentClassCode == null) return null;
@@ -108,7 +114,7 @@ public class SDEF_Parser {
     List<String> elementNames = initClassElements(classExtensionTag);
 
     final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode,
-            classExtensionTag, parentClassName, elementNames, pluralName);
+            classExtensionTag, null, elementNames, pluralName);
     String description = classExtensionTag.getAttributeValue("description");
     classExtension.setDescription(description);
 

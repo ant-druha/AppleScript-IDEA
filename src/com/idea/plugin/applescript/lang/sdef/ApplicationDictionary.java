@@ -15,8 +15,12 @@ import java.util.Map;
  */
 public interface ApplicationDictionary extends DictionarySuite {
 
-  List<String> STD_LIBRARY_NAMES = Arrays.asList("CocoaStandard", "StandardAdditions");
   List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
+  // supported by default in a scriptable application
+  String STANDARD_COCOA_LIBRARY = "CocoaStandard";
+  // standard suite, provided by Mac OS X
+  String STANDARD_ADDITIONS_LIBRARY = "StandardAdditions";
+  List<String> STD_LIBRARY_NAMES = Arrays.asList(STANDARD_COCOA_LIBRARY, STANDARD_ADDITIONS_LIBRARY);
   String[] STANDARD_DEFINITION_FILES = {"sdef/CocoaStandard.xml", "sdef/StandardAdditions.xml"};
   String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications",
           "/System/Library/CoreServices", "/System/Library/CoreServices/Applications",
@@ -44,6 +48,9 @@ public interface ApplicationDictionary extends DictionarySuite {
 
   @NotNull
   Map<String, AppleScriptClass> getDictionaryClassMap();
+
+  @Nullable
+  AppleScriptClass findClass(String name);
 
   @Nullable
   List<String> getParameterNamesForCommand(String name);

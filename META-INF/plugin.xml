@@ -49,8 +49,13 @@
         <lang.parserDefinition language="AppleScript"
                                implementationClass="com.idea.plugin.applescript.lang.parser.AppleScriptParserDefinition"/>
         <lang.syntaxHighlighterFactory key="AppleScript"
-                                       implementationClass="com.idea.plugin.applescript.highlighter.AppleScriptSyntaxHighlighterFactory"/>
-        <colorSettingsPage implementation="com.idea.plugin.applescript.highlighter.AppleScriptColorsAndFontsPage"/>
+                                       implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterFactory"/>
+        <colorSettingsPage
+                implementation="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptColorsAndFontsPage"/>
+
+        <lang.braceMatcher language="AppleScript"
+                           implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptPairedBraceMatcher"/>
+
 
         <lang.formatter language="AppleScript"
                         implementationClass="com.idea.plugin.applescript.lang.formatter.AppleScriptFormattingModelBuilder"/>

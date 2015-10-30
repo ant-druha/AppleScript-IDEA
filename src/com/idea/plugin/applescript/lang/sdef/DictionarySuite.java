@@ -8,9 +8,6 @@ public interface DictionarySuite extends DictionaryComponent {
   boolean addClass(AppleScriptClass appleScriptClass);
 
   @Nullable
-  AppleScriptClass findClassByName(String name);
-
-  @Nullable
   AppleScriptClass findClassByCode(String code);
 
   boolean addProperty(AppleScriptPropertyDefinition property);

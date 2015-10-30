@@ -185,8 +185,10 @@ private compilation_unit_ ::=
                       | RAW_CODE
                       | sep
                       )*
-//                      {recoverWhile="mainScriptRecover"}
-//mainScriptRecover ::= !(end)
+//                      sep?
+//                      {pin('.*')=2 recoverWhile="mainScriptRecover"}
+//                      {pin('.*')=1}
+//mainScriptRecover ::= !(sep (expression|statement))
                       //{recoverWhile = not_next_expression}
 
 private sep ::= NLS|COMMENT //one or more new lines and spaces
@@ -197,7 +199,7 @@ identifier ::= var_identifier//|appleScriptProperty
 
 referenceIdentifier ::= identifier
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
-implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
+ implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
 
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
                       |handlerDefinition
@@ -214,7 +216,7 @@ returnStatement ::= return [expression]
 
 private controlStatement ::= ifStatement | tryStatement | tellStatement | repeatStatement | exitStatement
 |consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|
-<<parseUseStatement useStatement>>
+<<parseUseStatement useStatement>> | <<parseUsingTermsFromStatement>>
 
 exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
@@ -297,7 +299,10 @@ private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
 //see <<parseTellCompoundStatementInner>>
 tellCompoundStatement ::= tell objectReferenceWrapper nls //todo not to count Ø -| and CRLF char as a sep
                                         blockBody? nls
-                          end [tell] {pin=6}
+                          end [tell] //{pin=6}
+{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName getApplicationReference]}
+
 //                      {recoverWhile="tellRecover"}
 //tellRecover ::= !(sep)
 private expectedType ::= typeSpecifier|referenceIdentifier
@@ -313,11 +318,12 @@ ignoringStatement ::= ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnor
                         [but considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls]
                            blockBody? nls
                       end ignoring {pin=2}
-considerOrIgnoreAttribute ::= expression
+private considerOrIgnoreAttribute ::= expression
 
-withTimeoutStatement ::= with timeout [of] integerLiteralExpression (seconds|second /*!(classTypeName)*/) nls //index ref
+withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second /*!(classTypeName)*/) nls //index ref
                            blockBody? nls
                          end [timeout] {pin=2}
+private timeoutIntegerExpression ::= integerLiteralExpression|parenthesizedExpression
 
 withTransactionStatement ::= with transaction [sessionSpecificator] nls
                                blockBody? nls
@@ -325,16 +331,15 @@ withTransactionStatement ::= with transaction [sessionSpecificator] nls
 private sessionSpecificator ::= referenceIdentifier
 
 //todo may define just single 'use' statement?
-useStatement ::= useAppleScriptStatement|/*useScriptingAdditionsStatement|*/useApplicationOrScriptStatement
-|useFrameworkStatement|usingTermsFromStatement
+useStatement ::= useAppleScriptStatement|useApplicationOrScriptStatement|useFrameworkStatement
+{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName useStandardAdditions withImporting]}
 //todo 'considering numeric strings'
 
 private useAppleScriptStatement ::= use 'AppleScript' [version stringLiteralExpression] {pin=2}
 
 private useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
                                    [((with importing)|(without importing)|importing) expression ] {pin=2}
-
-//private parseUseApplicationOrScriptStatement ::= <<parseUseApplicationOrScriptStatementInner>>
 
 //see <<parseUseApplicationOrScriptStatementInner>>
 private useApplicationOrScriptStatement ::= use [referenceIdentifier COLON]
@@ -348,17 +353,19 @@ private useApplicationOrScriptStatement ::= use [referenceIdentifier COLON]
                         [version stringLiteralExpression] [(with importing)|(without importing)|(importing expression)]
                     )
 
-private withDictionaryImportPredicate ::= &([version stringLiteralExpression ] [(with importing)|(importing true)])
+private withDictionaryImportPredicate ::= &([version stringLiteralExpression ] !((without importing)|(importing false)))
 
-//useApplicationStatement ::=
 
 private dataSpecifier ::= referenceExpression|stringLiteralExpression
 
 private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
 
-private usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|(SCRIPTING_ADDITIONS)) nls
+//see <<parseUsingTermsFromStatement>>
+usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<putStdLibrary>>) nls
                                blockBody? nls
-                            end [using terms from] {pin=3}
+                            end [using terms from] //{pin=3}
+{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName withImportingStdLibrary]}
 
 //todo: to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
 //and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
@@ -371,7 +378,7 @@ private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 
 ifSimpleStatement ::= if expression then (/*!(ifCompoundStatement)*/ (statement|expression) )
 //                                    {pin=4}
-//todo: neew to fix issue with detection simple vs compound statement
+//todo: need to fix issue with detection simple vs compound statement
 ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep
                                        blockBody? nls
                                    (else if expression [then] nls
@@ -496,8 +503,8 @@ private parseReferenceToApplication ::= <<parseApplicationReference>>
 //see <<parseApplicationReference>>
 applicationReference ::= THE_KW? applicationClass applicationNameString
 [of THE_KW? machine machineNameString (of THE_KW? zone appleTalkZoneNameString)?] | THE_KW? current_application_constant
-
-private applicationNameString ::= <<pushApplicationNameString>> //STRING_LITERAL
+{methods=[getApplicationName]}
+applicationNameString ::= <<pushApplicationNameString>> //STRING_LITERAL
 
 machineNameString ::= STRING_LITERAL
 appleTalkZoneNameString ::= STRING_LITERAL
@@ -777,14 +784,20 @@ directParameterVal ::=  handlerCallDirectParameterWithGuardPredicate | expressio
 private parseTellSimpleStatement ::= <<parseTellSimpleStatementInner>>
 //see <<parseTellSimpleStatementInner>>
 tellSimpleStatement ::= tell (handlerCallDirectParameterWithGuardPredicate | objectReferenceWrapper | current_application_constant )
-to (statement | handlerInterleavedParametersCall | expression ) 
+to (statement | handlerInterleavedParametersCall | expression )
+{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator" //may be not needed?
+ methods=[getApplicationName getApplicationReference]}
 //{pin=1}
 
 handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
                                             [varDeclarationList] nls
                                                blockBody? nls
-                                            end [handlerNameStrict]
-//                                            {pin=3} or Grammar kit will also make formalParameterList as Component
+                                            end [referenceIdentifier]
+                                            {pin=3  //or Grammar kit will also make formalParameterList as Component
+//                                            recoverWhile="statementRecover"
+                                            }
+//todo: recover?
+//statementRecover::=!(sep (on|expression|statement)) //then grammar kit always reports an error after end of stms..?
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 

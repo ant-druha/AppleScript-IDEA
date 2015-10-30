@@ -69,6 +69,7 @@ public class AppleScriptResolveUtil {
     return result;
   }
 
+  @NotNull
   public static SortedList<PsiElement> getTellStatementResolveScope(PsiElement myElement) {
     SortedList<PsiElement> resultList = new SortedList<PsiElement>(new Comparator<PsiElement>() {
       @Override
@@ -85,5 +86,18 @@ public class AppleScriptResolveUtil {
       }
     }
     return resultList;
+  }
+
+  @Nullable
+  public static PsiElement getTellStatementScope(PsiElement myElement) {
+    PsiElement tellStatement = myElement;
+    while (tellStatement != null) {
+      tellStatement = tellStatement.getParent();
+      if (tellStatement instanceof AppleScriptTellSimpleStatement
+              || tellStatement instanceof AppleScriptTellCompoundStatement) {
+        return tellStatement;
+      }
+    }
+    return null;
   }
 }

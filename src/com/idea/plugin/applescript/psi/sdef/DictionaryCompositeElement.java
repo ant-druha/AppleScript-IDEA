@@ -1,7 +1,6 @@
 package com.idea.plugin.applescript.psi.sdef;
 
 import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
-import com.intellij.psi.PsiReference;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -11,7 +10,7 @@ public interface DictionaryCompositeElement extends AppleScriptPsiElement {
 
   @NotNull
   @Override
-  PsiReference getReference();
+  DictionaryReference getReference();
 
   @NotNull
   DictionaryCompositeName getCompositeNameElement();

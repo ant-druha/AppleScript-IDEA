@@ -25,48 +25,47 @@ public class AppleScriptComponentScopeResolver implements ResolveCache.AbstractR
 
   public static final AppleScriptComponentScopeResolver INSTANCE = new AppleScriptComponentScopeResolver();
 
-    @Override
-    public List<? extends PsiElement> resolve(@NotNull AppleScriptReferenceElement scopeElement, boolean incompleteCode) {
-        final Set<AppleScriptComponent> resultSet = new HashSet<AppleScriptComponent>();
+  @Override
+  public List<? extends PsiElement> resolve(@NotNull AppleScriptReferenceElement scopeElement, boolean incompleteCode) {
+    final Set<AppleScriptComponent> resultSet = new HashSet<AppleScriptComponent>();
 
-        // local
-        PsiElement maxScope = getMaxScope(scopeElement);
-        final AppleScriptComponentScopeProcessor resolveProcessor = new AppleScriptComponentScopeProcessor(resultSet);
-        PsiTreeUtil.treeWalkUp(resolveProcessor, scopeElement, maxScope, ResolveState.initial());
-        return new ArrayList<AppleScriptComponent>(resultSet);
-    }
+    // local
+    PsiElement maxScope = getMaxScope(scopeElement);
+    final AppleScriptComponentScopeProcessor resolveProcessor = new AppleScriptComponentScopeProcessor(resultSet);
+    PsiTreeUtil.treeWalkUp(resolveProcessor, scopeElement, maxScope, ResolveState.initial());
+    return new ArrayList<AppleScriptComponent>(resultSet);
+  }
 
-    /**
-     *
-     * @param scopeElement element for which max scope is calculated
-     * @return max resolve scope for scopeElement
-     */
-    @Nullable
-    private PsiElement getMaxScope(AppleScriptReferenceElement scopeElement) {
-        return getHandlerDefinitionScope(scopeElement.getContext());//currently only handler def. are processed
-    }
+  /**
+   * @param scopeElement element for which max scope is calculated
+   * @return max resolve scope for scopeElement
+   */
+  @Nullable
+  private PsiElement getMaxScope(AppleScriptReferenceElement scopeElement) {
+    return getHandlerDefinitionScope(scopeElement.getContext());//currently only handler def. are processed
+  }
 
-    @Nullable
-    private PsiElement getHandlerDefinitionScope(PsiElement scopeElement) {
-        PsiElement currentScope = scopeElement;
-        while (currentScope != null) {
-            IElementType elementType = currentScope.getNode().getElementType();
-            if (HANDLER_DEFINITIONS.contains(elementType)) {
-                return currentScope;
-            }
-            currentScope = currentScope.getContext();
-        }
-        return null;
+  @Nullable
+  private PsiElement getHandlerDefinitionScope(PsiElement scopeElement) {
+    PsiElement currentScope = scopeElement;
+    while (currentScope != null) {
+      IElementType elementType = currentScope.getNode().getElementType();
+      if (HANDLER_DEFINITIONS.contains(elementType)) {
+        return currentScope;
+      }
+      currentScope = currentScope.getContext();
     }
+    return null;
+  }
 
-    private boolean isInsideHandlerDefinition(PsiElement context) {
-        while (context != null) {
-            IElementType elementType = context.getNode().getElementType();
-            if (HANDLER_DEFINITIONS.contains(elementType)) {
-                return true;
-            }
-            context = context.getContext();
-        }
-        return false;
+  private boolean isInsideHandlerDefinition(PsiElement context) {
+    while (context != null) {
+      IElementType elementType = context.getNode().getElementType();
+      if (HANDLER_DEFINITIONS.contains(elementType)) {
+        return true;
+      }
+      context = context.getContext();
     }
+    return false;
+  }
 }

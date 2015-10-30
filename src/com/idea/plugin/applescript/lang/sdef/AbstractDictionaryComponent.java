@@ -158,27 +158,30 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
 //    if (!(this instanceof DictionaryClass
 //            || this instanceof AppleScriptCommand
 //            || this instanceof Suite)) {
-      sb.append("<p>");
-    sb.append(type.substring(10)).append(" <b>").append(name).//todo remove 10 !!
-              append("</b>");
+    sb.append("<p>");
+    sb.append(type.toLowerCase().contains("dictionary") ? type.substring(10) : type).append(" <b>").append(name)
+            .//todo remove 10 !!
+            append("</b>");
 
     if (this instanceof AppleScriptClass) {
-      AppleScriptClass parentClass = ((AppleScriptClass)this).getParentClass();
+      AppleScriptClass parentClass = ((AppleScriptClass) this).getParentClass();
       if (parentClass != null) {
         sb.append(" [inh. ");
         String ext = "";
+        int recursionGuard = 15;
         do {
+          recursionGuard--;
           sb.append(ext);
           AppleScriptDocHelper.appendElementLink(sb, parentClass, parentClass.getName());
           parentClass = parentClass.getParentClass();
           ext = " > ";
-        } while (parentClass != null);
+        } while (parentClass != null && recursionGuard > 0);
         sb.append(" ]");
       }
     }
 
     sb.append(" : ").append(StringUtil.notNullize(getDescription()));
-      sb.append("</p>");
+    sb.append("</p>");
 //    }
     return sb.toString();
   }

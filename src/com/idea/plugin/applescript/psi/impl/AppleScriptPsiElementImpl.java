@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.psi.*;
+import com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -11,7 +12,6 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +31,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       return true;
     }
     final PsiElement[] children = context.getChildren();
-    final Set<AppleScriptComponent> result = new THashSet<AppleScriptComponent>();
+    final Set<AppleScriptPsiElement> result = new THashSet<AppleScriptPsiElement>();
     for (PsiElement child : children) {
       if (child == lastParent && child instanceof AppleScriptBlockBody)//todo extract condition=>"stop at last parent"
         continue;
@@ -66,19 +66,25 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       } else if (child instanceof AppleScriptAssignmentStatement) {
         AppleScriptAssignmentStatement assignmentStmt = (AppleScriptAssignmentStatement) child;
         result.addAll(assignmentStmt.getTargets());
-//          addFromAssignmentStatementWithFilter(result, assignmentStmt, referencingElement);
       } else if (child instanceof AppleScriptComponent) {
         result.add((AppleScriptComponent) child);
       }
+      //dictionary components
+      else if (child instanceof AppleScriptUseStatement) { //is before is also checked lower
+        AppleScriptUseStatement useStatement = (AppleScriptUseStatement) child;
+        result.add(useStatement);
+      }
+    }
+    //because of a scope of tell statements
+    if (referencingElement != null) {
+      if (context instanceof ApplicationDictionaryDeclarator
+              && !(context instanceof AppleScriptUseStatement)) {
+        result.add((ApplicationDictionaryDeclarator) context);
+      }
     }
 
-    for (AppleScriptComponent component : result) {
-      if (referencingElement != null && canBeReferenced(referencingElement, component)) {//do not process
-        // declarations below todo move condition to ResolveProcessor ?
-        if (!processor.execute(component, state)) {
-          return false;
-        }
-      } else if (referencingElement == null) {
+    for (AppleScriptPsiElement component : result) {
+      if (referencingElement == null || canBeReferenced(referencingElement, component)) {//do not process
         if (!processor.execute(component, state)) {
           return false;
         }
@@ -88,78 +94,26 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
   }
 
   private static boolean canBeReferenced(@NotNull PsiElement referencingElement,
-                                         @NotNull AppleScriptComponent component) {
+                                         @NotNull AppleScriptPsiElement component) {
     //todo handle other declarations besides simple reference elements (inside object references etc)
+
+    boolean dictionaryElementMatches = component instanceof ApplicationDictionaryDeclarator
+            && referencingElement instanceof AppleScriptPsiElement
+            && AppleScriptPsiImplUtil.isBefore(component, referencingElement, true);//for getVariants()
+
     return referencingElement instanceof AppleScriptObjectPropertyDeclaration
             || referencingElement instanceof AppleScriptHandlerCall
             || referencingElement.getParent() instanceof AppleScriptHandlerPositionalParametersCallExpression
-            || AppleScriptPsiImplUtil.isBefore(component, referencingElement, true);
-  }
-
-  private static void addFromAssignmentStatementWithFilter(Set<AppleScriptComponent> result,
-                                                           AppleScriptAssignmentStatement
-                                                                   creationStatement, PsiElement referencingElement) {
-    List<AppleScriptTargetVariable> assignmentTargets = creationStatement.getTargets();
-    if (!assignmentTargets.isEmpty()) {
-      addCheckingDuplicates(result, assignmentTargets, referencingElement);
-//      addTheMostRecentDefinition(result, assignmentTargets, referencingElement);
-    }
-  }
-
-  private static void addCheckingDuplicates(Set<AppleScriptComponent> result, List<AppleScriptTargetVariable>
-          currentTargetComponentList, PsiElement referencingElement) {
-    for (AppleScriptTargetVariable targetVariable : currentTargetComponentList) {
-      boolean duplicatedDeclaration = false;
-      boolean duplicatedDeclarationRemoved = false;
-      for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
-        AppleScriptComponent ourAddedComponent = it.next();
-        if (ourAddedComponent.getContainingFile() == targetVariable.getContainingFile()//only for local file
-                && ourAddedComponent.getName() != null
-                && ourAddedComponent.getName().equals(targetVariable.getName())) {
-          duplicatedDeclaration = true;
-          if (ourAddedComponent.getTextOffset() > targetVariable.getTextOffset()) {
-            it.remove(); //not called
-            duplicatedDeclarationRemoved = true;
-          } //remove if targetVariable declared earlier, will add it later
-        }
-      }
-      if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
-        result.add(targetVariable);
-      }
-    }
-  }
-
-  private static void addTheMostRecentDefinition(Set<AppleScriptComponent> result, List<AppleScriptTargetVariable>
-          currentTargetComponentList, @Nullable PsiElement referencingElement) {
-    for (AppleScriptTargetVariable targetVariable : currentTargetComponentList) {
-      boolean duplicatedDeclaration = false;
-      boolean duplicatedDeclarationRemoved = false;
-      for (Iterator<AppleScriptComponent> it = result.iterator(); it.hasNext(); ) {
-        AppleScriptComponent ourAddedComponent = it.next();
-        if (ourAddedComponent.getContainingFile() == targetVariable.getContainingFile()//only for local file
-                && ourAddedComponent.getName() != null
-                && ourAddedComponent.getName().equals(targetVariable.getName())) {
-          duplicatedDeclaration = true;
-          if (referencingElement != null && referencingElement.getTextOffset() - ourAddedComponent.getTextOffset() >
-                  referencingElement.getTextOffset() - targetVariable.getTextOffset()) {
-            it.remove(); //not called
-            duplicatedDeclarationRemoved = true;//remove if added component defined higher from referencing element
-          }
-        }
-      }
-      if (!duplicatedDeclaration || duplicatedDeclarationRemoved) {
-        result.add(targetVariable);
-      }
-    }
+            || AppleScriptPsiImplUtil.isBefore(component, referencingElement, true)
+            || dictionaryElementMatches;
   }
 
   @Override
   public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement
           lastParent, @NotNull PsiElement place) {
 
-    return processDeclarationsImpl(this, processor, state, lastParent, place) && super.processDeclarations(processor,
-            state,
-            lastParent, place);
+    return processDeclarationsImpl(this, processor, state, lastParent, place)
+            && super.processDeclarations(processor, state, lastParent, place);
   }
 
   @Override

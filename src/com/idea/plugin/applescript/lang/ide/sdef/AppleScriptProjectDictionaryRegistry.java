@@ -11,9 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
@@ -33,19 +31,30 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
     this.systemDictionaryRegistry = systemDictionaryRegistry;
   }
 
-  @NotNull
-  public List<ApplicationDictionary> getStandardDictionaries() {
-    List<ApplicationDictionary> result = new ArrayList<ApplicationDictionary>();
-    for (String stdDictionaryName : ApplicationDictionary.STD_LIBRARY_NAMES) {
+  /**
+   * @return returns available by default terminology (Standard Additions)
+   */
+  @Nullable
+  public ApplicationDictionary getStandardAdditionsTerminology() {
+    String stdDictionaryName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
       ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
       if (stdDic == null) {
         stdDic = createDictionary(stdDictionaryName);
       }
-      if (stdDic != null) {
-        result.add(stdDic);
-      }
+    return stdDic;
+  }
+
+  /**
+   * @return returns terminology available by default in the scripting application (Cocoa Standard)
+   */
+  @Nullable
+  public ApplicationDictionary getDefaultCocoaTerminology() {
+    String stdDictionaryName = ApplicationDictionary.STANDARD_COCOA_LIBRARY;
+    ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
+    if (stdDic == null) {
+      stdDic = createDictionary(stdDictionaryName);
     }
-    return result;
+    return stdDic;
   }
 
   /**

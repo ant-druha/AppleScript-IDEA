@@ -31,7 +31,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static final Key<Stack<ApplicationDictionary>> SCRIPT_DICTIONARY_STACK =
           Key.create("applescript.parsing.current.dictionary.stack");
-  public static final Key<Stack<String>> SCRIPT_APPLICATION_NAME_STACK =
+  // for storing application names inside <tell...end tell> statements
+  public static final Key<Stack<String>> TOLD_APPLICATION_NAME_STACK =
           Key.create("applescript.parsing.current.dictionary.name.stack");
 
   private static final Key<Boolean> IS_PARSING_POSSESSIVE_FORM =
@@ -54,6 +55,18 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static final Key<Boolean> WAS_USE_STATEMENT_USED =
           Key.create("applescript.parsing.is.use.statement.used");
 
+  //for <using terms of ... end using terms of> compound statement and pushing application/std library
+  // to dictionary stack
+  private static final Key<Boolean> IS_PARSING_USING_TERMS_FROM_STATEMENT =
+          Key.create("applescript.parsing.is.use.statement.used");
+
+  // CocoaStandard library is by default supported in all scripting applications
+  private static Stack<String> defaultToldApplicationNameStack = new Stack<String>();
+
+  static {
+    defaultToldApplicationNameStack.push(ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+  }
+
   enum DeclaredType {
     SDEF_COMMAND_NAME,
     PROPERTY_LABEL_NAME,
@@ -63,31 +76,42 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   }
 
-  public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, StringHolder parsedName,
-                                                        String toldApplicationName, boolean areThereUseStatements,
-                                                        Set<String> applicationsToImportFrom) {
+  public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, @NotNull StringHolder parsedName,
+                                                        @NotNull String toldApplicationName,
+                                                        boolean areThereUseStatements,
+                                                        @Nullable Set<String> applicationsToImportFrom) {
     if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
-    boolean r = false;
+    boolean r;
     parsedName.value = "";
-    if (!StringUtil.isEmpty(toldApplicationName)) {
-      r = parseCommandNameForApplication(b, l + 1, parsedName, toldApplicationName);
-    }
+//    if (!StringUtil.isEmpty(toldApplicationName)) {
+    r = parseCommandNameForApplication(b, l + 1, parsedName, toldApplicationName);
+//    }
     if (!r) {
       if (areThereUseStatements) {
         if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
           for (String appName : applicationsToImportFrom) {
-
-            if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName))
-              r = parseStdLibCommandName(b, l + 1, parsedName);
-            else
-              r = parseCommandNameForApplication(b, l + 1, parsedName, appName);
+//            if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName))
+//              r = parseStdLibCommandName(b, l + 1, parsedName);
+//            else
+            //in case of SCRIPTING_ADDITIONS 'StandardAdditions' app name is added to app names import list
+            r = parseCommandNameForApplication(b, l + 1, parsedName, appName);
             if (r)
               return true;
           }
         }
       }
+    } else {
+      return true;
     }
-    if (!r && !areThereUseStatements) r = parseStdLibCommandName(b, l + 1, parsedName);
+    if (!areThereUseStatements) {
+      r = parseStdLibCommandName(b, l + 1, parsedName);
+    }
+    // Could be command from Cocoa Standard library which was not yet checked, because
+    // applicationName == ScriptingAdditions.
+    // The could happen when parsing <using terms from scripting additions> stms
+    if (!r && ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+      r = parseCommandNameForApplication(b, l + 1, parsedName, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+    }
     return r;
   }
 
@@ -102,47 +126,48 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       return false;
     }
     StringHolder parsedCommandName = new StringHolder();
-    Stack<String> applicationNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
-    String applicationName = null;
-    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
-      applicationName = applicationNameStack.peek();
-    }
+    String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImport = null;
     if (areThereUseStatements) {
       applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
     }
     PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Command Handler Call Expression>");
-    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, applicationName, areThereUseStatements,
+    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
             applicationsToImport);
     exit_section_(b, l, mComName, null, r, false, null);
     if (r) {
       PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Command Handler Call Expression>");
-      r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, applicationName, areThereUseStatements,
+      r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
               applicationsToImport);
       exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
     }
 
     if (!r) return false;
     List<AppleScriptCommand> allCommandsWithName = new ArrayList<AppleScriptCommand>();
+    allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+            .findApplicationCommands(b.getProject(), toldApplicationName, parsedCommandName.value));
+    // StandardAdditions fake application does not contain CocoaStandard terms. Adding them here
+    if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+              .findApplicationCommands(b.getProject(), ApplicationDictionary.STANDARD_COCOA_LIBRARY,
+                      parsedCommandName.value));
+    }
     if (areThereUseStatements) {
       if (applicationsToImport != null) {
         for (String appName : applicationsToImport) {
-          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
-            allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
-                    .findStdCommands(b.getProject(), parsedCommandName.value));
-          } else {
-            allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
-                    .findApplicationCommands(b.getProject(), appName, parsedCommandName.value));
-          }
+//          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
+//            allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+//                    .findStdCommands(b.getProject(), parsedCommandName.value));
+//          } else {
+          allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+                  .findApplicationCommands(b.getProject(), appName, parsedCommandName.value));
+//          }
         }
       }
     } else {
-      allCommandsWithName = ParsableScriptSuiteRegistryHelper.findStdCommands(b.getProject(), parsedCommandName.value);
-      if (!StringUtil.isEmpty(applicationName)) {
-        allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
-                .findApplicationCommands(b.getProject(), applicationName, parsedCommandName.value));
-      }
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+              .findStdCommands(b.getProject(), parsedCommandName.value));
     }
 
     for (AppleScriptCommand command : allCommandsWithName) {
@@ -158,8 +183,25 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         break;
       }
     }
-    boolean incompleteHandlerCall = !r && allCommandsWithName.size() > 0 && b.getTokenType() == NLS;
+    boolean incompleteHandlerCall = !r && allCommandsWithName.size() > 0 && (b.getTokenType() == NLS || b.eof());
     return r || incompleteHandlerCall;
+  }
+
+  @NotNull
+  public static String getTargetApplicationName(PsiBuilder b) {
+    String toldApplicationName = peekTargetApplicationName(b);
+    // CocoaStandard library is always available for the scriptable application
+    return toldApplicationName != null ? toldApplicationName : ApplicationDictionary.STANDARD_COCOA_LIBRARY;
+  }
+
+  @Nullable
+  public static String peekTargetApplicationName(PsiBuilder b) {
+    Stack<String> applicationNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
+    String toldApplicationName = null;
+    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
+      toldApplicationName = applicationNameStack.peek();
+    }
+    return toldApplicationName;
   }
 
   private static boolean parseCommandNameForApplication(PsiBuilder b, int l, StringHolder parsedName,
@@ -246,7 +288,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   private static void popApplicationNameIfNeeded(PsiBuilder b) {
     if (b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE) {
-      Stack<String> dictionaryNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
+      Stack<String> dictionaryNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
       if (dictionaryNameStack != null && !dictionaryNameStack.isEmpty()) {//should always be true if r==true
         dictionaryNameStack.pop(); //not always need to pop 'cause could be: tell 'front window' ... to...
       }
@@ -263,9 +305,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     List<String> appNames = new ArrayList<String>();
     r = consumeToken(b, SCRIPTING_ADDITIONS);
     if (r) {
-      for (String stdLibName : ApplicationDictionary.STD_LIBRARY_NAMES) {
-        appNames.add(stdLibName);
-      }
+      appNames.add(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+//      for (String stdLibName : ApplicationDictionary.STD_LIBRARY_NAMES) {
+//        appNames.add(stdLibName);
+//      }
     } else {
       r = consumeToken(b, APPLICATION);
       if (!r) r = consumeToken(b, APP);
@@ -284,11 +327,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       Set<String> usedAppNames = b.getUserData(USED_APPLICATION_NAMES);
       if (usedAppNames == null) {
         usedAppNames = new HashSet<String>();
+        b.putUserData(USED_APPLICATION_NAMES, usedAppNames);
       }
       if (r) {
         usedAppNames.addAll(appNames);
       }
-      b.putUserData(USED_APPLICATION_NAMES, usedAppNames);
     }
     return r;
   }
@@ -296,8 +339,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean parseUseStatement(PsiBuilder b, int l, Parser useStatement) {
     if (!recursion_guard_(b, l, "parseUseStatement")) return false;
     boolean r = useStatement.parse(b, l + 1);
-    boolean oldVal = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
-    b.putUserData(WAS_USE_STATEMENT_USED, r || oldVal);
+    boolean prevPass = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
+    b.putUserData(WAS_USE_STATEMENT_USED, r || prevPass);
     return r;
   }
 
@@ -328,6 +371,44 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  public static boolean parseUsingTermsFromStatement(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseUsingTermsFromStatement")) return false;
+    boolean r;
+    boolean oldParseUsingTermsState = b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) == Boolean.TRUE;
+    boolean oldPushedState = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
+    b.putUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT, true);
+    b.putUserData(APPLICATION_NAME_PUSHED, false);
+
+    r = AppleScriptParser.usingTermsFromStatement(b, l + 1);
+
+    if (r) {
+      popApplicationNameIfNeeded(b);
+    }
+    b.putUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT, oldParseUsingTermsState);
+    b.putUserData(APPLICATION_NAME_PUSHED, oldPushedState);
+
+    return r;
+  }
+
+  public static boolean putStdLibrary(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "pushApplicationNameString")) return false;
+    boolean r;
+    r = consumeToken(b, SCRIPTING_ADDITIONS);
+    if (r) {
+//      Stack<String> currentTargetAppNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
+      pushTargetApplicationName(b, ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+//      if (importingApps == null) {
+//        importingApps = new HashSet<String>();
+//        b.putUserData(USED_APPLICATION_NAMES, importingApps);
+//      }
+//      importingApps.add(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+//      for (String stdLib : ApplicationDictionary.STD_LIBRARY_NAMES) {
+//        importingApps.add(stdLib);
+//      }
+    }
+    return r;
+  }
+
   public static boolean pushApplicationNameString(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pushApplicationNameString")) return false;
 //    boolean r;
@@ -343,11 +424,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     LighterASTNode lastNode = b.getLatestDoneMarker();
     IElementType prevElemType = b.rawLookup(-1);
 
-    //check if this is tell compound or tell simple statements
-    boolean appNamePushed = false;
+    //check if this is tell compound or tell simple statements or using terms of
+//    boolean appNamePushed = false;
     if (r && ((b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) == Boolean.TRUE && nextTokenIs(b, TO))
             || (b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE
-            && b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) == Boolean.FALSE))
+            && b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) == Boolean.FALSE)
+            || b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) == Boolean.TRUE)
             ) {
       int i = -1;
       IElementType prevElem = b.rawLookup(i);
@@ -355,19 +437,27 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
               || prevElem == APPLICATION || prevElem == STRING_LITERAL || prevElem == null) {
         prevElem = b.rawLookup(--i);
       }
-      if (prevElem == TELL) {
-        Stack<String> dictionaryNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
-        if (dictionaryNameStack == null) {
-          dictionaryNameStack = new Stack<String>();
-          b.putUserData(SCRIPT_APPLICATION_NAME_STACK, dictionaryNameStack);
-        }
-        dictionaryNameStack.push(applicationNameString);
-        appNamePushed = true;
+      if (prevElem == TELL
+              || (b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) == Boolean.TRUE)
+              && prevElem == FROM) {
+        pushTargetApplicationName(b, applicationNameString);
+//        appNamePushed = true;
       }
     }
-    b.putUserData(APPLICATION_NAME_PUSHED, appNamePushed);
+//    b.putUserData(APPLICATION_NAME_PUSHED, appNamePushed);
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  public static Stack<String> pushTargetApplicationName(PsiBuilder b, String applicationNameString) {
+    Stack<String> dictionaryNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
+    if (dictionaryNameStack == null) {
+      dictionaryNameStack = new Stack<String>();
+      b.putUserData(TOLD_APPLICATION_NAME_STACK, dictionaryNameStack);
+    }
+    dictionaryNameStack.push(applicationNameString);
+    b.putUserData(APPLICATION_NAME_PUSHED, true);
+    return dictionaryNameStack;
   }
 
   public static boolean parseDictionaryClassIdentifierPluralInner(PsiBuilder b, int l) {
@@ -532,7 +622,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    }
     if (!r) r = com.idea.plugin.applescript.lang.parcer.AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, DIRECT_PARAMETER_VAL, r, false, null);
-    return r || parameter.isOptional();
+    // A tell statement specifies a default target for all commands contained
+    // within it, so the direct parameter is optional.
+    return r || parameter.isOptional() || b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
   }
 
   /* ********************************************************** */
@@ -648,57 +740,63 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   private static boolean parseDictionaryPropertyInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseDictionaryPropertyInner")) return false;
-    boolean r = false;
+    boolean r;
     //todo how not to make it check twice?
 //    PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
-    Stack<String> applicationNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
-    String toldApplicationName = null;
-    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
-      toldApplicationName = applicationNameStack.peek();
-    }
+    String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImportFrom = null;
     if (areThereUseStatements) {
       applicationsToImportFrom = b.getUserData(USED_APPLICATION_NAMES);
     }
-    if (toldApplicationName != null) {
-      PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+//    if (toldApplicationName != null) {
+    PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+    r = tryToParseApplicationProperty(b, l + 1, toldApplicationName);
+    exit_section_(b, l, m, null, r, false, null);
+    if (r) {
       r = tryToParseApplicationProperty(b, l + 1, toldApplicationName);
-      exit_section_(b, l, m, null, r, false, null);
-      if (r) {
-        r = tryToParseApplicationProperty(b, l + 1, toldApplicationName);
-        return r;
-      }
+      return r;
     }
+//    }
     if (areThereUseStatements) {
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
         for (String appName : applicationsToImportFrom) {
-          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
-            PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
-            r = tryToParseStdProperty(b, l + 1);
-            exit_section_(b, l, m, null, r, false, null);
-            if (r) {
-              r = tryToParseStdProperty(b, l + 1);
-              return r;
-            }
-          } else {
-            PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+//          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
+//            m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+//            r = tryToParseStdProperty(b, l + 1);
+//            exit_section_(b, l, m, null, r, false, null);
+//            if (r) {
+//              r = tryToParseStdProperty(b, l + 1);
+//              return r;
+//            }
+//          } else {
+          m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+          r = tryToParseApplicationProperty(b, l + 1, appName);
+          exit_section_(b, l, m, null, r, false, null);
+          if (r) {
             r = tryToParseApplicationProperty(b, l + 1, appName);
-            exit_section_(b, l, m, null, r, false, null);
-            if (r) {
-              r = tryToParseApplicationProperty(b, l + 1, appName);
-              return r;
-            }
+            return r;
           }
+//          }
         }
       }
     } else {
-      PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+      m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
       r = tryToParseStdProperty(b, l + 1);
       exit_section_(b, l, m, null, r, false, null);
       if (r) {
         r = tryToParseStdProperty(b, l + 1);
         return r;
+      }
+      // if told app name == standard additions, Cocoa Standard terms were not checked
+      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+        m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+        r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+        exit_section_(b, l, m, null, r, false, null);
+        if (r) {
+          r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+          return r;
+        }
       }
     }
     return false;
@@ -759,11 +857,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static boolean parseDictionaryClassNameInner(PsiBuilder b, int l, final boolean isPluralForm) {
     if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
     boolean r;
-    Stack<String> applicationNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
-    String toldApplicationName = null;
-    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
-      toldApplicationName = applicationNameStack.peek();
-    }
+    String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImportFrom = null;
     if (areThereUseStatements) {
@@ -797,7 +891,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   private static boolean tryToParseDictionaryClass(PsiBuilder b, int l, final boolean isPluralForm,
-                                                   @Nullable String toldApplicationName,
+                                                   @NotNull String toldApplicationName,
                                                    boolean areThereUseStatements,
                                                    @Nullable Set<String> applicationsToImportFrom) {
     if (!recursion_guard_(b, l, "tryToParseDictionaryClass")) return false;
@@ -916,35 +1010,43 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   private static boolean findClassNameExactMatch(PsiBuilder b, int l, StringHolder currentTokenText,
                                                  final boolean isPluralForm,
-                                                 @Nullable String toldApplicationName,
+                                                 @NotNull String toldApplicationName,
                                                  boolean areThereUseStatements,
                                                  @Nullable Set<String> applicationsToImportFrom) {
     boolean r;
-    if (toldApplicationName != null) {
-      r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, toldApplicationName);
-      if (r) return true;
-    }
+//    if (toldApplicationName != null) {
+    r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, toldApplicationName);
+    if (r) return true;
+//    }
     if (areThereUseStatements) {
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
         for (String appName : applicationsToImportFrom) {
-          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
-            r = findStdClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm);
-            if (r) return true;
-          } else {
-            r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, appName);
-            if (r) return true;
-          }
+//          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
+//            r = findStdClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm);
+//            if (r) return true;
+//          } else {
+          r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, appName);
+          if (r) return true;
+//          }
         }
       }
+    } else {
+      r = findStdClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm);
     }
-    return false;
+    // If told application name == standard additions, terms from Cocoa Standard library were not checked
+    // Checking them here
+    if (!r && ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+      r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm,
+              ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+    }
+    return r;
   }
 
   private static boolean findStdClassNameExactMatch(PsiBuilder b, int l, StringHolder currentTokenText,
                                                     boolean isPluralForm) {
     if (isPluralForm) {
       int candidatesCount = ParsableScriptSuiteRegistryHelper
-              .countStdClassesStartingWithName(currentTokenText.value);
+              .countStdClassesStartingWithPluralName(currentTokenText.value);
       while (b.getTokenText() != null && candidatesCount > 0) {
         boolean r = identifier(b, l + 1);
         if (!r) r = builtInClassIdentifier(b, l + 1);
@@ -1002,10 +1104,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
   }
 
-  @SuppressWarnings("Duplicates")
   private static boolean findApplicationClassNameExactMatch(PsiBuilder b, int l, StringHolder currentTokenText,
-                                                            final boolean isPluralForm, @NotNull String
-                                                                    applicationName) {
+                                                            final boolean isPluralForm,
+                                                            @NotNull String applicationName) {
     if (isPluralForm) {
       int candidatesCount = ParsableScriptSuiteRegistryHelper
               .countApplicationClassesStartingWithPluralName(applicationName, currentTokenText.value);
@@ -1037,34 +1138,35 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
             }
           }
         }
-      } else {
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdClassesStartingWithPluralName(currentTokenText
-                .value);
-        while (b.getTokenText() != null && candidatesCount > 0) {//checking in standard definitions
-          boolean r = identifier(b, l + 1);
-          if (!r) r = builtInClassIdentifier(b, l + 1);
-          if (!r) b.advanceLexer(); //advance lexer in any case
-          if (candidatesCount == 1) {
-            if (ParsableScriptSuiteRegistryHelper.isStdLibClassPluralName(currentTokenText.value)) {
-              return true;
-            }
-
-            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-            candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countStdClassesStartingWithPluralName(currentTokenText.value);
-          } else {
-            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
-                    .isStdLibClassPluralName(currentTokenText.value);
-
-            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-            candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countStdClassesStartingWithPluralName(currentTokenText.value);
-            if (candidatesCount == 0) {
-              return foundExactMatch;
-            }
-          }
-        }
       }
+//      else {
+//        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdClassesStartingWithPluralName(currentTokenText
+//                .value);
+//        while (b.getTokenText() != null && candidatesCount > 0) {//checking in standard definitions
+//          boolean r = identifier(b, l + 1);
+//          if (!r) r = builtInClassIdentifier(b, l + 1);
+//          if (!r) b.advanceLexer(); //advance lexer in any case
+//          if (candidatesCount == 1) {
+//            if (ParsableScriptSuiteRegistryHelper.isStdLibClassPluralName(currentTokenText.value)) {
+//              return true;
+//            }
+//
+//            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
+//            candidatesCount = ParsableScriptSuiteRegistryHelper
+//                    .countStdClassesStartingWithPluralName(currentTokenText.value);
+//          } else {
+//            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper
+//                    .isStdLibClassPluralName(currentTokenText.value);
+//
+//            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
+//            candidatesCount = ParsableScriptSuiteRegistryHelper
+//                    .countStdClassesStartingWithPluralName(currentTokenText.value);
+//            if (candidatesCount == 0) {
+//              return foundExactMatch;
+//            }
+//          }
+//        }
+//      }
       return false;
     } else {
       int candidatesCount = ParsableScriptSuiteRegistryHelper.countApplicationClassesStartingWithName(applicationName,
@@ -1095,31 +1197,32 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
             }
           }
         }
-      } else {//else if there were no classes found in application dictionary searching in standard definitions
-        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdClassesStartingWithName(currentTokenText.value);
-        while (b.getTokenText() != null && candidatesCount > 0) {
-          boolean r = identifier(b, l + 1);
-          if (!r) r = builtInClassIdentifier(b, l + 1);
-          if (!r) b.advanceLexer(); //advance lexer in any case
-
-          if (candidatesCount == 1) {
-            if (ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value)) {
-              return true;
-            }
-            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-            candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countStdClassesStartingWithName(currentTokenText.value);
-          } else {
-            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value);
-            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
-            candidatesCount = ParsableScriptSuiteRegistryHelper
-                    .countStdClassesStartingWithName(currentTokenText.value);
-            if (candidatesCount == 0) {
-              return foundExactMatch;
-            }
-          }
-        }
       }
+//      else {//else if there were no classes found in application dictionary searching in standard definitions
+//        candidatesCount = ParsableScriptSuiteRegistryHelper.countStdClassesStartingWithName(currentTokenText.value);
+//        while (b.getTokenText() != null && candidatesCount > 0) {
+//          boolean r = identifier(b, l + 1);
+//          if (!r) r = builtInClassIdentifier(b, l + 1);
+//          if (!r) b.advanceLexer(); //advance lexer in any case
+//
+//          if (candidatesCount == 1) {
+//            if (ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value)) {
+//              return true;
+//            }
+//            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
+//            candidatesCount = ParsableScriptSuiteRegistryHelper
+//                    .countStdClassesStartingWithName(currentTokenText.value);
+//          } else {
+//            boolean foundExactMatch = ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value);
+//            currentTokenText.value = currentTokenText.value + " " + b.getTokenText();
+//            candidatesCount = ParsableScriptSuiteRegistryHelper
+//                    .countStdClassesStartingWithName(currentTokenText.value);
+//            if (candidatesCount == 0) {
+//              return foundExactMatch;
+//            }
+//          }
+//        }
+//      }
       return false;
     }
   }
@@ -1131,59 +1234,63 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   private static boolean parseDictionaryConstantInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
-    boolean r = false;
-    Stack<String> applicationNameStack = b.getUserData(SCRIPT_APPLICATION_NAME_STACK);
-    String toldApplicationName = null;
-    if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
-      toldApplicationName = applicationNameStack.peek();
-    }
+    boolean r;
+    String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImportFrom = null;
     if (areThereUseStatements) {
       applicationsToImportFrom = b.getUserData(USED_APPLICATION_NAMES);
     }
-    if (toldApplicationName != null) {
-      //todo how not to make it check twice?
-      PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+//    if (toldApplicationName != null) {
+    //todo how not to make it check twice?
+    PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+    r = tryToParseApplicationConstant(b, l + 1, toldApplicationName);
+    exit_section_(b, l, m, null, r, false, null);
+    if (r) {
       r = tryToParseApplicationConstant(b, l + 1, toldApplicationName);
-      exit_section_(b, l, m, null, r, false, null);
-      if (r) {
-        r = tryToParseApplicationConstant(b, l + 1, toldApplicationName);
-        return r;
-      }
+      return r;
     }
+//    }
     if (areThereUseStatements) {
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
         for (String appName : applicationsToImportFrom) {
-          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
-            PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
-            r = tryToParseStdConstant(b, l + 1);
-            exit_section_(b, l, m, null, r, false, null);
-            if (r) {
-              r = tryToParseStdConstant(b, l + 1);
-              return r;
-            }
-          } else {
-            PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+//          if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName)) {
+//            m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+//            r = tryToParseStdConstant(b, l + 1);
+//            exit_section_(b, l, m, null, r, false, null);
+//            if (r) {
+//              r = tryToParseStdConstant(b, l + 1);
+//              return r;
+//            }
+//          } else {
+          m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+          r = tryToParseApplicationConstant(b, l + 1, appName);
+          exit_section_(b, l, m, null, r, false, null);
+          if (r) {
             r = tryToParseApplicationConstant(b, l + 1, appName);
-            exit_section_(b, l, m, null, r, false, null);
-            if (r) {
-              r = tryToParseApplicationConstant(b, l + 1, appName);
-              return r;
-            }
+            return r;
           }
+//          }
         }
       }
     } else {
-      PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+      m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
       r = tryToParseStdConstant(b, l + 1);
       exit_section_(b, l, m, null, r, false, null);
       if (r) {
         r = tryToParseStdConstant(b, l + 1);
         return r;
       }
+      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+        m = enter_section_(b, l, _AND_, "<parse Declared Name Inner>");
+        r = tryToParseApplicationConstant(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+        exit_section_(b, l, m, null, r, false, null);
+        if (r) {
+          r = tryToParseApplicationConstant(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+          return r;
+        }
+      }
     }
-
     return false;
   }
 

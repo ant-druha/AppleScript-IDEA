@@ -1,19 +1,13 @@
 package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptComponentScopeResolver;
+import com.idea.plugin.applescript.lang.resolve.AppleScriptDictionaryResolveProcessor;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
-import com.idea.plugin.applescript.lang.sdef.AppleScriptClass;
-import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.lang.util.ScopeUtil;
-import com.idea.plugin.applescript.psi.AppleScriptIdentifier;
-import com.idea.plugin.applescript.psi.AppleScriptPsiElementFactory;
-import com.idea.plugin.applescript.psi.AppleScriptReferenceElement;
-import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
+import com.idea.plugin.applescript.psi.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
@@ -28,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Andrey on 13.04.2015.
@@ -142,68 +135,37 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
     List<? extends PsiElement> elements =
             ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptComponentScopeResolver
                     .INSTANCE, true, true);
-    //here we should add elements from parsed dictionaries (commands, classes etc.. which are the most relevant)
 
-    List<String> applicationNames = AppleScriptPsiImplUtil
-            .getApplicationNameForElementInsideTellStatement(this);
-    AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = getProject()
-            .getComponent(AppleScriptProjectDictionaryRegistry.class);
-    List<AppleScriptCommand> stdCommandsWithName = new ArrayList<AppleScriptCommand>();
-    List<AppleScriptClass> stdClassesWithName = new ArrayList<AppleScriptClass>();
-    List<DictionaryComponent> dictionaryComponents = new ArrayList<DictionaryComponent>();
-    if (projectDictionaryRegistry != null) {
-      for (ApplicationDictionary stdDictionary : projectDictionaryRegistry.getStandardDictionaries()) {
-        Map<String, AppleScriptCommand> stdCommandsMap = stdDictionary.getDictionaryCommandMap();
-        Map<String, AppleScriptClass> stdClassMap = stdDictionary.getDictionaryClassMap();
-        stdCommandsWithName.addAll(stdCommandsMap.values());
-        stdClassesWithName.addAll(stdClassMap.values());
-      }
-      if (!applicationNames.isEmpty()) {
-        for (String appName : applicationNames) {
-          ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(appName);
-          if (dictionary == null) {
-            dictionary = projectDictionaryRegistry.createDictionary(appName);
-          }
-          if (dictionary != null) {
-            Map<String, AppleScriptCommand> dictionaryCommandsMap = dictionary.getDictionaryCommandMap();
-            stdCommandsWithName.addAll(dictionaryCommandsMap.values());
-            for (AppleScriptCommand stdCmd : stdCommandsWithName) {//filtering the same std commands
-              if (!dictionaryCommandsMap.containsKey(stdCmd.getName())) {
-                dictionaryComponents.add(stdCmd);
-              }
-            }
-            dictionaryComponents.addAll(dictionaryCommandsMap.values());
-            dictionaryComponents.addAll(dictionary.getDictionaryClassMap().values());
-            dictionaryComponents.addAll(dictionary.getDictionaryPropertyMap().values());
-          }
-        }
-      } else {
-        dictionaryComponents.addAll(stdCommandsWithName);
-        dictionaryComponents.addAll(stdClassesWithName);
-      }
-    }
+    final AppleScriptDictionaryResolveProcessor resolveProcessor =
+            new AppleScriptDictionaryResolveProcessor(getProject(), getCanonicalText());
+    ResolveState myCollectAllState = ResolveState.initial()
+            .put(AppleScriptDictionaryResolveProcessor.COLLECT_ALL_DECLARATIONS, true);
+    PsiTreeUtil.treeWalkUp(resolveProcessor, getElement(), null, myCollectAllState);
+    List<DictionaryComponent> dictionaryComponents = resolveProcessor.getFilteredResult();
+
     List<LookupElement> lookupElements = new ArrayList<LookupElement>();
-    for (DictionaryComponent dictionaryTerm : dictionaryComponents) {
-      LookupElementBuilder builder = LookupElementBuilder.create(dictionaryTerm)
-              .withTypeText(dictionaryTerm.getType(), dictionaryTerm.getIcon(0), true);
-      lookupElements.add(builder);
-    }
-    if (elements != null) {
+    if (elements != null && !elements.isEmpty()) {
       for (PsiElement el : elements) {
-        LookupElementBuilder builder;
-        if (el instanceof PsiNamedElement) {
-          builder = LookupElementBuilder.create((PsiNamedElement) el);
-        } else {
-          builder = LookupElementBuilder.create(el);
-        }
-        AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
-        String typeText = componentType != null ? componentType.toString() : null;
-        builder = builder.withTypeText(typeText, el.getIcon(0), true);
-        lookupElements.add(builder);
+        addLookupElement(lookupElements, el);
       }
     }
-
+    for (PsiElement el : dictionaryComponents) {
+      addLookupElement(lookupElements, el);
+    }
     return !lookupElements.isEmpty() ? lookupElements.toArray() : LookupElement.EMPTY_ARRAY;
+  }
+
+  private void addLookupElement(List<LookupElement> lookupElements, PsiElement el) {
+    LookupElementBuilder builder;
+    if (el instanceof AppleScriptComponent) {
+      builder = LookupElementBuilder.createWithIcon((AppleScriptComponent) el);
+    } else {
+      builder = LookupElementBuilder.create(el);
+    }
+    AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(el);
+    String typeText = componentType != null ? componentType.toString().toLowerCase() : null;
+    builder = builder.withTypeText(typeText, null, true);
+    lookupElements.add(builder);
   }
 
   @Override

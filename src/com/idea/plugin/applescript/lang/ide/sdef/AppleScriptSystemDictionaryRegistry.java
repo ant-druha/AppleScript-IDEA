@@ -134,7 +134,10 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
       List<String> applicationNames = new ArrayList<String>();
       for (String applicationName : stringPair.getValue().split(",")) {
         if (!StringUtil.isEmpty(applicationName)
-                && !ApplicationDictionary.STD_LIBRARY_NAMES.contains(applicationName)) {//if std class was saved somehow
+                && !ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {//if std class was
+          // saved somehow
+//                && !ApplicationDictionary.STD_LIBRARY_NAMES.contains(applicationName)) {//if std class was saved
+// somehow
           //do not add it here - other map for std classes is used
           applicationNames.add(applicationName);
         }
@@ -269,6 +272,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   public int countApplicationCommandsStartingWithName(@NotNull String applicationName, @NotNull String
           commandNamePrefix) {
     int result = 0;
+// must not violate contract => use *std* methods
     for (Map.Entry<String, List<String>> stringListEntry : commandNameToApplicationNameListMap.entrySet()) {
       if (startsWithWord(stringListEntry.getKey(), commandNamePrefix)
               && stringListEntry.getValue().contains(applicationName)) {
@@ -476,6 +480,15 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
   private void initStandardSuite() {
     try {
+//      URL stdLibResourceUrl = getClass().getClassLoader()
+//              .getResource(ApplicationDictionary.STANDARD_ADDITIONS_RESOURCE_URL);
+//      if (stdLibResourceUrl != null) {
+//        File file = new File(stdLibResourceUrl.toURI());
+//        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+//        if (virtualFile != null) {
+//          initializeDictionaryFromApplicationFile(virtualFile, ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+//        }
+//      }
       for (String fName : ApplicationDictionary.STANDARD_DEFINITION_FILES) {
         URL url = getClass().getClassLoader().getResource(fName);
         if (url == null) continue;
@@ -516,8 +529,8 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
       if (!SystemInfo.isMac && "xml".equals(virtualApplicationFile.getExtension())) {
 
         final VirtualFile vAppFileDir = LocalFileSystem.getInstance().findFileByIoFile(targetFile.getParentFile());
+        final VirtualFile[] movedFile = new VirtualFile[1];
         if (vAppFileDir != null && (vAppFileDir.findChild(targetFile.getName()) == null)) {
-          final VirtualFile[] movedFile = new VirtualFile[1];
           ApplicationManager.getApplication().runWriteAction(new Runnable() {
             @Override
             public void run() {
@@ -536,12 +549,14 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
               }
             }
           });
-          if (movedFile[0] != null && movedFile[0].exists()) {
-            System.out.println("Application file moved to " + vAppFileDir + "directory");
-            LOG.info("Application file moved to " + vAppFileDir + "directory");
-            applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
-            return cachedDictionaryPath;
-          }
+        } else if (vAppFileDir != null && (vAppFileDir.findChild(targetFile.getName()) != null)) {
+          movedFile[0] = vAppFileDir.findChild(targetFile.getName());
+        }
+        if (movedFile[0] != null && movedFile[0].exists()) {
+          System.out.println("Application file moved to " + vAppFileDir + "directory");
+          LOG.info("Application file moved to " + vAppFileDir + "directory");
+          applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
+          return cachedDictionaryPath;
         }
 
       } else {
@@ -623,8 +638,15 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
       Element rootNode = document.getRootElement();
       List<Element> suiteElements = rootNode.getChildren();
 
-      for (Element suiteElem : suiteElements) {
-        parseSuiteElement(suiteElem, applicationName);
+      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
+        for (Element suiteElem : suiteElements) {
+          parseSuiteElementForApplication(suiteElem, applicationName);
+          parseSuiteElementForStandardAdditions(suiteElem);
+        }
+      } else {
+        for (Element suiteElem : suiteElements) {
+          parseSuiteElementForApplication(suiteElem, applicationName);
+        }
       }
       return true;
     } catch (JDOMException e) {
@@ -635,32 +657,57 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     return false;
   }
 
-  private void parseSuiteElement(Element suiteElem, String applicationName) {
+  private void parseSuiteElementForStandardAdditions(@NotNull Element suiteElem) {
+    String applicationName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
     List<Element> suiteClasses = suiteElem.getChildren("class");
+    List<Element> suiteValueTypes = suiteElem.getChildren("value-type");
     List<Element> suiteClassExtensions = suiteElem.getChildren("class-extension");
     List<Element> suiteCommands = suiteElem.getChildren("command");
     List<Element> recordTypeTags = suiteElem.getChildren("record-type");
     List<Element> enumerationTags = suiteElem.getChildren("enumeration");
 
-    // initialization of different maps for standard library and other applications
-    Map<String, List<String>> commandNameToApplicationNameListMap;
-    Map<String, List<String>> recordNameToApplicationNameListMap;
-    Map<String, List<String>> propertyNameToApplicationNameListMap;
-    Map<String, List<String>> enumerationNameToApplicationNameListMap;
-    Map<String, List<String>> enumeratorConstantNameToApplicationNameListMap;
+    for (Element valType : suiteValueTypes) {
+      parseClassElement(applicationName, valType, false);
+    }
 
-    if (!ApplicationDictionary.STD_LIBRARY_NAMES.contains(applicationName)) {
-      commandNameToApplicationNameListMap = this.commandNameToApplicationNameListMap;
-      recordNameToApplicationNameListMap = this.recordNameToApplicationNameListMap;
-      propertyNameToApplicationNameListMap = this.propertyNameToApplicationNameListMap;
-      enumerationNameToApplicationNameListMap = this.enumerationNameToApplicationNameListMap;
-      enumeratorConstantNameToApplicationNameListMap = this.enumeratorConstantNameToApplicationNameListMap;
-    } else {
-      commandNameToApplicationNameListMap = stdCommandNameToApplicationNameListMap;
-      recordNameToApplicationNameListMap = stdRecordNameToApplicationNameListMap;
-      propertyNameToApplicationNameListMap = stdPropertyNameToApplicationNameListMap;
-      enumerationNameToApplicationNameListMap = stdEnumerationNameToApplicationNameListMap;
-      enumeratorConstantNameToApplicationNameListMap = stdEnumeratorConstantNameToApplicationNameListMap;
+    for (Element classTag : suiteClasses) {
+      parseClassElement(applicationName, classTag, false);
+      List<Element> propertyElements = classTag.getChildren("property");
+      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToApplicationNameListMap);
+    }
+
+    for (Element classTag : suiteClassExtensions) {
+      parseClassElement(applicationName, classTag, false);
+      List<Element> propertyElements = classTag.getChildren("property");
+      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToApplicationNameListMap);
+    }
+
+    parseElementsForApplication(suiteCommands, applicationName, stdCommandNameToApplicationNameListMap);
+    parseElementsForApplication(recordTypeTags, applicationName, stdRecordNameToApplicationNameListMap);
+
+    for (Element recordTag : recordTypeTags) {
+      List<Element> propertyElements = recordTag.getChildren("property");
+      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToApplicationNameListMap);
+    }
+
+    parseElementsForApplication(enumerationTags, applicationName, stdEnumerationNameToApplicationNameListMap);
+
+    for (Element enumerationTag : enumerationTags) {
+      List<Element> enumeratorTags = enumerationTag.getChildren("enumerator");
+      parseElementsForApplication(enumeratorTags, applicationName, stdEnumeratorConstantNameToApplicationNameListMap);
+    }
+  }
+
+  private void parseSuiteElementForApplication(@NotNull Element suiteElem, @NotNull String applicationName) {
+    List<Element> suiteClasses = suiteElem.getChildren("class");
+    List<Element> suiteValueTypes = suiteElem.getChildren("value-type");
+    List<Element> suiteClassExtensions = suiteElem.getChildren("class-extension");
+    List<Element> suiteCommands = suiteElem.getChildren("command");
+    List<Element> recordTypeTags = suiteElem.getChildren("record-type");
+    List<Element> enumerationTags = suiteElem.getChildren("enumeration");
+
+    for (Element valType : suiteValueTypes) {
+      parseClassElement(applicationName, valType, false);
     }
 
     for (Element classTag : suiteClasses) {
@@ -718,10 +765,16 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     if (className == null || code == null) return;
     pluralClassName = !StringUtil.isEmpty(pluralClassName) ? pluralClassName : className + "s";
 
-    if (!ApplicationDictionary.STD_LIBRARY_NAMES.contains(applicationName)) {
-      updateApplicationNameListFor(className, applicationName, classNameToApplicationNameListMap);
-      updateApplicationNameListFor(pluralClassName, applicationName, classNamePluralToApplicationNameListMap);
-    } else {
+    updateApplicationNameListFor(className, applicationName, classNameToApplicationNameListMap);
+    updateApplicationNameListFor(pluralClassName, applicationName, classNamePluralToApplicationNameListMap);
+//    if (!ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
+//      updateApplicationNameListFor(className, applicationName, classNameToApplicationNameListMap);
+//      updateApplicationNameListFor(pluralClassName, applicationName, classNamePluralToApplicationNameListMap);
+//    } else {
+//      updateApplicationNameListFor(className, applicationName, stdClassNameToApplicationNameListMap);
+//      updateApplicationNameListFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameListMap);
+//    }
+    if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
       updateApplicationNameListFor(className, applicationName, stdClassNameToApplicationNameListMap);
       updateApplicationNameListFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameListMap);
     }

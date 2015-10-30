@@ -2,7 +2,7 @@
  * Copyright (C) 2014, Cast & Crew (R) Software, LLC
  * All rights reserved.  Unauthorized disclosure or distribution is prohibited.
  */
-package com.idea.plugin.applescript.highlighter;
+package com.idea.plugin.applescript.lang.ide.highlighting;
 
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory;

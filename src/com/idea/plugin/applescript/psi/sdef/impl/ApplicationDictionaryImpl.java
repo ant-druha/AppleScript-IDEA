@@ -143,6 +143,12 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return dictionaryClassMap;
   }
 
+  @Nullable
+  @Override
+  public AppleScriptClass findClass(@Nullable String name) {
+    return dictionaryClassMap.get(name);
+  }
+
   private void readDictionaryFromApplicationBundle(@NotNull VirtualFile applicationFile, @NotNull Project project) {
     if (!SystemInfo.isMac) return;
     final String pathPrefix = FileUtil.getTempDirectory() + '/';
@@ -251,12 +257,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public ItemPresentation getPresentation() {
     return new AppleScriptElementPresentation(this);
-  }
-
-  @Override
-  @Nullable
-  public AppleScriptClass findClassByName(String name) {
-    return dictionaryClassMap.get(name);
   }
 
   @Nullable
@@ -421,6 +421,9 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public void addRecord(DictionaryRecord record) {
     dictionaryRecordMap.put(record.getName(), record);
+    for (AppleScriptPropertyDefinition prop : record.getProperties()) {
+      dictionaryPropertyMap.put(prop.getName(), prop);
+    }
   }
 
 

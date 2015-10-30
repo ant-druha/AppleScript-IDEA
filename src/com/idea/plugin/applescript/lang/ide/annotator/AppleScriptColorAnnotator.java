@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.annotator;
 
-import com.idea.plugin.applescript.highlighter.AppleScriptSyntaxHighlighterColors;
+import com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterColors;
 import com.idea.plugin.applescript.lang.ide.intentions.AddApplicationDictionaryQuickFix;
 import com.idea.plugin.applescript.lang.ide.intentions.RenameParameterLabelQuickFix;
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry;

@@ -1,4 +1,4 @@
-package com.idea.plugin.applescript.highlighter;
+package com.idea.plugin.applescript.lang.ide.highlighting;
 
 import com.idea.plugin.applescript.AppleScriptFileType;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -14,8 +14,6 @@ import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.idea.plugin.applescript.highlighter.AppleScriptSyntaxHighlighterColors.*;
-
 /**
  * Created by Andrey on 04.04.2015.
  */
@@ -27,18 +25,19 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
 
     static {
         ATTRS = new AttributesDescriptor[]{
-                new AttributesDescriptor("Keyword", KEYWORD),
-                new AttributesDescriptor("String", STRING),
-                new AttributesDescriptor("Operator", OPERATION_SIGN),
-                new AttributesDescriptor("Comment", COMMENT),
-                new AttributesDescriptor("Dictionary command", DICTIONARY_COMMAND_ATTR),
+                new AttributesDescriptor("Keyword", AppleScriptSyntaxHighlighterColors.KEYWORD),
+                new AttributesDescriptor("String", AppleScriptSyntaxHighlighterColors.STRING),
+                new AttributesDescriptor("Operator", AppleScriptSyntaxHighlighterColors.OPERATION_SIGN),
+                new AttributesDescriptor("Comment", AppleScriptSyntaxHighlighterColors.COMMENT),
+                new AttributesDescriptor("Dictionary command", AppleScriptSyntaxHighlighterColors
+                        .DICTIONARY_COMMAND_ATTR),
         };
 
-        ourTags.put("keyword", KEYWORD);
-        ourTags.put("string", STRING);
-        ourTags.put("operator", OPERATION_SIGN);
-        ourTags.put("comment", COMMENT);
-      ourTags.put("command", DICTIONARY_COMMAND_ATTR);
+      ourTags.put("keyword", AppleScriptSyntaxHighlighterColors.KEYWORD);
+      ourTags.put("string", AppleScriptSyntaxHighlighterColors.STRING);
+      ourTags.put("operator", AppleScriptSyntaxHighlighterColors.OPERATION_SIGN);
+      ourTags.put("comment", AppleScriptSyntaxHighlighterColors.COMMENT);
+      ourTags.put("command", AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
     }
 
 

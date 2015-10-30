@@ -1,8 +1,11 @@
 package com.idea.plugin.applescript.lang.resolve;
 
+import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.psi.AppleScriptComponent;
+import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
 import com.idea.plugin.applescript.psi.AppleScriptTargetVariable;
 import com.intellij.openapi.util.Key;
+import com.intellij.psi.ResolveState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +27,7 @@ public class AppleScriptComponentScopeProcessor extends AppleScriptPsiScopeProce
   }
 
   @Override
-  protected boolean doExecute(@NotNull AppleScriptComponent element) {
+  protected boolean doExecute(@NotNull AppleScriptPsiElement element, final @NotNull ResolveState state) {
     if (element instanceof AppleScriptTargetVariable) {
       final AppleScriptTargetVariable targetVar = (AppleScriptTargetVariable) element;
       if (!myCollectedTargets.containsKey(targetVar.getName())) {
@@ -37,8 +40,9 @@ public class AppleScriptComponentScopeProcessor extends AppleScriptPsiScopeProce
         // (file, handler etc)
         throw new AssertionError("Elements are defined in different files:");
       }
-    } else
-      myResult.add(element);
+    } else if (element instanceof AppleScriptComponent && !(element instanceof DictionaryComponent)) {
+      myResult.add((AppleScriptComponent) element);
+    }
 
     return true;
   }

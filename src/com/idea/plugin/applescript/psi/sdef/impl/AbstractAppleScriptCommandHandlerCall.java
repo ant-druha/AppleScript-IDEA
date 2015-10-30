@@ -1,23 +1,14 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
-import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
-import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl;
-import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
-import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
-import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter;
-import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
-import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName;
+import com.idea.plugin.applescript.psi.sdef.*;
 import com.intellij.lang.ASTNode;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,7 +23,7 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
 
   @NotNull
   @Override
-  public PsiReference getReference() {
+  public DictionaryReference getReference() {
     return new CommandHandlerReference();
   }
 
@@ -41,7 +32,6 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   public DictionaryCompositeName getCompositeNameElement() {
     return PsiTreeUtil.getRequiredChildOfType(this, DictionaryCompositeName.class);
   }
-
 
   @NotNull
   @Override
@@ -210,8 +200,7 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
   //not implement expression ??
 
 
-  private class CommandHandlerReference extends AbstractDictionaryReferenceElement implements MultiRangeReference,
-          PsiPolyVariantReference {
+  private class CommandHandlerReference extends AbstractDictionaryReferenceElement implements DictionaryReference {
 
     @Override
     public boolean isReferenceTo(PsiElement element) {
@@ -221,67 +210,6 @@ public class AbstractAppleScriptCommandHandlerCall extends AppleScriptPsiElement
         return target == thatHandler;
       }
       return super.isReferenceTo(element);
-    }
-
-    @NotNull
-    @Override
-    protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-
-//      final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(getCommandName());
-//      PsiTreeUtil.treeWalkUp(resolveProcessor, getMyElement(), null, ResolveState.initial());
-//      final List<PsiElement> results = new ArrayList<PsiElement>();
-//      results.add(resolveProcessor.getResult());
-//      return AppleScriptResolveUtil.toCandidateInfoArray(results);
-
-      String commandName = getCommandName();
-      List<AppleScriptCommand> allCommandsWithName = null;
-      List<String> applicationNames = AppleScriptPsiImplUtil
-              .getApplicationNameForElementInsideTellStatement(getMyElement());
-      AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = getProject()
-              .getComponent(AppleScriptProjectDictionaryRegistry.class);
-      ApplicationDictionary appDictionary = null;
-      for (String appName : applicationNames) {
-
-        if (appName != null) {
-          if (projectDictionaryRegistry != null) {
-            appDictionary = projectDictionaryRegistry.getDictionary(appName);
-            if (appDictionary == null) {
-              appDictionary = projectDictionaryRegistry.createDictionary(appName);
-            }
-          }
-          if (appDictionary != null) {
-            if (allCommandsWithName == null)
-              allCommandsWithName = appDictionary.findAllCommandsWithName(commandName);
-            else
-              allCommandsWithName.addAll(appDictionary.findAllCommandsWithName(commandName));
-          }
-        }
-      }
-      if (allCommandsWithName == null || allCommandsWithName.isEmpty()) {
-        allCommandsWithName = new ArrayList<AppleScriptCommand>();
-        if (projectDictionaryRegistry != null) {
-          for (ApplicationDictionary stdDictionary : projectDictionaryRegistry.getStandardDictionaries()) {
-            List<AppleScriptCommand> commandList = stdDictionary.findAllCommandsWithName(commandName);
-            allCommandsWithName.addAll(commandList);
-          }
-        }
-      }
-      if (allCommandsWithName.isEmpty()) return ResolveResult.EMPTY_ARRAY;
-
-      final List<PsiElement> results = new ArrayList<PsiElement>();
-      for (AppleScriptCommand command : allCommandsWithName) {
-        if (resolveCommandInner(command)) {
-          results.add(command);
-          break;
-        }
-      }
-      return AppleScriptResolveUtil.toCandidateInfoArray(results);
-    }
-
-    private boolean resolveCommandInner(AppleScriptCommand command) {
-      //todo add checks for parameters
-      return command != null;
-
     }
 
     @NotNull

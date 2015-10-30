@@ -1,9 +1,11 @@
 package com.idea.plugin.applescript.psi.impl;
 
 import com.idea.plugin.applescript.lang.resolve.AppleScriptResolveUtil;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -239,7 +241,9 @@ public class AppleScriptPsiImplUtil {
     List<String> result = new ArrayList<String>();
     for (PsiElement tellStatement : resolveScope) {
       String appRef = findApplicationNameFromTellStatement(tellStatement);
-      result.add(appRef);
+      if (!StringUtil.isEmpty(appRef)) {
+        result.add(appRef);
+      }
     }
     return result;
   }
@@ -256,6 +260,83 @@ public class AppleScriptPsiImplUtil {
       }
     }
     return null;
+  }
+
+  @Nullable
+  public static String getApplicationName(AppleScriptUseStatement useStatement) {
+    if (useStatement.getText().contains("application")) {
+      ASTNode appNameNode = useStatement.getNode().findChildByType(AppleScriptTypes.STRING_LITERAL);
+      return appNameNode != null ? appNameNode.getText().replace("\"", "") : null;
+    } else if (useStatement.getNode().findChildByType(AppleScriptTypes.SCRIPTING_ADDITIONS) != null) {
+      return ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
+    }
+    return null;
+  }
+
+
+  public static boolean useStandardAdditions(AppleScriptUseStatement useStatement) {
+    ASTNode node = useStatement.getNode();
+    return node.findChildByType(AppleScriptTypes.SCRIPTING_ADDITIONS) != null;
+  }
+
+  public static boolean withImporting(AppleScriptUseStatement useStatement) {
+    ASTNode node = useStatement.getNode();
+    return !(node.getText().contains("without") || node.getText().contains("false"));
+  }
+
+
+  @Nullable
+  public static String getApplicationName(AppleScriptUsingTermsFromStatement usingTermsStatement) {
+    AppleScriptApplicationReference appRef = usingTermsStatement.getApplicationReference();
+    return appRef != null ? appRef.getApplicationName() : usingTermsStatement.withImportingStdLibrary() ?
+            ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY : null;
+  }
+
+  public static boolean withImportingStdLibrary(AppleScriptUsingTermsFromStatement usingTermsStatement) {
+    ASTNode node = usingTermsStatement.getNode();
+    return node.findChildByType(AppleScriptTypes.SCRIPTING_ADDITIONS) != null;
+  }
+
+  @Nullable
+  public static String getApplicationName(@NotNull AppleScriptApplicationReference applicationReference) {
+    PsiElement appNameElement = applicationReference.getApplicationNameString();
+    return appNameElement != null ? appNameElement.getText().replace("\"", "") : null;
+  }
+
+  public static boolean isInsideTellStatement(@NotNull PsiElement element) {
+    PsiElement parent = element;
+    while (parent != null) {
+      parent = parent.getParent();
+      if (parent instanceof AppleScriptTellSimpleStatement
+              || parent instanceof AppleScriptTellCompoundStatement) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Nullable
+  public static AppleScriptApplicationReference getApplicationReference(
+          @NotNull AppleScriptTellCompoundStatement tellCompoundStatement) {
+    return PsiTreeUtil.getChildOfType(tellCompoundStatement, AppleScriptApplicationReference.class);
+  }
+
+  @Nullable
+  public static String getApplicationName(@NotNull AppleScriptTellCompoundStatement tellCompound) {
+    AppleScriptApplicationReference appRef = tellCompound.getApplicationReference();
+    return appRef != null ? appRef.getApplicationName() : null;
+  }
+
+  @Nullable
+  public static AppleScriptApplicationReference getApplicationReference(
+          @NotNull AppleScriptTellSimpleStatement tellCompoundStatement) {
+    return PsiTreeUtil.getChildOfType(tellCompoundStatement, AppleScriptApplicationReference.class);
+  }
+
+  @Nullable
+  public static String getApplicationName(@NotNull AppleScriptTellSimpleStatement tellSimple) {
+    AppleScriptApplicationReference appRef = tellSimple.getApplicationReference();
+    return appRef != null ? appRef.getApplicationName() : null;
   }
 
 }

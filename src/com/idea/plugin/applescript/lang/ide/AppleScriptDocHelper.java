@@ -77,7 +77,7 @@ public class AppleScriptDocHelper {
       Suite suite = dictionary != null ? dictionary.findSuiteByName(suiteName) : null;
       result = suite != null ? suite.findClassByCode(targetName) : null;//search in suite first
       if (result == null)
-        result = dictionary != null ? dictionary.findClassByName(targetName) : null;
+        result = dictionary != null ? dictionary.findClass(targetName) : null;
     } else if ("dictionary".equals(typeName)) {
       result = dictionary;
     } else if ("suite".equals(typeName)) {
@@ -95,7 +95,7 @@ public class AppleScriptDocHelper {
       sb.append("<p>").append(indent).append("ELEMENTS <br>").append(indent).append("contains ");
       Iterator<String> it = classElements.iterator();
       String className = it.next();
-      AppleScriptClass aClass = dictionaryClass.getDictionary().findClassByName(className);
+      AppleScriptClass aClass = dictionaryClass.getDictionary().findClass(className);
       if (aClass != null) {
         appendElementLink(sb, aClass, aClass.getName());
       } else {
@@ -103,7 +103,7 @@ public class AppleScriptDocHelper {
       }
       while (it.hasNext()) {
         className = it.next();
-        aClass = dictionaryClass.getDictionary().findClassByName(className);
+        aClass = dictionaryClass.getDictionary().findClass(className);
         sb.append(", ");
         if (aClass != null) {
           appendElementLink(sb, aClass, aClass.getName());

@@ -42,4 +42,9 @@ public class DictionaryCompositeNameImpl extends AppleScriptPsiElementImpl imple
     }
     return sb.toString().trim();
   }
+
+  @Override
+  public String getName() {
+    return getCompositeName();
+  }
 }
