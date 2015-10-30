@@ -120,7 +120,25 @@ public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
       }
       while (count-- > 0) iterator.retreat();
       if (!result) return false;
+
+      // else if -> if not counted
+      count = 0;
+      result = true;
+      while (true) {
+        iterator.retreat();
+        count++;
+        if (iterator.atEnd()) break;
+        if (iterator.atEnd()) break;
+        IElementType eType = iterator.getTokenType();
+
+        if (eType == com.intellij.psi.TokenType.WHITE_SPACE) continue;
+
+        if (eType == AppleScriptTypes.ELSE) result = false;
+        else break;
+      }
+      while (count-- > 0) iterator.advance();
     }
+    if (!result) return false;
 
     // on error -> not count
     if (pair.getLeftBraceType() == AppleScriptTypes.ON) {

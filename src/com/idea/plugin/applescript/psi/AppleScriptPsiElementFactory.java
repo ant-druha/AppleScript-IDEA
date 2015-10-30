@@ -2,8 +2,6 @@ package com.idea.plugin.applescript.psi;
 
 import com.idea.plugin.applescript.AppleScriptFile;
 import com.idea.plugin.applescript.AppleScriptFileType;
-import com.idea.plugin.applescript.AppleScriptFileTypeFactory;
-import com.idea.plugin.applescript.AppleScriptLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
@@ -18,37 +16,41 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.HANDLER_PARAMETER
 public class AppleScriptPsiElementFactory {
 
 
-    public static AppleScriptHandlerParameterLabel createHandlerParameterLabel(Project project, String labelName){
-        StringBuilder builder = new StringBuilder();
-        String newLabelName = labelName!=null && !labelName.isEmpty() ? labelName : "to";
-        builder.append("dummyHandlerName ").append(newLabelName).append(" \"some sting val\"");
-        AppleScriptFile file = createFile(project, builder.toString());
-        AppleScriptHandlerLabeledParametersCall handlerCall = (AppleScriptHandlerLabeledParametersCall)file.getFirstChild();
+  public static AppleScriptHandlerParameterLabel createHandlerParameterLabel(Project project, String labelName) {
+    StringBuilder builder = new StringBuilder();
+    String newLabelName = labelName != null && !labelName.isEmpty() ? labelName : "to";
+    builder.append("dummyHandlerName ").append(newLabelName).append(" \"some sting val\"");
+    AppleScriptFile file = createFile(project, builder.toString());
+    file.findChildByClass(AppleScriptHandlerLabeledParametersCall.class);
+//    file.getFirstChild().findChildByClass(AppleScriptHandlerLabeledParametersCall.class);
+    AppleScriptHandlerLabeledParametersCall handlerCall = (AppleScriptHandlerLabeledParametersCall) file
+            .getFirstChild();
 
-        AppleScriptHandlerParameterLabel psiLabelNode = PsiTreeUtil.getChildOfType(file, AppleScriptHandlerParameterLabel.class);
+    AppleScriptHandlerParameterLabel psiLabelNode = PsiTreeUtil.getChildOfType(file, AppleScriptHandlerParameterLabel
+            .class);
 
-        PsiElement[] childElements = handlerCall.getChildren();
-        for (PsiElement childElement : childElements ) {
-            if (childElement.getNode().getElementType()==HANDLER_PARAMETER_LABEL) {
-                return (AppleScriptHandlerParameterLabel)childElement;
-            }
-        }
-        return null;
+    PsiElement[] childElements = handlerCall.getChildren();
+    for (PsiElement childElement : childElements) {
+      if (childElement.getNode().getElementType() == HANDLER_PARAMETER_LABEL) {
+        return (AppleScriptHandlerParameterLabel) childElement;
+      }
     }
+    return null;
+  }
 
-    public static AppleScriptFile createFile(Project project, String text){
-        final String name = "dummy_file" + AppleScriptFileType.INSTANCE.getDefaultExtension();
-        final long stamp = System.currentTimeMillis();
-        final PsiFileFactory factory = PsiFileFactory.getInstance(project);
-        return (AppleScriptFile)factory.createFileFromText(name, AppleScriptFileType.INSTANCE,text,stamp,false);
-    }
+  public static AppleScriptFile createFile(Project project, String text) {
+    final String name = "dummy_file" + AppleScriptFileType.INSTANCE.getDefaultExtension();
+    final long stamp = System.currentTimeMillis();
+    final PsiFileFactory factory = PsiFileFactory.getInstance(project);
+    return (AppleScriptFile) factory.createFileFromText(name, AppleScriptFileType.INSTANCE, text, stamp, false);
+  }
 
-    @Nullable
-    public static AppleScriptIdentifier createIdentifierFromText(Project project, String name) {
-        AppleScriptFile file = createFile(project, name);
-        AppleScriptIdentifier identifier = PsiTreeUtil.findChildOfAnyType(file,AppleScriptIdentifier.class);
+  @Nullable
+  public static AppleScriptIdentifier createIdentifierFromText(Project project, String name) {
+    AppleScriptFile file = createFile(project, name);
+    AppleScriptIdentifier identifier = PsiTreeUtil.findChildOfAnyType(file, AppleScriptIdentifier.class);
 //        AppleScriptIdentifier identifier = PsiTreeUtil.getChildOfType(file, AppleScriptIdentifier.class);
 
-        return identifier;
-    }
+    return identifier;
+  }
 }

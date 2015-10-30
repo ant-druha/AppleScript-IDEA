@@ -793,9 +793,9 @@ handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParam
                                             [varDeclarationList] nls
                                                blockBody? nls
                                             end [referenceIdentifier]
-                                            {pin=3  //or Grammar kit will also make formalParameterList as Component
+//                                            {pin=3  //or Grammar kit will also make formalParameterList as Component
 //                                            recoverWhile="statementRecover"
-                                            }
+//                                            }
 //todo: recover?
 //statementRecover::=!(sep (on|expression|statement)) //then grammar kit always reports an error after end of stms..?
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"

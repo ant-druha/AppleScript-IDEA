@@ -32,6 +32,7 @@ public class AppleScriptTargetElementEvaluator extends TargetElementEvaluatorEx2
   @Override
   public ThreeState isAcceptableReferencedElement(@Nullable PsiElement element, @Nullable PsiElement
           referenceOrReferencedElement) {
+//    return ThreeState.YES;
     return element instanceof AppleScriptReferenceElement ? ThreeState.YES : ThreeState.NO;
   }
 
@@ -43,7 +44,8 @@ public class AppleScriptTargetElementEvaluator extends TargetElementEvaluatorEx2
   @Nullable
   @Override
   public PsiElement getElementByReference(@NotNull PsiReference ref, int flags) {
-    final PsiElement resolveResult = ref.resolve();
-    return ref.resolve();
+//    final PsiElement elem = ref.getElement();
+//    return ref.getElement();
+    return null;
   }
 }
