@@ -82,24 +82,24 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
   public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
                                                              @Nullable VirtualFile applicationFile) {
     ApplicationDictionary newDictionary = dictionaryMap.get(applicationName);
-    String cachedDictionaryFile = systemDictionaryRegistry.getGeneratedDictionaryFilePath(applicationName);
+    String cachedDictionaryFilePath = systemDictionaryRegistry.getGeneratedDictionaryFilePath(applicationName);
 
-    if (cachedDictionaryFile == null) {
+    if (cachedDictionaryFilePath == null) {
       System.out.println("WARNING: no pre-initialized dictionary found for application: [" + applicationName + "] " +
               "Caching it now...");
       LOG.warn("No pre-initialized dictionary found for application: [" + applicationName + "] " +
               "Caching it now...");
       if (applicationFile != null) {
-        cachedDictionaryFile = systemDictionaryRegistry
+        cachedDictionaryFilePath = systemDictionaryRegistry
                 .initializeDictionaryFromApplicationFile(applicationFile, applicationName);
       } else { //if file is null, searching in standard paths
-        cachedDictionaryFile = systemDictionaryRegistry.initializeDictionaryForApplication(applicationName);
+        cachedDictionaryFilePath = systemDictionaryRegistry.initializeDictionaryForApplication(applicationName);
       }
     }
 
-    if (cachedDictionaryFile != null) {
+    if (cachedDictionaryFilePath != null) {
       //todo initialize map to virtualFile?
-      final File cachedXmlFileForApplication = new File(cachedDictionaryFile);
+      final File cachedXmlFileForApplication = new File(cachedDictionaryFilePath);
       final VirtualFile applicationCachedVFile = LocalFileSystem.getInstance()
               .findFileByIoFile(cachedXmlFileForApplication);
       if (applicationCachedVFile != null) {

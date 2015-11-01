@@ -18,6 +18,7 @@ import com.intellij.util.xmlb.annotations.Tag;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,8 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   public static final String DICTIONARY_GENERATED_FILE_URL = "generatedFileUrl";
 
   private final Map<String, String> applicationNameToGeneratedDictionaryPathMap = new HashMap<String, String>();
+  private final Map<String, VirtualFile> applicationNameToGeneratedDictionaryFileMap = new HashMap<String,
+          VirtualFile>();
 
   private final List<String> allSystemApplicationNames = new ArrayList<String>();
 
@@ -101,6 +104,9 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   @Override
   public State getState() {
     State state = new State();
+    for (Map.Entry<String, VirtualFile> e : applicationNameToGeneratedDictionaryFileMap.entrySet()) {
+      state.cachedApplicationNameToGeneratedDictionaryUrlMap.put(e.getKey(), e.getValue().getPath());
+    }
     state.cachedApplicationNameToGeneratedDictionaryUrlMap = applicationNameToGeneratedDictionaryPathMap;
     Map<String, String> result = new HashMap<String, String>();
     for (Map.Entry<String, List<String>> stringListPair : classNameToApplicationNameListMap.entrySet()) {
@@ -125,8 +131,12 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     Map<String, String> uncheckedMap = state.cachedApplicationNameToGeneratedDictionaryUrlMap;
     for (Map.Entry<String, String> stringEntry : uncheckedMap.entrySet()) {
       File file = new File(stringEntry.getValue());
+      VirtualFile vFile = LocalFileSystem.getInstance().findFileByPath(stringEntry.getValue());
       if (file.exists()) {
         applicationNameToGeneratedDictionaryPathMap.put(stringEntry.getKey(), stringEntry.getValue());
+      }
+      if (vFile != null && vFile.exists()) {
+        applicationNameToGeneratedDictionaryFileMap.put(stringEntry.getKey(), vFile);
       }
     }
     Map<String, String> classToDictionariesMap = state.cachedClassNameToDictionaryListMap;
@@ -387,6 +397,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
   private void initOSXApplicationsDictionary() {
     Collection<String> myCachedApplications = applicationNameToGeneratedDictionaryPathMap.keySet();
+    Collection<String> myCachedApplicationNames = applicationNameToGeneratedDictionaryFileMap.keySet();
     //init from previously generated files
     for (Map.Entry<String, String> appNameToFile : applicationNameToGeneratedDictionaryPathMap.entrySet()) {
       VirtualFile dictionaryVFile = LocalFileSystem.getInstance().findFileByPath(appNameToFile.getValue());
@@ -473,6 +484,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
         //if parsing failed for some reason, remove that generated dictionary file from cached files
         System.out.println("WARNING: initialization failed for application [" + applicationName + "].");
         applicationNameToGeneratedDictionaryPathMap.remove(applicationName);
+        applicationNameToGeneratedDictionaryFileMap.remove(applicationName);
       }
     }
     return null;
@@ -556,14 +568,13 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
           System.out.println("Application file moved to " + vAppFileDir + "directory");
           LOG.info("Application file moved to " + vAppFileDir + "directory");
           applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
+          applicationNameToGeneratedDictionaryFileMap.put(applicationName, movedFile[0]);
           return cachedDictionaryPath;
         }
 
       } else {
         final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFileFinalPath + "\" " +
-                "> " +
-
-                cachedDictionaryPath};
+                "> " + cachedDictionaryPath};
         System.out.println("executing command: " + Arrays.toString(shellCommand));
         LOG.info("executing command: " + Arrays.toString(shellCommand));
         long execStart = System.currentTimeMillis();
@@ -575,6 +586,10 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
           LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
           if (exitCode == 0) {
             applicationNameToGeneratedDictionaryPathMap.put(applicationName, cachedDictionaryPath);
+            final VirtualFile cachedFile = LocalFileSystem.getInstance().findFileByPath(cachedDictionaryPath);
+            if (cachedFile != null) {
+              applicationNameToGeneratedDictionaryFileMap.put(applicationName, cachedFile);
+            }
             return cachedDictionaryPath;
           }
         } catch (InterruptedException e) {
@@ -604,6 +619,11 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     return applicationNameToGeneratedDictionaryPathMap.get(applicationName);
   }
 
+  @Nullable
+  public VirtualFile getGeneratedDictionaryFile(@Nullable String applicationName) {
+    return applicationNameToGeneratedDictionaryFileMap.get(applicationName);
+  }
+
   @NotNull
   public Collection<String> getCachedApplicationNames() {
     return applicationNameToGeneratedDictionaryPathMap.keySet();
@@ -617,6 +637,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   public boolean isApplicationKnown(String applicationName) {
     return allSystemApplicationNames.contains(applicationName)
             || applicationNameToGeneratedDictionaryPathMap.containsKey(applicationName);
+//            || applicationNameToGeneratedDictionaryFileMap.containsKey(applicationName);
   }
 
   @Override
@@ -699,12 +720,29 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   }
 
   private void parseSuiteElementForApplication(@NotNull Element suiteElem, @NotNull String applicationName) {
+    Namespace n1 = Namespace.getNamespace("http://www.w3.org/2003/XInclude");
+    List<Element> xiIncludes = suiteElem.getChildren("include", n1);
     List<Element> suiteClasses = suiteElem.getChildren("class");
     List<Element> suiteValueTypes = suiteElem.getChildren("value-type");
     List<Element> suiteClassExtensions = suiteElem.getChildren("class-extension");
     List<Element> suiteCommands = suiteElem.getChildren("command");
     List<Element> recordTypeTags = suiteElem.getChildren("record-type");
     List<Element> enumerationTags = suiteElem.getChildren("enumeration");
+
+    // todo: need to move this to a single generated xml file for a dictionary (psi file is just one). Or
+    // handle it (linking included file) transparently
+    for (Element include : xiIncludes) {
+      String hrefIncl = include.getAttributeValue("href");
+//<dictionary title="Mail Terminology" xmlns:xi="http://www.w3.org/2003/XInclude">
+//      <xi:include href="file://localhost/System/Library/ScriptingDefinitions/CocoaStandard.sdef"
+// xpointer="xpointer(/dictionary/suite/node()[not(self::command and ((@name = 'delete') or (@name = 'duplicate') or
+// (@name = 'move')))])"/>
+      hrefIncl = hrefIncl.replace("file://localhost", "");
+      File inclFile = new File(hrefIncl);
+      if (inclFile.exists()) {
+        parseDictionaryFromGeneratedFile(inclFile, applicationName);
+      }
+    }
 
     for (Element valType : suiteValueTypes) {
       parseClassElement(applicationName, valType, false);

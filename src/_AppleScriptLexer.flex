@@ -36,7 +36,7 @@ GT=(">"|"is greater than"|"greater than"|"comes after"|"is not less than or equa
 LE=("≤"|"<="|"is less than or equal to"|"less than or equal to"|"is less than or equal"|"less than or equal"|"is not greater than"|"isn't greater than"|"does not come after"|"doesn't come after")
 GE=("≥"|">="|"is greater than or equal to"|"greater than or equal to"|"is greater than or equal"|"greater than or equal"|"is not less than"|"isn't less than"|"does not come before"|"doesn't come before")
 LT=("<"|"is less than"|"less than"|"comes before"|"is not greater than or equal to"|"is not greater than or equal"|"isn't greater than or equal to"|"isn't greater than or equal")
-NE=("isn't equal to"|"isn't equal"|"is not equal to"|"is not equal"|"doesn't equal"|"does not equal"|"is not"|"isn't")
+NE=("≠"|"isn't equal to"|"isn't equal"|"is not equal to"|"is not equal"|"doesn't equal"|"does not equal"|"is not"|"isn't")
 EQ=("="|"is equal to"|"equal to"|"is"|"equal"|"equals")
 REF_OP=("a reference to"|"a ref to"|"a ref"|"reference to"|"ref")
 DIV=("/"|"÷")

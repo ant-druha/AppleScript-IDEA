@@ -89,20 +89,20 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     exit_section_(b, l, mComName, null, r, false, null);
     if (r) return parseCommandNameForApplication(b, l + 1, parsedName, toldApplicationName);
 //    }
-      if (areThereUseStatements) {
-        if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
-          for (String appName : applicationsToImportFrom) {
+    if (areThereUseStatements) {
+      if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
+        for (String appName : applicationsToImportFrom) {
 //            if (ApplicationDictionary.STD_LIBRARY_NAMES.contains(appName))
 //              r = parseStdLibCommandName(b, l + 1, parsedName);
 //            else
-            //in case of SCRIPTING_ADDITIONS 'StandardAdditions' app name is added to app names import list
-            mComName = enter_section_(b, l, _AND_, "<parse Dictionary Command Name Inner>");
-            r = parseCommandNameForApplication(b, l + 1, parsedName, appName);
-            exit_section_(b, l, mComName, null, r, false, null);
-            if (r) return parseCommandNameForApplication(b, l + 1, parsedName, appName);
-          }
+          //in case of SCRIPTING_ADDITIONS 'StandardAdditions' app name is added to app names import list
+          mComName = enter_section_(b, l, _AND_, "<parse Dictionary Command Name Inner>");
+          r = parseCommandNameForApplication(b, l + 1, parsedName, appName);
+          exit_section_(b, l, mComName, null, r, false, null);
+          if (r) return parseCommandNameForApplication(b, l + 1, parsedName, appName);
         }
       }
+    }
     if (!areThereUseStatements) {
       mComName = enter_section_(b, l, _AND_, "<parse Dictionary Command Name Inner>");
       r = parseStdLibCommandName(b, l + 1, parsedName);
@@ -143,10 +143,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //            applicationsToImport);
 //    exit_section_(b, l, mComName, null, r, false, null);
 //    if (r) {
-      PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Command Handler Call Expression>");
-      r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
-              applicationsToImport);
-      exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
+    PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Command Handler Call Expression>");
+    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
+            applicationsToImport);
+    exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
 //    }
 
     if (!r) return false;
@@ -174,6 +174,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     } else {
       allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
               .findStdCommands(b.getProject(), parsedCommandName.value));
+    }
+    // well, even application could not contain CocoaStandard terms sometimes (need to implement <include> directive)
+    // todo remove this workaround when implement include in dictionaries
+    if (allCommandsWithName.isEmpty()) {
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
+              .findApplicationCommands(b.getProject(), ApplicationDictionary.STANDARD_COCOA_LIBRARY,
+                      parsedCommandName.value));
     }
 
     for (AppleScriptCommand command : allCommandsWithName) {
@@ -280,11 +287,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
     }
     PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Command Handler Call Expression>");
-    isApplicationCommand = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
+    isApplicationCommand = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName,
+            areThereUseStatements,
             applicationsToImport);
     exit_section_(b, l, mComName, null, isApplicationCommand, false, null);
     if (!isApplicationCommand)
-    r = AppleScriptParser.assignmentStatement(b, l + 1);
+      r = AppleScriptParser.assignmentStatement(b, l + 1);
     b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, false);
     return r;
   }
@@ -815,12 +823,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       }
       // if told app name == standard additions, Cocoa Standard terms were not checked
 //      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
-        m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
-        r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
-        exit_section_(b, l, m, null, r, false, null);
-        if (r) {
-          return tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
-        }
+      m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
+      r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+      exit_section_(b, l, m, null, r, false, null);
+      if (r) {
+        return tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+      }
 //      }
     }
     return false;
@@ -895,7 +903,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    if (r) {
 //      r = tryToParseDictionaryClass(b, l + 1, isPluralForm, toldApplicationName, areThereUseStatements,
 //              applicationsToImportFrom);
-      return r;
+    return r;
 //    }
 
 //    return false;
@@ -1072,12 +1080,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // If told application name == standard additions, terms from Cocoa Standard library were not checked
     // Checking them here
 //    if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
-      m = enter_section_(b, l, _AND_, "<find Class Name Exact Match>");
-      r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm,
-              ApplicationDictionary.STANDARD_COCOA_LIBRARY);
-      exit_section_(b, l, m, null, r, false, null);
-      if (r) return findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm,
-              ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+    m = enter_section_(b, l, _AND_, "<find Class Name Exact Match>");
+    r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm,
+            ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+    exit_section_(b, l, m, null, r, false, null);
+    if (r) return findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm,
+            ApplicationDictionary.STANDARD_COCOA_LIBRARY);
 //    }
     return false;
   }

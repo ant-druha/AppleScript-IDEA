@@ -67,6 +67,25 @@ public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
 
       if (eType == com.intellij.psi.TokenType.WHITE_SPACE) continue;
 
+      if (eType == AppleScriptTypes.NLS || eType == null) break;
+      else {
+        result = false;
+        break;
+      }
+    }
+    while (count-- > 0) iterator.advance();
+    if (!result) return false;
+
+    result = true;
+    count = 0;
+    while (true) {
+      iterator.retreat();
+      count++;
+      if (iterator.atEnd()) break;
+      IElementType eType = iterator.getTokenType();
+
+      if (eType == com.intellij.psi.TokenType.WHITE_SPACE) continue;
+
       if (eType == AppleScriptTypes.END) result = false;
       else break;
     }

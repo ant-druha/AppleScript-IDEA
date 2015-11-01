@@ -41,7 +41,7 @@
     LE="regexp:(≤|<=|((is)? less than or equal (to)?)|(is not greater than)|(isn't greater than)|(does not come after)|(doesn't come after))"
     GE="regexp:(≥|>=|((is)? greater than or equal (to)?)|(is not less than)|(isn't less than)|(does not come before)|(doesn't come before))"
     LT="regexp:(<|((is)? less than)|(comes before)|(is not greater than or equal (to)?)|(isn't greater than or equal (to)?))"
-    NE="regexp:((isn't equal (to)?)|(is not equal (to)?)|(doesn't equal)|(does not equal)|(is not)|(isn't))"
+    NE="regexp:(≠|(isn't equal (to)?)|(is not equal (to)?)|(doesn't equal)|(does not equal)|(is not)|(isn't))"
     EQ="regexp:(=|((is)? equal to)|is|equal|equals)"
     REF_OP="regexp:(a reference to|a ref to|a ref|reference to|ref)"
 
