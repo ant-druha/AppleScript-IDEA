@@ -3,12 +3,15 @@ package com.idea.plugin.applescript.lang.sdef.parser;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,59 +38,79 @@ public class SDEF_Parser {
             parsedDictionary.setDisplayName(dicTitle);
           }
         }
-        XmlTag[] suiteTags = rootTag.getSubTags();
-        for (XmlTag suiteTag : suiteTags) {
-          Suite suite = parseSuiteTag(suiteTag, parsedDictionary);
-
-          XmlTag[] suiteCommands = suiteTag.findSubTags("command");
-          for (XmlTag commandTag : suiteCommands) {
-            AppleScriptCommand command = parseCommandTag(commandTag, suite);
-            parsedDictionary.addCommand(command);
-            suite.addCommand(command);
-          }
-
-          XmlTag[] suiteClasses = suiteTag.findSubTags("class");
-          for (XmlTag classTag : suiteClasses) {
-            AppleScriptClass appleScriptClass = parseClassTag(classTag, suite);
-            parsedDictionary.addClass(appleScriptClass);
-            suite.addClass(appleScriptClass);
-          }
-          XmlTag[] suiteValueTypes = suiteTag.findSubTags("value-type");
-          for (XmlTag valueTypeTag : suiteValueTypes) {
-            AppleScriptClass simpleClass = parseClassTag(valueTypeTag, suite);
-            parsedDictionary.addClass(simpleClass);
-            suite.addClass(simpleClass);
-          }
-
-          XmlTag[] suiteClassExtensions = suiteTag.findSubTags("class-extension");
-          for (XmlTag classExtensionTag : suiteClassExtensions) {
-            AppleScriptClass appleScriptClass = parseClassExtensionTag(classExtensionTag, parsedDictionary, suite);
-            if (appleScriptClass != null) {
-              parsedDictionary.addClass(appleScriptClass);
-              suite.addClass(appleScriptClass);
-            }
-          }
-
-          XmlTag[] recordTypeTags = suiteTag.findSubTags("record-type");
-          for (XmlTag recordTag : recordTypeTags) {
-            DictionaryRecord record = parseRecordTag(recordTag, suite);
-            parsedDictionary.addRecord(record);
-            suite.addRecord(record);
-          }
-
-          XmlTag[] enumerationTags = suiteTag.findSubTags("enumeration");
-          for (XmlTag enumerationTag : enumerationTags) {
-            DictionaryEnumeration enumeration = parseEnumerationTag(enumerationTag, suite);
-            parsedDictionary.addEnumeration(enumeration);
-            suite.addEnumeration(enumeration);
-          }
-          parsedDictionary.addSuite(suite);//todo remove adding the components directly to dictionary (see above)
-        }
+        parseRootTag(parsedDictionary, rootTag);
 
       }
     }
     System.out.println("parsing completed for file.");
     LOG.info("parsing completed for file.");
+  }
+
+  public static void parseRootTag(@NotNull ApplicationDictionary parsedDictionary, @NotNull XmlTag rootTag) {
+    XmlTag[] suiteTags = rootTag.getSubTags();
+    String xInclNs = "http://www.w3.org/2003/XInclude";
+    for (XmlTag suiteTag : suiteTags) {
+      XmlTag[] includes = suiteTag.findSubTags("include", xInclNs);
+
+      for (XmlTag include : includes) {
+        String hrefIncl = include.getAttributeValue("href");
+        if (!StringUtil.isEmpty(hrefIncl)) {
+          hrefIncl = hrefIncl.replace("file://localhost", "");
+          File includedFile = new File(hrefIncl);
+          VirtualFile includedVFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
+          if (includedVFile != null && includedVFile.isValid()) {
+            parsedDictionary.processInclude(includedVFile);
+          }
+        }
+      }
+    }
+    for (XmlTag suiteTag : suiteTags) {
+      Suite suite = parseSuiteTag(suiteTag, parsedDictionary);
+
+      XmlTag[] suiteCommands = suiteTag.findSubTags("command");
+      for (XmlTag commandTag : suiteCommands) {
+        AppleScriptCommand command = parseCommandTag(commandTag, suite);
+        parsedDictionary.addCommand(command);
+        suite.addCommand(command);
+      }
+
+      XmlTag[] suiteClasses = suiteTag.findSubTags("class");
+      for (XmlTag classTag : suiteClasses) {
+        AppleScriptClass appleScriptClass = parseClassTag(classTag, suite);
+        parsedDictionary.addClass(appleScriptClass);
+        suite.addClass(appleScriptClass);
+      }
+      XmlTag[] suiteValueTypes = suiteTag.findSubTags("value-type");
+      for (XmlTag valueTypeTag : suiteValueTypes) {
+        AppleScriptClass simpleClass = parseClassTag(valueTypeTag, suite);
+        parsedDictionary.addClass(simpleClass);
+        suite.addClass(simpleClass);
+      }
+
+      XmlTag[] suiteClassExtensions = suiteTag.findSubTags("class-extension");
+      for (XmlTag classExtensionTag : suiteClassExtensions) {
+        AppleScriptClass appleScriptClass = parseClassExtensionTag(classExtensionTag, parsedDictionary, suite);
+        if (appleScriptClass != null) {
+          parsedDictionary.addClass(appleScriptClass);
+          suite.addClass(appleScriptClass);
+        }
+      }
+
+      XmlTag[] recordTypeTags = suiteTag.findSubTags("record-type");
+      for (XmlTag recordTag : recordTypeTags) {
+        DictionaryRecord record = parseRecordTag(recordTag, suite);
+        parsedDictionary.addRecord(record);
+        suite.addRecord(record);
+      }
+
+      XmlTag[] enumerationTags = suiteTag.findSubTags("enumeration");
+      for (XmlTag enumerationTag : enumerationTags) {
+        DictionaryEnumeration enumeration = parseEnumerationTag(enumerationTag, suite);
+        parsedDictionary.addEnumeration(enumeration);
+        suite.addEnumeration(enumeration);
+      }
+      parsedDictionary.addSuite(suite);//todo remove adding the components directly to dictionary (see above)
+    }
   }
 
   private static Suite parseSuiteTag(XmlTag suiteTag, ApplicationDictionary dictionary) {

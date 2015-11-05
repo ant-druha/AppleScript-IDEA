@@ -777,7 +777,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static boolean parseDictionaryPropertyInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseDictionaryPropertyInner")) return false;
     boolean r;
-    //todo how not to make it check twice?
+    //todo need to check if there is an application class with the same name
 //    PsiBuilder.Marker m = enter_section_(b, l, _AND_, "<parse Dictionary Property Inner>");
     String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
@@ -1803,6 +1803,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!r) r = consumeToken(b, TEXT);
     if (!r) r = consumeToken(b, TYPE);
     if (!r) r = consumeToken(b, ALIAS);
+//    if (!r) r = consumeToken(b, PROPERTY);
     exit_section_(b, m, null, r);
     return r;
   }

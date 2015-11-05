@@ -210,7 +210,7 @@ private statement ::= controlStatement|propertyDeclarationStatement|varDeclarati
 
 
 private handlerDefinition ::= handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
-//                      |handlerRunDefinition|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
+                      |handlerRunDefinition//|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
@@ -521,7 +521,7 @@ propertyReference
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
 
-dictionaryPropertyName ::= <<parseDictionaryPropertyName>>
+dictionaryPropertyName ::= !dictionaryClassName <<parseDictionaryPropertyName>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
 implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
@@ -542,9 +542,8 @@ everyElemReference ::= every typeSpecifier //{pin=1}
 // in a Boolean expression.
 left filterReference ::=  (whose|where) expression
 
-//the syntax is not clear??
 //The ID reference form specifies an object by the value of its ID property
-//private id_reference ::= class_name id id_value
+idReference ::= id expression
 
 //The Index reference form specifies an object or a location by describing its position with respect
 // to the beginning or end of a container. For related information, see “Relative” (page 185).
@@ -558,7 +557,9 @@ indexReference ::=  (integerLiteralExpression('st'|'rd'|'th') (typeSpecifier|use
 //things like: "message id of message" and "item i of EmailAddresses" _property_(1st) vs _index_(2nd) forms
 // mailbox "Name string" detected as a 'mailbox' propertyReference
 //todo: custom parsing. To think how more efficient handle propertyName vs className detection
-private classNamePrimaryExpression ::= !(propertyReference (of| !([index] indexValueExpression|nameReferenceString
+//todo add predicate check to all dictionary terms parsing rules:
+//todo if toldApplicationName is not empty - check all terms from there first(property,class,constant,command)
+private classNamePrimaryExpression ::= !(dictionaryPropertyName (of| !([index] indexValueExpression|nameReferenceString
 |rangeReferenceFormWithClassPrefix) ) ) typeSpecifier
 // to think how better parse properties & class names
 //private parseClassNameExpression ::= <<parseClassNamePrimaryExpression>>  //!(propertyReference (of| !([index] indexValueExpression)) ) typeSpecifier
@@ -700,6 +701,22 @@ private userLabelReference ::= THE_KW? referenceIdentifier
 
 //===HANDLERS===
 // handler is a collection of statements which can be invoked by name
+//todo consider add all in handlerLabeledParametersDefinition and handledLabeledParametersName
+handlerRunDefinition ::= on run nls
+                            blockBody? nls
+                          end run {pin=2}
+
+//handlerOpenDefinition ::= on open directParameterDeclaration? nls
+//                            blockBody? nls
+//                           end open {pin=2}
+
+//handlerIdleDefinition ::= on idle nls
+//                            blockBody? nls
+//                           end idle {pin=2}
+
+//handlerQuitDefinition ::= on quit nls
+//                            blockBody? nls
+//                           end quit {pin=2}
 
 handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
                                          [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
@@ -710,6 +727,7 @@ handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParamet
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"
 methods=[getParameterComponentList]}
+//private handledLabeledParametersName ::= identifier|run|open|idle|quit
 
 labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
 {methods=[getComponentList]}
@@ -1039,10 +1057,11 @@ private referenceForm ::=
          | nameReference
          | relativeReference
          | indexReferenceClassForm
+         | idReference
         )?
        )
        |
-       (arbitraryReference
+       (  arbitraryReference
         | everyElemReference
         | everyRangeReference
         | middleElemReference

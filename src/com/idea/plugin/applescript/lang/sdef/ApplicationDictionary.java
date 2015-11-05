@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.sdef;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 public interface ApplicationDictionary extends DictionarySuite {
 
-  List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax");
+  List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax", "sdef");
   // supported by default in a scriptable application
   String STANDARD_COCOA_LIBRARY = "CocoaStandard";
   // standard suite, provided by Mac OS X
@@ -25,6 +26,9 @@ public interface ApplicationDictionary extends DictionarySuite {
   String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications",
           "/System/Library/CoreServices", "/System/Library/CoreServices/Applications",
           "/Library/ScriptingAdditions", "/Applications/Utilities/"};
+
+  @Nullable
+  PsiFile processInclude(@NotNull VirtualFile includedFile);
 
   @NotNull
   VirtualFile getCachedLibraryXmlFile();

@@ -22,10 +22,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.FakePsiElement;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.*;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +45,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull private final VirtualFile applicationFile;
   //cachedLibraryXmlFile is needed for navigation from PSI (getParent()) if dictionary was created from .app bundle
   @NotNull private VirtualFile cachedLibraryXmlFile;
+  @NotNull private final List<PsiFile> includedFiles = new ArrayList<PsiFile>();
   @NotNull private String applicationName;
   @NotNull private String displayName;
   private XmlTag myRootTag;
@@ -84,11 +82,30 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   private void readDictionaryFromApplicationBundle() {
     if (!extensionSupported(applicationFile.getExtension())) return;
-    if ("xml".equalsIgnoreCase(applicationFile.getExtension())) {
+    if ("xml".equalsIgnoreCase(applicationFile.getExtension())
+            || "sdef".equalsIgnoreCase(applicationFile.getExtension())) {
       readDictionaryFromXmlFile(applicationFile);
     } else {
       readDictionaryFromApplicationBundle(applicationFile, project);
     }
+  }
+
+  public PsiFile processInclude(@NotNull VirtualFile fileInclude) {
+    PsiFile psiFile = PsiManager.getInstance(project).findFile(fileInclude);
+    XmlFile xmlFile = (XmlFile) psiFile;
+    if (xmlFile != null && xmlFile.isValid()) {
+      final XmlDocument document = xmlFile.getDocument();
+      if (document != null) {
+        final XmlTag rootTag = document.getRootTag();
+        if (rootTag != null) {
+          SDEF_Parser.parseRootTag(this, rootTag);
+        }
+      }
+      includedFiles.add(xmlFile);
+      System.out.println("Processed included file: " + psiFile);
+      LOG.info("Processed included file:: " + psiFile);
+    }
+    return psiFile;
   }
 
   @NotNull

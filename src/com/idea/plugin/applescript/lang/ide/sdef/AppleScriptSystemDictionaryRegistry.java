@@ -8,6 +8,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
@@ -161,9 +163,15 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
   @Override
   public void initComponent() {
+    registerSdefExtension();
     initStandardSuite();
     initOSXApplicationsDictionary();
     initSystemApplicationNames();
+  }
+
+  private void registerSdefExtension() {
+    FileType ft = FileTypeManager.getInstance().getFileTypeByExtension("xml");
+    FileTypeManager.getInstance().associateExtension(ft, "sdef");
   }
 
   private void initSystemApplicationNames() {
@@ -591,17 +599,19 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
               applicationNameToGeneratedDictionaryFileMap.put(applicationName, cachedFile);
             }
             return cachedDictionaryPath;
+          } else {
+            System.out.println("WARNING: Command failed: exit code!=0. Dictionary was not generated");
+            LOG.warn("Command failed: exit code!=0. Dictionary was not generated");
           }
         } catch (InterruptedException e) {
           e.printStackTrace();
         } catch (IOException e) {
           e.printStackTrace();
-        }
-        System.out.println("WARNING: Command failed: exit code!=0. Dictionary was not generated");
-        LOG.warn("Command failed: exit code!=0. Dictionary was not generated");
-        if (targetFile.delete()) {
-          System.out.println("Generated file was deleted");
-          LOG.info("Generated file was deleted");
+        } finally {
+          if (exitCode != 0 && targetFile.delete()) {
+            System.out.println("Generated file was deleted");
+            LOG.info("Generated file was deleted");
+          }
         }
       }
     }
@@ -737,7 +747,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 //      <xi:include href="file://localhost/System/Library/ScriptingDefinitions/CocoaStandard.sdef"
 // xpointer="xpointer(/dictionary/suite/node()[not(self::command and ((@name = 'delete') or (@name = 'duplicate') or
 // (@name = 'move')))])"/>
-      hrefIncl = hrefIncl.replace("file://localhost", "");
+      hrefIncl = hrefIncl.replace("localhost", "");
       File inclFile = new File(hrefIncl);
       if (inclFile.exists()) {
         parseDictionaryFromGeneratedFile(inclFile, applicationName);
