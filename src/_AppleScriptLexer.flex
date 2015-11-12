@@ -251,6 +251,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "over"                       { return OVER; }
   "since"                      { return SINCE; }
   "under"                      { return UNDER; }
+  "run"                        { return RUN; }
   "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
   "copy"                       { return COPY; }
@@ -258,7 +259,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "count"                      { return COUNT; }
   "each"                       { return EACH; }
   "get"                        { return GET; }
-  "run"                        { return RUN; }
   "set"                        { return SET; }
   "returning"                  { return RETURNING; }
   "my"                         { return MY; }

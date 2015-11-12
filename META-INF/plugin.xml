@@ -39,6 +39,9 @@
         <!-- Add your extensions here -->
 
         <!--<library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>-->
+        <applicationService
+                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.ApplicationDictionaryRegistryService"
+                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.ApplicationDictionaryRegistryService"/>
 
         <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
 

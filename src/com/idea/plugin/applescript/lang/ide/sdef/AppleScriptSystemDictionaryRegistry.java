@@ -3,6 +3,7 @@ package com.idea.plugin.applescript.lang.ide.sdef;
 import com.idea.plugin.applescript.lang.parser.ParsableScriptHelper;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
+import com.idea.plugin.applescript.lang.util.MyStopVisitingException;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
@@ -14,7 +15,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import org.jdom.Document;
@@ -56,6 +59,8 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   private final List<String> allSystemApplicationNames = new ArrayList<String>();
 
   public static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
+
+  private static final int APP_DEPTH_SEARCH = 3;
 
 
   private final Map<String, List<String>> classNameToApplicationNameListMap =
@@ -179,16 +184,28 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
       VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
       if (appsDirVFile != null && appsDirVFile.exists()) {
-        for (VirtualFile appVFile : appsDirVFile.getChildren()) {
-          if (ApplicationDictionaryImpl.extensionSupported(appVFile.getExtension())) {
-            allSystemApplicationNames.add(appVFile.getNameWithoutExtension());
-          }
-        }
+        processApplicationsDirectory(appsDirVFile);
       }
     }
     System.out.println("System.out: List of installed applications initialized. Count: " + allSystemApplicationNames
             .size());
     LOG.info("List of installed applications initialized. Count: " + allSystemApplicationNames.size());
+  }
+
+  private void processApplicationsDirectory(@NotNull VirtualFile appsDirVFile) {
+    VfsUtilCore.visitChildrenRecursively(appsDirVFile, new VirtualFileVisitor(VirtualFileVisitor.limit
+            (APP_DEPTH_SEARCH)) {
+      @Override
+      public boolean visitFile(@NotNull VirtualFile file) {
+        if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
+          if (!"xml".equals(file.getExtension())) {
+            allSystemApplicationNames.add(file.getNameWithoutExtension());
+          }
+          return false;
+        }
+        return file.isDirectory();
+      }
+    });
   }
 
   // === parsing helper interface ===
@@ -445,25 +462,57 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
    * @return File path of generated and cached dictionary for application
    */
   public String initializeDictionaryForApplication(@NotNull String applicationName) {
-    File applicationFile = getApplicationBundleFile(applicationName);
-    if (applicationFile != null && applicationFile.exists()) {
-      final VirtualFile vAppFile = LocalFileSystem.getInstance().findFileByIoFile(applicationFile);
-      if (vAppFile != null) {
-        return initializeDictionaryFromApplicationFile(vAppFile, applicationName);
+    final VirtualFile vAppFile = findApplicationBundleFile(applicationName);
+//    if (applicationFile != null && applicationFile.exists()) {
+//      final VirtualFile vAppFile = LocalFileSystem.getInstance().findFileByIoFile(applicationFile);
+    if (vAppFile != null) {
+      return initializeDictionaryFromApplicationFile(vAppFile, applicationName);
+    }
+//    }
+    return null;
+  }
+
+  @Nullable
+  private VirtualFile findApplicationBundleFile(@NotNull String applicationName) {
+    for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
+
+      //speed search first
+      for (String ext : ApplicationDictionary.SUPPORTED_EXTENSIONS) {
+        String appBundleFilePath = applicationsDirectory + "/" + applicationName + "." + ext;
+        VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(appBundleFilePath);
+        if (appsDirVFile != null && appsDirVFile.exists()) return appsDirVFile;
+      }
+
+      VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
+      if (appsDirVFile != null && appsDirVFile.exists()) {
+        return findApplicationFileRecursively(appsDirVFile, applicationName);
       }
     }
     return null;
   }
 
-  @Nullable
-  private File getApplicationBundleFile(@NotNull String applicationName) {
-    for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
-      for (String ext : ApplicationDictionary.SUPPORTED_EXTENSIONS) {
-        String appBundleFilePath = applicationsDirectory + "/" + applicationName + "." + ext;
-        File applicationFile = new File(appBundleFilePath);
-        if (applicationFile.exists()) return applicationFile;
+  private VirtualFile findApplicationFileRecursively(VirtualFile appsDirVFile, @NotNull final String applicationName) {
+    final VirtualFileVisitor<VirtualFile> fileVisitor = new VirtualFileVisitor<VirtualFile>(VirtualFileVisitor
+            .limit(APP_DEPTH_SEARCH), VirtualFileVisitor.SKIP_ROOT) {
+      @Override
+      public boolean visitFile(@NotNull VirtualFile file) {
+        if ("app".equals(file.getExtension())) {
+          if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())
+                  && applicationName.equals(file.getNameWithoutExtension())) {
+            throw new MyStopVisitingException(file);
+          }
+          return false; //do not search inside application bundles
+        }
+        return true;
       }
+    };
+    try {
+      VfsUtilCore.visitChildrenRecursively(appsDirVFile, fileVisitor, MyStopVisitingException.class);
+    } catch (MyStopVisitingException e) {
+      LOG.info("Application file found for application " + applicationName + " : " + e.geResult());
+      return e.geResult();
     }
+    LOG.warn("No files were found for application: " + applicationName);
     return null;
   }
 
@@ -480,7 +529,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     if (!ApplicationDictionaryImpl.extensionSupported(applicationVFile.getExtension()))
       return null;
 
-    String generatedDictionaryFilePath = getGeneratedDictionaryFilePath(applicationName);
+    String generatedDictionaryFilePath = getSavedDictionaryFilePath(applicationName);
     if (generatedDictionaryFilePath == null) {
       generatedDictionaryFilePath = generateDictionaryFileForApplication(applicationName, applicationVFile);
     }
@@ -625,7 +674,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   }
 
   @Nullable
-  public String getGeneratedDictionaryFilePath(@Nullable String applicationName) {
+  public String getSavedDictionaryFilePath(@Nullable String applicationName) {
     return applicationNameToGeneratedDictionaryPathMap.get(applicationName);
   }
 

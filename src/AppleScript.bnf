@@ -214,7 +214,7 @@ private handlerDefinition ::= handlerLabeledParametersDefinition|handlerPosition
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
-private controlStatement ::= ifStatement | tryStatement | tellStatement | repeatStatement | exitStatement
+private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseRepeatStatement repeatStatement>> | exitStatement
 |consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|
 <<parseUseStatement useStatement>> | <<parseUsingTermsFromStatement>>
 
@@ -438,7 +438,7 @@ private Length ::= CENTIMETRES|CENTIMETERS|FEET|INCHES|KILOMETRES|KILOMETERS|MET
 //but declared as properties...
 //private parseBuiltInClassIdentifierPlural ::= <<parseBuiltInClassIdentifierPluralInner>>
 builtInClassIdentifierPlural ::= BUILT_IN_TYPE_S|scripts
-dictionaryClassIdentifierPlural ::= <<parseDictionaryClassIdentifierPluralInner>>
+dictionaryClassIdentifierPlural ::= <<parseDictionaryClassName true checkForUseStatements>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
  implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
@@ -504,7 +504,7 @@ private parseReferenceToApplication ::= <<parseApplicationReference>>
 applicationReference ::= THE_KW? applicationClass applicationNameString
 [of THE_KW? machine machineNameString (of THE_KW? zone appleTalkZoneNameString)?] | THE_KW? current_application_constant
 {methods=[getApplicationName]}
-applicationNameString ::= <<pushApplicationNameString>> //STRING_LITERAL
+applicationNameString ::= <<pushApplicationNameString>> //id? STRING_LITERAL
 
 machineNameString ::= STRING_LITERAL
 appleTalkZoneNameString ::= STRING_LITERAL
@@ -521,7 +521,13 @@ propertyReference
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
 
-dictionaryPropertyName ::= !dictionaryClassName <<parseDictionaryPropertyName>>
+private assertProperty ::= &(<<parseDictionaryPropertyName>> (of|in|COLON)) //dictionaryClassName
+private isNextContainerReference::= <<parseCheckForContainerReference>>//check if next token is (of|in)
+//todo check for longest match + check if inside tell stmt AND there is a class with
+// longer matching name -> do not parse as a property
+// !! + check the position -> priority to class name or command name if there is no (of|in) before and after
+dictionaryPropertyName ::=  (assertProperty <<parseDictionaryPropertyName>>)
+                           |(!dictionaryClassName <<parseDictionaryPropertyName>>)
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
 implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
@@ -559,7 +565,7 @@ indexReference ::=  (integerLiteralExpression('st'|'rd'|'th') (typeSpecifier|use
 //todo: custom parsing. To think how more efficient handle propertyName vs className detection
 //todo add predicate check to all dictionary terms parsing rules:
 //todo if toldApplicationName is not empty - check all terms from there first(property,class,constant,command)
-private classNamePrimaryExpression ::= !(dictionaryPropertyName (of| !([index] indexValueExpression|nameReferenceString
+private classNamePrimaryExpression ::= !(dictionaryPropertyName (of|in|COLON|!([index] indexValueExpression|nameReferenceString
 |rangeReferenceFormWithClassPrefix) ) ) typeSpecifier
 // to think how better parse properties & class names
 //private parseClassNameExpression ::= <<parseClassNamePrimaryExpression>>  //!(propertyReference (of| !([index] indexValueExpression)) ) typeSpecifier
@@ -568,7 +574,10 @@ private classNamePrimaryExpression ::= !(dictionaryPropertyName (of| !([index] i
 
 left indexReferenceClassForm ::= [index] indexValueExpression
 
-dictionaryClassName ::= <<parseDictionaryClassName>>
+private checkForUseStatements ::= <<parseCheckForUseStatements>>
+private checkIfInsideTellStatement ::= <<parseCheckIfInsideTellStatement>>
+
+dictionaryClassName ::= <<parseDictionaryClassName false checkForUseStatements>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
  implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
@@ -897,7 +906,7 @@ private appleScriptCommandExpression ::= getCommandExpression|runCommandExpressi
 //There are only five AppleScript commands: Get, Set, Count, Copy, and Run.
 //>>copy<<
 private copyCommandStatement ::= (copy|put) 
-( ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) (targetVariablePattern|expression) ) {pin=1}
+( ((&(referenceIdentifier to)referenceIdentifier )|expression) (to|into) (targetVariablePattern|expression) ) //{pin=1}
 
 //>>count<<
 // AppleScript syntax
@@ -907,7 +916,7 @@ countCommandExpression ::= (count [[each|every] typeSpecifier (in|of)] composite
 //The class name of the elements to be counted. The elements of lists, records, and strings are listed in
 // the value class definitions in “Values and Constants” (page 51). The elements of application objects
 // are listed in their object class definitions in the application dictionary. Class: Class identifier
-private typeSpecifier ::= singularClassName|pluralClassName
+private typeSpecifier ::= pluralClassName|singularClassName
 //private classTypeNameD ::= builtInClassName|builtInClassNamePlural|applicationClassName|script|<<parseDictionaryClassName>>
 private pluralClassName ::= (builtInClassIdentifierPlural|dictionaryClassIdentifierPlural) //items?
 private singularClassName ::= dictionaryClassName|builtInClassIdentifier ITEM?
@@ -957,8 +966,8 @@ private setCommandAppleScriptSetSyntax ::= set THE_KW?
 (( (&(targetVariablePattern to)targetVariablePattern) | objectReferenceWrapper ) to THE_KW? expression/*|expression*/) //{pin=1}//fall back to single expression=(
 private setCommandAppleScriptReturningSyntax ::= expression returning targetVariablePattern {pin=2}
 //set Application command
-private setCommandApplication ::= setCommandApplicationSetSyntax|setCommandApplicationReturningSyntax
-private setCommandApplicationSetSyntax ::= set objectReferenceWrapper /*referencePatternD */to expression {pin=1}
+private setCommandApplication ::= /*setCommandApplicationSetSyntax|*/setCommandApplicationReturningSyntax
+//private setCommandApplicationSetSyntax ::= set objectReferenceWrapper /*referencePatternD */to expression {pin=1}
 private setCommandApplicationReturningSyntax ::=  expression returning objectReferenceWrapper /*referencePatternD */{pin=2}
 //private setCommandApplicationSetSyntax ::= set expression to expression {pin=1}
 
@@ -1058,7 +1067,7 @@ private referenceForm ::=
          | relativeReference
          | indexReferenceClassForm
          | idReference
-        )?
+        )? //may be remove '?' from here? but, for ex. "get 'className'" or is it invalid syntax?
        )
        |
        (  arbitraryReference

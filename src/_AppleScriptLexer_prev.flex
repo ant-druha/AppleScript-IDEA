@@ -19,7 +19,7 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 %unicode
 
 ONE_NL=(\r|\n|\r\n)
-CC="�"
+CC="¬"
 WHITE_SPACE_CHAR=[\ \t\f]
 WHITE_SPACE={WHITE_SPACE_CHAR}|{CC}({WHITE_SPACE_CHAR})*({ONE_NL})?//|{CC}
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE})*
@@ -33,13 +33,13 @@ IS_CONTAIN=("contain"|"contains")
 
 //todo duplicate variants with and without to/is parts otherwise it is not parsed correctly
 GT=(">"|"is greater than"|"greater than"|"comes after"|"is not less than or equal to"|"is not less than or equal"|"isn't less than or equal to"|"isn't less than or equal")
-LE=("?"|"<="|"is less than or equal to"|"less than or equal to"|"is less than or equal"|"less than or equal"|"is not greater than"|"isn't greater than"|"does not come after"|"doesn't come after")
-GE=("?"|">="|"is greater than or equal to"|"greater than or equal to"|"is greater than or equal"|"greater than or equal"|"is not less than"|"isn't less than"|"does not come before"|"doesn't come before")
+LE=("≤"|"<="|"is less than or equal to"|"less than or equal to"|"is less than or equal"|"less than or equal"|"is not greater than"|"isn't greater than"|"does not come after"|"doesn't come after")
+GE=("≥"|">="|"is greater than or equal to"|"greater than or equal to"|"is greater than or equal"|"greater than or equal"|"is not less than"|"isn't less than"|"does not come before"|"doesn't come before")
 LT=("<"|"is less than"|"less than"|"comes before"|"is not greater than or equal to"|"is not greater than or equal"|"isn't greater than or equal to"|"isn't greater than or equal")
-NE=("isn't equal to"|"isn't equal"|"is not equal to"|"is not equal"|"doesn't equal"|"does not equal"|"is not"|"isn't")
+NE=("≠"|"isn't equal to"|"isn't equal"|"is not equal to"|"is not equal"|"doesn't equal"|"does not equal"|"is not"|"isn't")
 EQ=("="|"is equal to"|"equal to"|"is"|"equal"|"equals")
 REF_OP=("a reference to"|"a ref to"|"a ref"|"reference to"|"ref")
-DIV=("/"|"?")
+DIV=("/"|"÷")
 STYLED_TEXT="styled"{WHITE_SPACE}+"text"
 TEXT_ITEM="text"{WHITE_SPACE}+"item"
 FILE_SPECIFICATION="file"{WHITE_SPACE}+"specification"
@@ -152,7 +152,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "{"                          { return LCURLY; }
   "}"                          { return RCURLY; }
   ":"                          { return COLON; }
-  "script"                     { return SCRIPT; }
   "return"                     { return RETURN; }
   "exit"                       { return EXIT; }
   "repeat"                     { return REPEAT; }
@@ -184,6 +183,8 @@ RAW_CODE=("<<"[^">>"]*">>")
   "version"                    { return VERSION; }
   "importing"                  { return IMPORTING; }
   "without"                    { return WITHOUT; }
+  "script"                     { return SCRIPT; }
+  "false"                      { return FALSE; }
   "framework"                  { return FRAMEWORK; }
   "using"                      { return USING; }
   "terms"                      { return TERMS; }
@@ -192,14 +193,13 @@ RAW_CODE=("<<"[^">>"]*">>")
   "else"                       { return ELSE; }
   "scripts"                    { return SCRIPTS; }
   "true"                       { return TRUE; }
-  "false"                      { return FALSE; }
   "machine"                    { return MACHINE; }
   "zone"                       { return ZONE; }
   "some"                       { return SOME; }
   "every"                      { return EVERY; }
   "whose"                      { return WHOSE; }
   "where"                      { return WHERE; }
-  "index"                      { return INDEX; }
+  "id"                         { return ID; }
   "first"                      { return FIRST; }
   "third"                      { return THIRD; }
   "fourth"                     { return FOURTH; }
@@ -212,6 +212,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "last"                       { return LAST; }
   "front"                      { return FRONT; }
   "back"                       { return BACK; }
+  "index"                      { return INDEX; }
   "middle"                     { return MIDDLE; }
   "named"                      { return NAMED; }
   "beginning"                  { return BEGINNING; }
@@ -288,9 +289,9 @@ RAW_CODE=("<<"[^">>"]*">>")
   {TEMPERATURE}                { return TEMPERATURE; }
   {CUBIC_VOL}                  { return CUBIC_VOL; }
   {SQUARE_AREA}                { return SQUARE_AREA; }
-  {QUOTED_FORM}                { return QUOTED_FORM; }
   {BUILT_IN_TYPE_S}            { return BUILT_IN_TYPE_S; }
   {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
+  {QUOTED_FORM}                { return QUOTED_FORM; }
   {APART_FROM}                 { return APART_FROM; }
   {ASIDE_FROM}                 { return ASIDE_FROM; }
   {OUT_OF}                     { return OUT_OF; }
@@ -298,7 +299,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   {C_WHITE_SPACE}              { return C_WHITE_SPACE; }
   {APP_RESPONSES}              { return APP_RESPONSES; }
   {SCRIPTING_ADDITIONS}        { return SCRIPTING_ADDITIONS; }
-//  {CURRENT_DATE}               { return CURRENT_DATE; }
   {CURRENT_APPLICATION}        { return CURRENT_APPLICATION; }
   {CURRENT_APP}                { return CURRENT_APP; }
   {TEXT_ITEM_DELIMETERS}       { return TEXT_ITEM_DELIMETERS; }

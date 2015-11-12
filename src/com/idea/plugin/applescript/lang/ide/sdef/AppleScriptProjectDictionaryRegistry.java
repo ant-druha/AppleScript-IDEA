@@ -82,7 +82,7 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
   public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
                                                              @Nullable VirtualFile applicationFile) {
     ApplicationDictionary newDictionary = dictionaryMap.get(applicationName);
-    String cachedDictionaryFilePath = systemDictionaryRegistry.getGeneratedDictionaryFilePath(applicationName);
+    String cachedDictionaryFilePath = systemDictionaryRegistry.getSavedDictionaryFilePath(applicationName);
 
     if (cachedDictionaryFilePath == null) {
       System.out.println("WARNING: no pre-initialized dictionary found for application: [" + applicationName + "] " +
@@ -108,6 +108,8 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
 
         newDictionary = new ApplicationDictionaryImpl(project, applicationCachedVFile, applicationName);
       }
+    } else {
+      LOG.warn("Failed to create dictionary for application: " + applicationName);
     }
     if (newDictionary != null) {
       dictionaryMap.put(applicationName, newDictionary);
