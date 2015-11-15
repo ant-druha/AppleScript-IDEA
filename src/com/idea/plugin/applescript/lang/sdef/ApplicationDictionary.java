@@ -16,7 +16,8 @@ import java.util.Map;
  */
 public interface ApplicationDictionary extends DictionarySuite {
 
-  List<String> SUPPORTED_EXTENSIONS = Arrays.asList("xml", "app", "osax", "sdef");
+  List<String> SUPPORTED_DICTIONARY_EXTENSIONS = Arrays.asList("xml", "app", "osax", "sdef");
+  List<String> SUPPORTED_APPLICATION_EXTENSIONS = Arrays.asList("app", "osax");
   // supported by default in a scriptable application
   String STANDARD_COCOA_LIBRARY = "CocoaStandard";
   // standard suite, provided by Mac OS X

@@ -1,6 +1,8 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService;
 import com.idea.plugin.applescript.lang.sdef.*;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -57,10 +59,25 @@ public class SDEF_Parser {
         if (!StringUtil.isEmpty(hrefIncl)) {
           hrefIncl = hrefIncl.replace("file://localhost", "");
           File includedFile = new File(hrefIncl);
-          VirtualFile includedVFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
-          if (includedVFile != null && includedVFile.isValid()) {
-            parsedDictionary.processInclude(includedVFile);
+          //as there is assertion error (java.lang.AssertionError: File accessed outside allowed roots),
+          // we are trying to find if the dictionary file for this included dictionary was already generated
+          String fName = null;
+          if (includedFile.isFile()) {
+            fName = includedFile.getName();
+            int index = fName.lastIndexOf('.');
+            fName = index < 0 ? fName : fName.substring(0, index);
           }
+          AppleScriptDictionarySystemRegistryService dictionarySystemRegistry = ServiceManager
+                  .getService(AppleScriptDictionarySystemRegistryService.class);
+          VirtualFile vFile = dictionarySystemRegistry.getGeneratedDictionaryFile(fName);
+          if (vFile==null || !vFile.isValid()) vFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
+//          VirtualFile includedVFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
+          if (vFile != null && vFile.isValid()) {
+            parsedDictionary.processInclude(vFile);
+          }
+//          if (includedVFile != null && includedVFile.isValid()) {
+//            parsedDictionary.processInclude(includedVFile);
+//          }
         }
       }
     }

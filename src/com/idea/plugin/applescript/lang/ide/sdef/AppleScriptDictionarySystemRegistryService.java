@@ -7,10 +7,8 @@ import com.idea.plugin.applescript.lang.util.MyStopVisitingException;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
-import com.intellij.openapi.components.*;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
@@ -18,8 +16,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
-import com.intellij.util.xmlb.annotations.MapAnnotation;
-import com.intellij.util.xmlb.annotations.Tag;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -35,152 +31,72 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
-/**
- * for storing plain structure info about application name and it's classes/properties/constants/commands
- */
-@State(name = AppleScriptSystemDictionaryRegistry.COMPONENT_NAME,
-        storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml")})
-public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent,
-        PersistentStateComponent<AppleScriptSystemDictionaryRegistry.State>, ParsableScriptHelper {
+public class AppleScriptDictionarySystemRegistryService implements ParsableScriptHelper {
 
-  private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistry.class.getName());
-
-
-  public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistry";
-
-  public static final String GENERATED_DICTIONARY_URLS_ELEMENT = "generatedDictionaryUrls";
-  public static final String APPLICATION_NAME_ELEMENT = "applicationName";
-  public static final String DICTIONARY_GENERATED_FILE_URL = "generatedFileUrl";
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptDictionarySystemRegistryService.class.getName
+          ());
 
   private final Map<String, String> applicationNameToGeneratedDictionaryPathMap = new HashMap<String, String>();
-  private final Map<String, VirtualFile> applicationNameToGeneratedDictionaryFileMap = new HashMap<String,
-          VirtualFile>();
+  private final Map<String, VirtualFile> applicationNameToGeneratedDictionaryFileMap =
+          new HashMap<String, VirtualFile>();
 
   private final List<String> allSystemApplicationNames = new ArrayList<String>();
-
   public static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
-
   private static final int APP_DEPTH_SEARCH = 3;
 
+  private final Map<String, List<String>> classNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> classNamePluralToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> commandNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> recordNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> propertyNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> enumerationNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> enumeratorConstantNameToApplicationNameListMap = new HashMap<String,
+          List<String>>();
+  private final Map<String, List<String>> stdClassNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> stdClassNamePluralToApplicationNameListMap = new HashMap<String,
+          List<String>>();
+  private final Map<String, List<String>> stdCommandNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> stdRecordNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> stdPropertyNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, List<String>> stdEnumerationNameToApplicationNameListMap = new HashMap<String,
+          List<String>>();
+  private final Map<String, List<String>> stdEnumeratorConstantNameToApplicationNameListMap = new HashMap<String,
+          List<String>>();
 
-  private final Map<String, List<String>> classNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> classNamePluralToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> commandNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> recordNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> propertyNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> enumerationNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> enumeratorConstantNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-
-  private final Map<String, List<String>> stdClassNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdClassNamePluralToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdCommandNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdRecordNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdPropertyNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdEnumerationNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdEnumeratorConstantNameToApplicationNameListMap =
-          new HashMap<String, List<String>>();
-
-  public static class State {
-
-    @Tag(GENERATED_DICTIONARY_URLS_ELEMENT)
-    @MapAnnotation(surroundWithTag = false, keyAttributeName = APPLICATION_NAME_ELEMENT,
-            valueAttributeName = DICTIONARY_GENERATED_FILE_URL)
-    public Map<String, String> cachedApplicationNameToGeneratedDictionaryUrlMap = new HashMap<String, String>();
-
-    @Tag("cachedClassNameToApplicationsMap")
-    @MapAnnotation(surroundWithTag = false, keyAttributeName = "className",
-            valueAttributeName = "applications")
-    public Map<String, String> cachedClassNameToDictionaryListMap = new HashMap<String, String>();
+  public AppleScriptDictionarySystemRegistryService(@NotNull AppleScriptDictionarySystemRegistry
+                                                            systemDictionaryRegistry) {
+    initCachedForApplicationDictionariesPath(systemDictionaryRegistry);
+    initStandardSuite();
+    initOSXApplicationsDictionary();
+    initSystemApplicationNames();
 
   }
 
-  @Nullable
-  @Override
-  public State getState() {
-    State state = new State();
-    for (Map.Entry<String, VirtualFile> e : applicationNameToGeneratedDictionaryFileMap.entrySet()) {
-      state.cachedApplicationNameToGeneratedDictionaryUrlMap.put(e.getKey(), e.getValue().getPath());
-    }
-    state.cachedApplicationNameToGeneratedDictionaryUrlMap = applicationNameToGeneratedDictionaryPathMap;
-    Map<String, String> result = new HashMap<String, String>();
-    for (Map.Entry<String, List<String>> stringListPair : classNameToApplicationNameListMap.entrySet()) {
-      result.put(stringListPair.getKey(), serializeDictionaryNameList(stringListPair.getValue()));
-    }
-    state.cachedClassNameToDictionaryListMap = result;
-    return state;
-  }
-
-  private static String serializeDictionaryNameList(List<String> dictionaryNameList) {
-    String result = "";
-    String sep = "";
-    for (String dictionaryName : dictionaryNameList) {
-      result = result + sep + dictionaryName;
-      sep = ",";
-    }
-    return result;
-  }
-
-  @Override
-  public void loadState(State state) {
-    Map<String, String> uncheckedMap = state.cachedApplicationNameToGeneratedDictionaryUrlMap;
-    for (Map.Entry<String, String> stringEntry : uncheckedMap.entrySet()) {
-      File file = new File(stringEntry.getValue());
+  private void initCachedForApplicationDictionariesPath(@NotNull AppleScriptDictionarySystemRegistry
+                                                                systemDictionaryRegistry) {
+    applicationNameToGeneratedDictionaryPathMap
+            .putAll(systemDictionaryRegistry.getApplicationNameToGeneratedDictionaryUrlMap());
+    for (Map.Entry<String, String> stringEntry : applicationNameToGeneratedDictionaryPathMap.entrySet()) {
       VirtualFile vFile = LocalFileSystem.getInstance().findFileByPath(stringEntry.getValue());
-      if (file.exists()) {
-        applicationNameToGeneratedDictionaryPathMap.put(stringEntry.getKey(), stringEntry.getValue());
-      }
       if (vFile != null && vFile.exists()) {
         applicationNameToGeneratedDictionaryFileMap.put(stringEntry.getKey(), vFile);
       }
     }
-    Map<String, String> classToDictionariesMap = state.cachedClassNameToDictionaryListMap;
-    for (Map.Entry<String, String> stringPair : classToDictionariesMap.entrySet()) {
-      List<String> applicationNames = new ArrayList<String>();
-      for (String applicationName : stringPair.getValue().split(",")) {
-        if (!StringUtil.isEmpty(applicationName)
-                && !ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {//if std class was
-          // saved somehow
-//                && !ApplicationDictionary.STD_LIBRARY_NAMES.contains(applicationName)) {//if std class was saved
-// somehow
-          //do not add it here - other map for std classes is used
-          applicationNames.add(applicationName);
-        }
-      }
-      if (!applicationNames.isEmpty()) {
-        classNameToApplicationNameListMap.put(stringPair.getKey(), applicationNames);
-      }
-    }
   }
 
-
-  @Override
-  public void initComponent() {
-    registerSdefExtension();
-    initStandardSuite();
-    initOSXApplicationsDictionary();
-    initSystemApplicationNames();
+  public Map<String, String> getApplicationNameToGeneratedDictionaryPathMap() {
+    return applicationNameToGeneratedDictionaryPathMap;
   }
 
-  private void registerSdefExtension() {
-    FileType ft = FileTypeManager.getInstance().getFileTypeByExtension("xml");
-    FileTypeManager.getInstance().associateExtension(ft, "sdef");
+  public Map<String, VirtualFile> getApplicationNameToGeneratedDictionaryFileMap() {
+    return applicationNameToGeneratedDictionaryFileMap;
+  }
+
+  public Map<String, List<String>> getClassNameToApplicationNameListMap() {
+    return classNameToApplicationNameListMap;
   }
 
   private void initSystemApplicationNames() {
-
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
       VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
       if (appsDirVFile != null && appsDirVFile.exists()) {
@@ -207,8 +123,6 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
       }
     });
   }
-
-  // === parsing helper interface ===
 
   @Override
   public boolean isStdLibClass(@NotNull String name) {
@@ -281,6 +195,15 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     return result;
   }
 
+  //todo: think about performance enhancement
+  public boolean ensureDictionaryInitialized(@NotNull String applicationName) {
+    boolean result = applicationNameToGeneratedDictionaryPathMap.get(applicationName) != null ||
+            initializeDictionaryForApplication(applicationName) != null;
+    if (!result)
+      LOG.warn("Application dictionary was not initialized for application: " + applicationName);
+    return result;
+  }
+
   @Override
   public boolean isStdCommand(@NotNull String name) {
     return stdCommandNameToApplicationNameListMap.containsKey(name);
@@ -304,8 +227,8 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   }
 
   @Override
-  public int countApplicationCommandsStartingWithName(@NotNull String applicationName, @NotNull String
-          commandNamePrefix) {
+  public int countApplicationCommandsStartingWithName(@NotNull String applicationName,
+                                                      @NotNull String commandNamePrefix) {
     int result = 0;
 // must not violate contract => use *std* methods
     for (Map.Entry<String, List<String>> stringListEntry : commandNameToApplicationNameListMap.entrySet()) {
@@ -334,8 +257,9 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   @Override
   public List<AppleScriptCommand> findApplicationCommands(@NotNull Project project, @NotNull String applicationName,
                                                           @NotNull String commandName) {
-    AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = (AppleScriptProjectDictionaryRegistry)
-            project.getComponent(AppleScriptProjectDictionaryRegistry.COMPONENT_NAME);
+//    ensureApplicationInitialized(applicationName);
+    AppleScriptDictionaryProjectService projectDictionaryRegistry =
+            ServiceManager.getService(project, AppleScriptDictionaryProjectService.class);
     ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(applicationName);
     //among dictionaries there should always be Standard Additions dictionaries checked BUT
     //if there was no command in that dictionaries found, we should initialize new dictionary here for the project
@@ -407,8 +331,8 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
   }
 
   @Override
-  public int countApplicationConstantStartingWithName(@NotNull String applicationName, @NotNull String
-          constantNamePrefix) {
+  public int countApplicationConstantStartingWithName(@NotNull String applicationName,
+                                                      @NotNull String constantNamePrefix) {
     int result = 0;
     for (Map.Entry<String, List<String>> stringListEntry : enumeratorConstantNameToApplicationNameListMap.entrySet()) {
       if (startsWithWord(stringListEntry.getKey(), constantNamePrefix)
@@ -418,7 +342,6 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     }
     return result;
   }
-
 
   private void initOSXApplicationsDictionary() {
     Collection<String> myCachedApplications = applicationNameToGeneratedDictionaryPathMap.keySet();
@@ -436,15 +359,12 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
                 "Dictionary file " + appNameToFile.getValue() + " is not valid");
         LOG.warn("Failed to initialize dictionary for application: " + appNameToFile.getKey() +
                 "Dictionary file " + appNameToFile.getValue() + " is not valid");
-
       }
     }
     List<String> myDefaultApplicationList = Arrays.asList("Mail", "BBEdit", "Satimage", "Finder", "System Events",
             "TextEdit", "Smile");
-    List<String> allApplications = new ArrayList<String>(myCachedApplications.size());
-    allApplications.addAll(myCachedApplications);
     for (String defaultApp : myDefaultApplicationList) {
-      if (!allApplications.contains(defaultApp)) {
+      if (!myCachedApplications.contains(defaultApp)) {
         if (initializeDictionaryForApplication(defaultApp) == null) {
           System.out.println("WARNING: failed to initialize dictionary for application: " + defaultApp);
           LOG.warn("Failed to initialize dictionary for application: " + defaultApp);
@@ -455,50 +375,51 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
   /**
    * Initializes dictionary information for given application and caches generated dictionary file for later use <br>
-   * by {@link com.idea.plugin.applescript.lang.sdef.ApplicationDictionary} psi class. Standard application paths are
+   * by {@link ApplicationDictionary} psi class. Standard application paths are
    * checked
    *
    * @param applicationName Name of the Mac OS application
    * @return File path of generated and cached dictionary for application
    */
+  @Nullable
   public String initializeDictionaryForApplication(@NotNull String applicationName) {
     final VirtualFile vAppFile = findApplicationBundleFile(applicationName);
-//    if (applicationFile != null && applicationFile.exists()) {
-//      final VirtualFile vAppFile = LocalFileSystem.getInstance().findFileByIoFile(applicationFile);
     if (vAppFile != null) {
       return initializeDictionaryFromApplicationFile(vAppFile, applicationName);
     }
-//    }
     return null;
   }
 
+  //todo: exclude sdef, xml files (check only .app/.osax extensions)
   @Nullable
   private VirtualFile findApplicationBundleFile(@NotNull String applicationName) {
+    if (!SystemInfo.isMac) return null;
+    //speed search first
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
-
-      //speed search first
-      for (String ext : ApplicationDictionary.SUPPORTED_EXTENSIONS) {
-        String appBundleFilePath = applicationsDirectory + "/" + applicationName + "." + ext;
-        VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(appBundleFilePath);
+      for (String ext : ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS) {
+        final String appBundleFilePath = applicationsDirectory + "/" + applicationName + "." + ext;
+        final VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(appBundleFilePath);
         if (appsDirVFile != null && appsDirVFile.exists()) return appsDirVFile;
       }
-
-      VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
+    }
+    for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
+      final VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
       if (appsDirVFile != null && appsDirVFile.exists()) {
-        return findApplicationFileRecursively(appsDirVFile, applicationName);
+        VirtualFile appBundleFile = findApplicationFileRecursively(appsDirVFile, applicationName);
+        if (appBundleFile != null && appBundleFile.exists()) return appBundleFile;
       }
     }
     return null;
   }
 
-  private VirtualFile findApplicationFileRecursively(VirtualFile appsDirVFile, @NotNull final String applicationName) {
+  private VirtualFile findApplicationFileRecursively(@NotNull VirtualFile appsDirVFile,
+                                                     @NotNull final String applicationName) {
     final VirtualFileVisitor<VirtualFile> fileVisitor = new VirtualFileVisitor<VirtualFile>(VirtualFileVisitor
             .limit(APP_DEPTH_SEARCH), VirtualFileVisitor.SKIP_ROOT) {
       @Override
       public boolean visitFile(@NotNull VirtualFile file) {
-        if ("app".equals(file.getExtension())) {
-          if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())
-                  && applicationName.equals(file.getNameWithoutExtension())) {
+        if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
+          if (applicationName.equals(file.getNameWithoutExtension())) {
             throw new MyStopVisitingException(file);
           }
           return false; //do not search inside application bundles
@@ -518,9 +439,9 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
   /**
    * Initializes dictionary information for given application and caches generated dictionary file for later use <br>
-   * by {@link com.idea.plugin.applescript.lang.sdef.ApplicationDictionary} psi class
+   * by {@link ApplicationDictionary} psi class
    *
-   * @param applicationVFile Path to the application bundle file (.app, .xml, osax extensions are supported)
+   * @param applicationVFile Path to the application bundle file (.app, .xml, .sdef, osax extensions are supported)
    * @param applicationName  Name of the Mac OS X application
    * @return File path String of generated and initialized dictionary for application
    */
@@ -539,6 +460,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
         return generatedDictionaryFilePath;
       } else {
         //if parsing failed for some reason, remove that generated dictionary file from cached files
+        //// TODO: 15/11/15 create registry for not supported scripting applications and do not check in future
         System.out.println("WARNING: initialization failed for application [" + applicationName + "].");
         applicationNameToGeneratedDictionaryPathMap.remove(applicationName);
         applicationNameToGeneratedDictionaryFileMap.remove(applicationName);
@@ -549,15 +471,6 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
   private void initStandardSuite() {
     try {
-//      URL stdLibResourceUrl = getClass().getClassLoader()
-//              .getResource(ApplicationDictionary.STANDARD_ADDITIONS_RESOURCE_URL);
-//      if (stdLibResourceUrl != null) {
-//        File file = new File(stdLibResourceUrl.toURI());
-//        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
-//        if (virtualFile != null) {
-//          initializeDictionaryFromApplicationFile(virtualFile, ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
-//        }
-//      }
       for (String fName : ApplicationDictionary.STANDARD_DEFINITION_FILES) {
         URL url = getClass().getClassLoader().getResource(fName);
         if (url == null) continue;
@@ -604,7 +517,7 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
             @Override
             public void run() {
               try {
-                movedFile[0] = virtualApplicationFile.copy(this, vAppFileDir, targetFile.getName());
+                movedFile[0] = virtualApplicationFile.copy(null, vAppFileDir, targetFile.getName());
               } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("WARNING: Failed to move file " + virtualApplicationFile + " to caching directory: "
@@ -699,17 +612,6 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 //            || applicationNameToGeneratedDictionaryFileMap.containsKey(applicationName);
   }
 
-  @Override
-  public void disposeComponent() {
-
-  }
-
-  @NotNull
-  @Override
-  public String getComponentName() {
-    return COMPONENT_NAME;
-  }
-
   private boolean parseDictionaryFromGeneratedFile(@NotNull File xmlFile, @NotNull String applicationName) {
     SAXBuilder builder = new SAXBuilder();
     Document document;
@@ -792,10 +694,6 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     // handle it (linking included file) transparently
     for (Element include : xiIncludes) {
       String hrefIncl = include.getAttributeValue("href");
-//<dictionary title="Mail Terminology" xmlns:xi="http://www.w3.org/2003/XInclude">
-//      <xi:include href="file://localhost/System/Library/ScriptingDefinitions/CocoaStandard.sdef"
-// xpointer="xpointer(/dictionary/suite/node()[not(self::command and ((@name = 'delete') or (@name = 'duplicate') or
-// (@name = 'move')))])"/>
       hrefIncl = hrefIncl.replace("localhost", "");
       File inclFile = new File(hrefIncl);
       if (inclFile.exists()) {
@@ -864,13 +762,6 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
 
     updateApplicationNameListFor(className, applicationName, classNameToApplicationNameListMap);
     updateApplicationNameListFor(pluralClassName, applicationName, classNamePluralToApplicationNameListMap);
-//    if (!ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
-//      updateApplicationNameListFor(className, applicationName, classNameToApplicationNameListMap);
-//      updateApplicationNameListFor(pluralClassName, applicationName, classNamePluralToApplicationNameListMap);
-//    } else {
-//      updateApplicationNameListFor(className, applicationName, stdClassNameToApplicationNameListMap);
-//      updateApplicationNameListFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameListMap);
-//    }
     if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
       updateApplicationNameListFor(className, applicationName, stdClassNameToApplicationNameListMap);
       updateApplicationNameListFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameListMap);
@@ -897,4 +788,5 @@ public class AppleScriptSystemDictionaryRegistry implements ApplicationComponent
     return prefix != null && string.startsWith(prefix) && (prefix.length() == string.length() || " ".equals(string
             .substring(prefix.length(), prefix.length() + 1)));
   }
+
 }

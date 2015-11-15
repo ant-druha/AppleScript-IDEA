@@ -2,7 +2,6 @@ package com.idea.plugin.applescript.lang.ide.sdef;
 
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -14,21 +13,21 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
+public class AppleScriptDictionaryProjectService {
 
-  public static final String COMPONENT_NAME = "AppleScriptProjectDictionaryRegistry";
-
-  private static final Logger LOG = Logger.getInstance("#" + AppleScriptProjectDictionaryRegistry.class.getName());
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptDictionaryProjectService.class
+          .getName());
 
 
   @NotNull private final Project project;
-  @NotNull private final AppleScriptSystemDictionaryRegistry systemDictionaryRegistry;
+  @NotNull private final AppleScriptDictionarySystemRegistryService dictionaryRegistryService;
   private final Map<String, ApplicationDictionary> dictionaryMap = new HashMap<String, ApplicationDictionary>();
 
-  public AppleScriptProjectDictionaryRegistry(@NotNull Project project,
-                                              @NotNull AppleScriptSystemDictionaryRegistry systemDictionaryRegistry) {
+  public AppleScriptDictionaryProjectService(@NotNull Project project,
+                                             @NotNull AppleScriptDictionarySystemRegistryService
+                                                     dictionaryRegistryService) {
     this.project = project;
-    this.systemDictionaryRegistry = systemDictionaryRegistry;
+    this.dictionaryRegistryService = dictionaryRegistryService;
   }
 
   /**
@@ -37,10 +36,10 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
   @Nullable
   public ApplicationDictionary getStandardAdditionsTerminology() {
     String stdDictionaryName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
-      ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
-      if (stdDic == null) {
-        stdDic = createDictionary(stdDictionaryName);
-      }
+    ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
+    if (stdDic == null) {
+      stdDic = createDictionary(stdDictionaryName);
+    }
     return stdDic;
   }
 
@@ -72,7 +71,7 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
   /**
    * Creates Dictionary psi class for specified application for Project. If dictionary was not initialized previously
    * IDE <br> caches generated dictionary file and initializes it's structure for later use by
-   * {@link com.idea.plugin.applescript.lang.sdef.ApplicationDictionary} psi class.
+   * {@link ApplicationDictionary} psi class.
    *
    * @param applicationName Name of the application
    * @param applicationFile VirtualFile of the application
@@ -82,7 +81,7 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
   public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
                                                              @Nullable VirtualFile applicationFile) {
     ApplicationDictionary newDictionary = dictionaryMap.get(applicationName);
-    String cachedDictionaryFilePath = systemDictionaryRegistry.getSavedDictionaryFilePath(applicationName);
+    String cachedDictionaryFilePath = dictionaryRegistryService.getSavedDictionaryFilePath(applicationName);
 
     if (cachedDictionaryFilePath == null) {
       System.out.println("WARNING: no pre-initialized dictionary found for application: [" + applicationName + "] " +
@@ -90,10 +89,10 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
       LOG.warn("No pre-initialized dictionary found for application: [" + applicationName + "] " +
               "Caching it now...");
       if (applicationFile != null) {
-        cachedDictionaryFilePath = systemDictionaryRegistry
+        cachedDictionaryFilePath = dictionaryRegistryService
                 .initializeDictionaryFromApplicationFile(applicationFile, applicationName);
       } else { //if file is null, searching in standard paths
-        cachedDictionaryFilePath = systemDictionaryRegistry.initializeDictionaryForApplication(applicationName);
+        cachedDictionaryFilePath = dictionaryRegistryService.initializeDictionaryForApplication(applicationName);
       }
     }
 
@@ -115,36 +114,6 @@ public class AppleScriptProjectDictionaryRegistry implements ProjectComponent {
       dictionaryMap.put(applicationName, newDictionary);
     }
     return newDictionary;
-  }
-
-  @Override
-  public void initComponent() {
-  }
-
-  @Override
-  public void disposeComponent() {
-    // TODO: insert component disposal logic here
-  }
-
-  @Override
-  @NotNull
-  public String getComponentName() {
-    return COMPONENT_NAME;
-  }
-
-  @Override
-  public void projectOpened() {
-    // init standard addition dictionary (for all applications) ?
-//    if (project.isInitialized()) {
-//      for (String stdDictionaryName : ApplicationDictionary.STD_LIBRARY_NAMES) {
-//        createDictionary(stdDictionaryName);
-//      }
-//    }
-  }
-
-  @Override
-  public void projectClosed() {
-    // called when project is being closed
   }
 
   @Nullable

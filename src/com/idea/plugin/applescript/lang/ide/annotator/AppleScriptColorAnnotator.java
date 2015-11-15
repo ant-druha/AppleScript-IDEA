@@ -3,12 +3,14 @@ package com.idea.plugin.applescript.lang.ide.annotator;
 import com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterColors;
 import com.idea.plugin.applescript.lang.ide.intentions.AddApplicationDictionaryQuickFix;
 import com.idea.plugin.applescript.lang.ide.intentions.RenameParameterLabelQuickFix;
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
@@ -60,10 +62,15 @@ public class AppleScriptColorAnnotator implements Annotator {
     } else if (element instanceof AppleScriptTellSimpleStatement
             || element instanceof AppleScriptTellCompoundStatement) {
       String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);
-      AppleScriptSystemDictionaryRegistry systemDictionaryRegistry = ApplicationManager.getApplication()
-              .getComponent(AppleScriptSystemDictionaryRegistry.class);
-      if (systemDictionaryRegistry != null) {
-        if (!StringUtil.isEmpty(appName) && !systemDictionaryRegistry.isApplicationKnown(appName)) {
+      AppleScriptDictionarySystemRegistryService dictionaryRegistryService = ServiceManager.getService
+              (AppleScriptDictionarySystemRegistryService.class);
+      AppleScriptDictionaryProjectService dictionaryProjectService = ServiceManager.getService
+              (element.getProject(), AppleScriptDictionaryProjectService.class);
+      ApplicationDictionary dictionary = !StringUtil.isEmpty(appName) ?
+              dictionaryProjectService.getDictionary(appName) : null;
+      if (dictionaryRegistryService != null) {
+        if (!StringUtil.isEmpty(appName) && !dictionaryRegistryService.isApplicationKnown(appName)
+                && dictionary != null) {
 
           AppleScriptApplicationReference appRef = PsiTreeUtil
                   .findChildOfType(element, AppleScriptApplicationReference.class);

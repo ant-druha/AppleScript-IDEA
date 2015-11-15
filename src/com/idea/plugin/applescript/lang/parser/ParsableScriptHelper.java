@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface ParsableScriptHelper {
 
+  boolean ensureDictionaryInitialized(@NotNull String applicationName);
+
   // Application classes
   boolean isStdLibClass(@NotNull String name);
 

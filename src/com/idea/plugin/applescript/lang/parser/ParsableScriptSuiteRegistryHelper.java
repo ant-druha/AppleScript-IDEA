@@ -1,8 +1,8 @@
 package com.idea.plugin.applescript.lang.parser;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,9 +17,12 @@ public class ParsableScriptSuiteRegistryHelper {
 
   private static ParsableScriptHelper getParsableScriptHelper() {
     scriptHelper = scriptHelper != null ? scriptHelper :
-            (AppleScriptSystemDictionaryRegistry) ApplicationManager.getApplication()
-                    .getComponent(AppleScriptSystemDictionaryRegistry.COMPONENT_NAME);
+            ServiceManager.getService(AppleScriptDictionarySystemRegistryService.class);
     return scriptHelper;
+  }
+
+  public static boolean ensureDictionaryInitialized(@NotNull String applicationName) {
+    return getParsableScriptHelper().ensureDictionaryInitialized(applicationName);
   }
 
   public static boolean isStdLibClass(@NotNull String name) {

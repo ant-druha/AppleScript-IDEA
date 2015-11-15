@@ -1,9 +1,11 @@
 package com.idea.plugin.applescript.lang.ide.actions;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.ide.IdeView;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -40,22 +42,24 @@ public class LoadDictionaryAction extends AnAction {
       public void consume(final List<VirtualFile> files) {
         for (VirtualFile file : files) {
           if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
+            String applicationName;
             if (StringUtil.isEmpty(appName)) {
-              String applicationName;
-              if (!"app".equals(file.getExtension())) {
+              if (!ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
                 applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
-                        + file.getName(), "Enter application name", null);
+                        + file.getName(), "Enter application name", null, file.getNameWithoutExtension(), null);
               } else {
                 applicationName = file.getNameWithoutExtension();
               }
-              if (StringUtil.isEmpty(applicationName)) {
-                return;
-              }
             } else {
-              AppleScriptProjectDictionaryRegistry projectDictionaryRegistry = project
-                      .getComponent(AppleScriptProjectDictionaryRegistry.class);
+              applicationName = appName;
+            }
+            if (StringUtil.isEmpty(applicationName)) {
+              return;
+            } else {
+              AppleScriptDictionaryProjectService projectDictionaryRegistry = ServiceManager
+                      .getService(project, AppleScriptDictionaryProjectService.class);
               if (projectDictionaryRegistry != null) {
-                projectDictionaryRegistry.createDictionary(appName, file);
+                projectDictionaryRegistry.createDictionary(applicationName, file);
               }
             }
           }

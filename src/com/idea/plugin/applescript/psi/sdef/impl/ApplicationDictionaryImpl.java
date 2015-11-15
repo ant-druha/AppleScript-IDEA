@@ -495,7 +495,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
 
   public static boolean extensionSupported(String extension) {
-    return extension != null && SUPPORTED_EXTENSIONS.contains(extension.toLowerCase());
+    return extension != null && SUPPORTED_DICTIONARY_EXTENSIONS.contains(extension.toLowerCase());
   }
 
   @NotNull

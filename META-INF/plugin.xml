@@ -40,8 +40,11 @@
 
         <!--<library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>-->
         <applicationService
-                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.ApplicationDictionaryRegistryService"
-                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.ApplicationDictionaryRegistryService"/>
+                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService"
+                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService"/>
+        <projectService
+                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService"
+                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService"/>
 
         <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
 
@@ -137,18 +140,13 @@
     <application-components>
         <!-- Add your application components here -->
         <component>
-            <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistry
+            <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistry
             </implementation-class>
         </component>
     </application-components>
 
     <project-components>
         <!-- Add your project components here -->
-        <component>
-            <implementation-class>
-                com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry
-            </implementation-class>
-        </component>
     </project-components>
 
 
@@ -163,11 +161,6 @@
                 class="com.idea.plugin.applescript.lang.ide.actions.CreateAppleScriptFileAction">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
-        <!--<action id="ChangeScriptSuiteRegistryAction"-->
-        <!--class="com.idea.plugin.applescript.lang.ide.libraries.ChangeScriptSuiteRegistryAction"-->
-        <!--text="Change Script Suite Library" description="Choose Dictionaries for the script">-->
-        <!--<add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="CompareClipboardWithSelection"/>-->
-        <!--</action>-->
     </actions>
 
 </idea-plugin>

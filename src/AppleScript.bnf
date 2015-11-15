@@ -549,7 +549,7 @@ everyElemReference ::= every typeSpecifier //{pin=1}
 left filterReference ::=  (whose|where) expression
 
 //The ID reference form specifies an object by the value of its ID property
-idReference ::= id expression
+left idReference ::= id expression
 
 //The Index reference form specifies an object or a location by describing its position with respect
 // to the beginning or end of a container. For related information, see “Relative” (page 185).

@@ -523,19 +523,20 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     dictionaryNameStack.push(applicationNameString);
     b.putUserData(APPLICATION_NAME_PUSHED, true);
+    ParsableScriptSuiteRegistryHelper.ensureDictionaryInitialized(applicationNameString);
     return dictionaryNameStack;
   }
 
-  public static Stack<String> pushTargetApplicationId(PsiBuilder b, String applicationIdReference) {
-    Stack<String> dictionaryIdStack = b.getUserData(TOLD_APPLICATION_ID_STACK);
-    if (dictionaryIdStack == null) {
-      dictionaryIdStack = new Stack<String>();
-      b.putUserData(TOLD_APPLICATION_ID_STACK, dictionaryIdStack);
-    }
-    dictionaryIdStack.push(applicationIdReference);
-    b.putUserData(APPLICATION_NAME_PUSHED, true);
-    return dictionaryIdStack;
-  }
+//  public static Stack<String> pushTargetApplicationId(PsiBuilder b, String applicationIdReference) {
+//    Stack<String> dictionaryIdStack = b.getUserData(TOLD_APPLICATION_ID_STACK);
+//    if (dictionaryIdStack == null) {
+//      dictionaryIdStack = new Stack<String>();
+//      b.putUserData(TOLD_APPLICATION_ID_STACK, dictionaryIdStack);
+//    }
+//    dictionaryIdStack.push(applicationIdReference);
+//    b.putUserData(APPLICATION_NAME_PUSHED, true);
+//    return dictionaryIdStack;
+//  }
 
   // ( commandParameter)*
   private static boolean parseCommandParameters(PsiBuilder b, int l, AppleScriptCommand commandDefinition) {
@@ -921,7 +922,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean parseDictionaryClassName(PsiBuilder b, int l, final boolean isPluralForm,
                                                  @NotNull Parser checkForUseStatements) {
-    if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
+    if (!recursion_guard_(b, l, "parseDictionaryClassName")) return false;
     boolean r;
     String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = checkForUseStatements.parse(b, l + 1);

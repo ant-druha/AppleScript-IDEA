@@ -1,9 +1,10 @@
 package com.idea.plugin.applescript.lang.ide;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryRegistry;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.psi.AppleScriptPsiElement;
 import com.intellij.codeInsight.documentation.DocumentationManagerProtocol;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
@@ -59,8 +60,8 @@ public class AppleScriptDocHelper {
 
     int dicNameIdxEnt = link.indexOf(TYPE_SEPARATOR) > 0 ? link.indexOf(TYPE_SEPARATOR) : link.length();
     final String dictionaryName = link.substring("dictionary".length() + 1, dicNameIdxEnt);
-    AppleScriptProjectDictionaryRegistry dictionaryRegistry = context.getProject()
-            .getComponent(AppleScriptProjectDictionaryRegistry.class);
+    AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
+            .getService(context.getProject(), AppleScriptDictionaryProjectService.class);
     ApplicationDictionary dictionary = null;
     if (dictionaryRegistry != null) {
       dictionary = dictionaryRegistry.getDictionary(dictionaryName);
