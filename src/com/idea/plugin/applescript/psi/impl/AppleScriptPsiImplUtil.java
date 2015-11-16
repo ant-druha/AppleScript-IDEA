@@ -250,14 +250,18 @@ public class AppleScriptPsiImplUtil {
 
   public static String findApplicationNameFromTellStatement(PsiElement tellStatement) {
     //todo: could be not only application but any class of the application (process "Mail", etc)
-    PsiElement appRef = PsiTreeUtil.findChildOfType(tellStatement, AppleScriptApplicationReference.class);
-    if (appRef != null) {
-      String text = appRef.getText();
-      int from = text.indexOf('"') + 1;
-      int to = text.indexOf('"', from);
-      if (from >= 0 && from <= text.length() && to >= 0 && to <= text.length()) {
-        return text.substring(from, to);
-      }
+    AppleScriptApplicationReference appRef = PsiTreeUtil.findChildOfType(tellStatement,
+            AppleScriptApplicationReference.class);
+    return getNameFromApplicationReference(appRef);
+  }
+
+  private static String getNameFromApplicationReference(@Nullable AppleScriptApplicationReference appRef) {
+    if (appRef == null) return null;
+    String text = appRef.getText();
+    int from = text.indexOf('"') + 1;
+    int to = text.indexOf('"', from);
+    if (from >= 0 && from <= text.length() && to >= 0 && to <= text.length()) {
+      return text.substring(from, to);
     }
     return null;
   }
@@ -299,8 +303,7 @@ public class AppleScriptPsiImplUtil {
 
   @Nullable
   public static String getApplicationName(@NotNull AppleScriptApplicationReference applicationReference) {
-    PsiElement appNameElement = applicationReference.getApplicationNameString();
-    return appNameElement != null ? appNameElement.getText().replace("\"", "") : null;
+    return getNameFromApplicationReference(applicationReference);
   }
 
   public static boolean isInsideTellStatement(@NotNull PsiElement element) {

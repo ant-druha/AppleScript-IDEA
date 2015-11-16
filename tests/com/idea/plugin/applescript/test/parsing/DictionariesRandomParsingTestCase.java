@@ -9,7 +9,15 @@ public class DictionariesRandomParsingTestCase extends AbstractParsingFixtureTes
     return "dictionaries_random";
   }
 
-  public void testLiveSamplesPackage() throws IOException {
+  public void testHugeScript() throws IOException {
+    doParseScriptInPackageTest("huge_script");
+  }
+
+  public void testWrongDictionary() throws IOException {
+    doParseScriptInPackageTest("wrong_dictionary");
+  }
+
+  public void testDictionariesRandomPackage() throws IOException {
     doParseAllInPackageTest();
   }
 

@@ -80,6 +80,17 @@ public class AppleScriptDictionaryProjectService {
   @Nullable
   public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
                                                              @Nullable VirtualFile applicationFile) {
+    // TODO: 15/11/15 create exception for not scriptable application and throw it from
+    // AppleScriptDictionarySystemRegistryService
+    if (!dictionaryRegistryService.isApplicationScriptable(applicationName)) {
+      LOG.info("Application " + applicationName + " is not scriptable. Can not create dictionary for it.");
+      return null;
+    }
+    //do not proceed if application location was previously not found
+    if (applicationFile == null && !dictionaryRegistryService.isApplicationKnown(applicationName)) {
+      LOG.warn("Application " + applicationName + " was added to unknown list. Can not create dictionary for it.");
+      return null;
+    }
     ApplicationDictionary newDictionary = dictionaryMap.get(applicationName);
     String cachedDictionaryFilePath = dictionaryRegistryService.getSavedDictionaryFilePath(applicationName);
 

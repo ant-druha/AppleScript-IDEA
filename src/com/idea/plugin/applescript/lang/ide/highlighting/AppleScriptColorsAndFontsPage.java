@@ -31,6 +31,8 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                 new AttributesDescriptor("Comment", AppleScriptSyntaxHighlighterColors.COMMENT),
                 new AttributesDescriptor("Dictionary command", AppleScriptSyntaxHighlighterColors
                         .DICTIONARY_COMMAND_ATTR),
+                new AttributesDescriptor("Dictionary class", AppleScriptSyntaxHighlighterColors
+                        .DICTIONARY_CLASS_ATTR),
         };
 
       ourTags.put("keyword", AppleScriptSyntaxHighlighterColors.KEYWORD);
@@ -38,6 +40,7 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
       ourTags.put("operator", AppleScriptSyntaxHighlighterColors.OPERATION_SIGN);
       ourTags.put("comment", AppleScriptSyntaxHighlighterColors.COMMENT);
       ourTags.put("command", AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
+      ourTags.put("dictionary class", AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);
     }
 
 
@@ -64,7 +67,14 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                 "    tell application \"ReportWizard\"\n" +
                 "    -- Statements to print the reports.\n" +
                 "    end tell\n" +
-                "end if ## had some reports to print";
+                "end if ## had some reports to print\n" +
+                "tell application \"TextEdit\"\n" +
+                "  make new document with properties {name:\"Doc Name\", text:\"Now I can create new documents using " +
+                "AppleScript.\"}\n" +
+                "  close\n" +
+                "  get character\n" +
+                "  set character to 1234\n" +
+                "end tell";
     }
 
     @Nullable

@@ -59,6 +59,8 @@ public class AppleScriptColorAnnotator implements Annotator {
     }
     if (element instanceof AppleScriptDictionaryCommandName) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
+    } else if (element instanceof AppleScriptDictionaryClassName) {
+      createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);
     } else if (element instanceof AppleScriptTellSimpleStatement
             || element instanceof AppleScriptTellCompoundStatement) {
       String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);
@@ -68,13 +70,19 @@ public class AppleScriptColorAnnotator implements Annotator {
               (element.getProject(), AppleScriptDictionaryProjectService.class);
       ApplicationDictionary dictionary = !StringUtil.isEmpty(appName) ?
               dictionaryProjectService.getDictionary(appName) : null;
+      // TODO: 15/11/15 should we create application dictionary here?? it makes sense. but on the other hand it is
+      // created when resolve or completing the code
       if (dictionaryRegistryService != null) {
-        if (!StringUtil.isEmpty(appName) && !dictionaryRegistryService.isApplicationKnown(appName)
-                && dictionary != null) {
-
+        if (!StringUtil.isEmpty(appName) && !dictionaryRegistryService.isApplicationKnown(appName)) {
           AppleScriptApplicationReference appRef = PsiTreeUtil
                   .findChildOfType(element, AppleScriptApplicationReference.class);
-          holder.createWarningAnnotation(appRef != null ? appRef : element, "Application \"" + appName + "\" not found")
+          String warningText;
+          if (!dictionaryRegistryService.isApplicationScriptable(appName)) {
+            warningText = "Application \"" + appName + "\" is not scriptable";
+          } else {
+            warningText = "Application \"" + appName + "\" not found";
+          }
+          holder.createWarningAnnotation(appRef != null ? appRef : element, warningText)
                   .registerFix(new AddApplicationDictionaryQuickFix(appName));
         }
       }
