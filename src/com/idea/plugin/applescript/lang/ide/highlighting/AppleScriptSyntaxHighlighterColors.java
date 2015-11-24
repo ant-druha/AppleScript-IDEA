@@ -48,9 +48,9 @@ public class AppleScriptSyntaxHighlighterColors {
   public static final TextAttributesKey UNRESOLVED_REFERENCE =
           createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
   public static final TextAttributesKey DICTIONARY_COMMAND_ATTR =
-          createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.STATIC_METHOD);
+          createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE);
   public static final TextAttributesKey DICTIONARY_CLASS_ATTR =
-          createTextAttributesKey(DICTIONARY_CLASS, DefaultLanguageHighlighterColors.CLASS_NAME);
+          createTextAttributesKey(DICTIONARY_CLASS, DefaultLanguageHighlighterColors.NUMBER);
   public static final TextAttributesKey DICTIONARY_PROPERTY_ATTR =
           createTextAttributesKey(DICTIONARY_PROPERTY, DefaultLanguageHighlighterColors.INSTANCE_FIELD);
 

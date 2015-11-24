@@ -160,9 +160,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
             .findApplicationCommands(b.getProject(), toldApplicationName, parsedCommandName));
     // StandardAdditions fake application does not contain CocoaStandard terms. Adding them here
     if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
-      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
-              .findApplicationCommands(b.getProject(), ApplicationDictionary.STANDARD_COCOA_LIBRARY,
-                      parsedCommandName));
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findApplicationCommands(b.getProject(),
+              ApplicationDictionary.STANDARD_COCOA_LIBRARY, parsedCommandName));
     }
     if (areThereUseStatements) {
       if (applicationsToImport != null) {
@@ -172,15 +171,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         }
       }
     } else {
-      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
-              .findStdCommands(b.getProject(), parsedCommandName));
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findStdCommands(b.getProject(), parsedCommandName));
     }
     // well, even application could not contain CocoaStandard terms sometimes (need to implement <include> directive)
     // todo remove this workaround when implement include in dictionaries
     if (allCommandsWithName.isEmpty()) {
-      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
-              .findApplicationCommands(b.getProject(), ApplicationDictionary.STANDARD_COCOA_LIBRARY,
-                      parsedCommandName));
+      allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findApplicationCommands(b.getProject(),
+              ApplicationDictionary.STANDARD_COCOA_LIBRARY, parsedCommandName));
     }
     return allCommandsWithName;
   }
@@ -979,10 +976,19 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
                                                  @NotNull String toldApplicationName,
                                                  boolean areThereUseStatements,
                                                  @Nullable Set<String> applicationsToImportFrom) {
-    boolean r;
+    boolean r, propertyExists = false;
     PsiBuilder.Marker m = enter_section_(b);
     r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, toldApplicationName);
-    exit_section_(b, m, null, r);
+    // TODO: 24/11/15 in case of success, need to check if there is a property with name longer than
+    // currentTokenText -> should append already parsed name from method
+    if (r) {
+      currentTokenText.value += " " + b.getTokenText();
+      propertyExists = ParsableScriptSuiteRegistryHelper
+              .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.value);
+      // TODO: 25/11/15 now need to check all other cases (should we check here all use statements or further below?)
+    }
+    exit_section_(b, m, null, r && !propertyExists);
+    if (propertyExists) return false;
     if (r) return true;
     if (areThereUseStatements) {
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
