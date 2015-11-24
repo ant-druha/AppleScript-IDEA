@@ -16,9 +16,9 @@ end tell
 
 close
 on run
---        tell application id "com.microsoft.PowerPoint"
+--        tell application id "com.microsoft.PowerPoint" --wrong fictionary added (for Ms Word ;( )
+--end tell
   tell application "Microsoft PowerPoint"
-
     activate
 
     tell active window

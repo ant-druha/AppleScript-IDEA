@@ -14,22 +14,20 @@ import com.intellij.util.xmlb.annotations.Tag;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * for storing plain structure info about application name and it's classes/properties/constants/commands
  */
-@State(name = AppleScriptDictionarySystemRegistry.COMPONENT_NAME,
+@State(name = AppleScriptSystemDictionaryRegistryComponent.COMPONENT_NAME,
         storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml")})
-public class AppleScriptDictionarySystemRegistry implements ApplicationComponent,
-        PersistentStateComponent<AppleScriptDictionarySystemRegistry.State> {
+public class AppleScriptSystemDictionaryRegistryComponent implements ApplicationComponent,
+        PersistentStateComponent<AppleScriptSystemDictionaryRegistryComponent.State> {
 
-  private static final Logger LOG = Logger.getInstance("#" + AppleScriptDictionarySystemRegistry.class.getName());
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistryComponent.class
+          .getName());
 
-  public static final String COMPONENT_NAME = "AppleScriptDictionarySystemRegistry";
+  public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistryComponent";
 
   public static final String GENERATED_DICTIONARY_URLS_ELEMENT = "generatedDictionaryUrls";
   public static final String APPLICATION_NAME_ELEMENT = "applicationName";
@@ -51,7 +49,7 @@ public class AppleScriptDictionarySystemRegistry implements ApplicationComponent
     @Tag("cachedClassNameToApplicationsMap")
     @MapAnnotation(surroundWithTag = false, keyAttributeName = "className",
             valueAttributeName = "applications")
-    public Map<String, String> cachedClassNameToDictionaryListMap = new HashMap<String, String>();
+    public Map<String, String> cachedApplicationNameToClassNameSetMap = new HashMap<String, String>();
 
 
   }
@@ -60,16 +58,16 @@ public class AppleScriptDictionarySystemRegistry implements ApplicationComponent
   @Override
   public State getState() {
     State state = new State();
-    AppleScriptDictionarySystemRegistryService dictionaryRegistry = ServiceManager.getService
-            (AppleScriptDictionarySystemRegistryService.class);
+    AppleScriptSystemDictionaryRegistryService dictionaryRegistry = ServiceManager.getService
+            (AppleScriptSystemDictionaryRegistryService.class);
     state.cachedApplicationNameToGeneratedDictionaryUrlMap = dictionaryRegistry
             .getApplicationNameToGeneratedDictionaryPathMap();
     Map<String, String> result = new HashMap<String, String>();
-    for (Map.Entry<String, List<String>> stringListPair : dictionaryRegistry.getClassNameToApplicationNameListMap()
+    for (Map.Entry<String, HashSet<String>> stringSetPair : dictionaryRegistry.getApplicationNameToClassNameSetMap()
             .entrySet()) {
-      result.put(stringListPair.getKey(), serializeDictionaryNameList(stringListPair.getValue()));
+      result.put(stringSetPair.getKey(), serializeDictionaryNameList(stringSetPair.getValue()));
     }
-    state.cachedClassNameToDictionaryListMap = result;
+    state.cachedApplicationNameToClassNameSetMap = result;
     return state;
   }
 
@@ -81,7 +79,7 @@ public class AppleScriptDictionarySystemRegistry implements ApplicationComponent
     return myApplicationNameToGeneratedDictionaryFileMap;
   }
 
-  private static String serializeDictionaryNameList(List<String> dictionaryNameList) {
+  private static String serializeDictionaryNameList(Collection<String> dictionaryNameList) {
     String result = "";
     String sep = "";
     for (String dictionaryName : dictionaryNameList) {
@@ -94,7 +92,7 @@ public class AppleScriptDictionarySystemRegistry implements ApplicationComponent
   @Override
   public void loadState(State state) {
     Map<String, String> uncheckedMap = state.cachedApplicationNameToGeneratedDictionaryUrlMap;
-    Map<String, String> classToDictionariesMap = state.cachedClassNameToDictionaryListMap;
+    Map<String, String> classToDictionariesMap = state.cachedApplicationNameToClassNameSetMap;
     for (Map.Entry<String, String> stringEntry : uncheckedMap.entrySet()) {
       File file = new File(stringEntry.getValue());
       VirtualFile vFile = LocalFileSystem.getInstance().findFileByPath(stringEntry.getValue());

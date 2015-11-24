@@ -6,7 +6,6 @@ import com.idea.plugin.applescript.lang.lexer._AppleScriptLexer;
 import com.idea.plugin.applescript.lang.parcer.AppleScriptParser;
 import com.idea.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.lang.ASTNode;
-import com.intellij.lang.Language;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
 import com.intellij.lexer.FlexAdapter;
@@ -20,8 +19,6 @@ import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Reader;
-
 /**
  * Created by Andrey on 22.02.2015.
  */
@@ -29,13 +26,12 @@ public class AppleScriptParserDefinition implements ParserDefinition {
   public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
   public static final TokenSet COMMENTS = TokenSet.create(AppleScriptTypes.COMMENT);
 
-  public static final IFileElementType FILE = new IFileElementType(Language.findInstance
-          (AppleScriptLanguage.class));
+  public static final IFileElementType FILE = new IFileElementType(AppleScriptLanguage.INSTANCE);
 
   @NotNull
   @Override
   public Lexer createLexer(Project project) {
-    return new FlexAdapter(new _AppleScriptLexer((Reader) null));
+    return new FlexAdapter(new _AppleScriptLexer(null));
   }
 
   @NotNull

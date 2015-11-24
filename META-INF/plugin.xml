@@ -40,11 +40,11 @@
 
         <!--<library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>-->
         <applicationService
-                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService"
-                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService"/>
+                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService"
+                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService"/>
         <projectService
-                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService"
-                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService"/>
+                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService"
+                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService"/>
 
         <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
 
@@ -140,7 +140,7 @@
     <application-components>
         <!-- Add your application components here -->
         <component>
-            <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistry
+            <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryComponent
             </implementation-class>
         </component>
     </application-components>

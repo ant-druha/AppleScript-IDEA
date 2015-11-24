@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.completion;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
 import com.idea.plugin.applescript.psi.AppleScriptApplicationReference;
 import com.idea.plugin.applescript.psi.AppleScriptUseStatement;
 import com.intellij.codeInsight.completion.*;
@@ -44,8 +44,8 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
                                             ProcessingContext context,
                                             @NotNull CompletionResultSet result) {
 
-                AppleScriptDictionarySystemRegistryService systemDictionaryRegistry = ServiceManager.getService
-                        (AppleScriptDictionarySystemRegistryService.class);
+                AppleScriptSystemDictionaryRegistryService systemDictionaryRegistry = ServiceManager.getService
+                        (AppleScriptSystemDictionaryRegistryService.class);
                 if (systemDictionaryRegistry != null) {
                   Collection<String> appNameList;
                   if (SystemInfo.isMac) {

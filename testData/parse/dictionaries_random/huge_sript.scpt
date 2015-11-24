@@ -136,7 +136,7 @@ on makeRelativeAlias(_item) --todo item as parameter
           end try
 
           return diskLocalRef
-
+          acos 0.32
         end if
       end repeat
     end if

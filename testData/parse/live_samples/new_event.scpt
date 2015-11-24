@@ -3,9 +3,13 @@ use scripting additions
 use framework "Foundation"
 use framework "EventKit"
 
+get afp URL
+
+
 -- lazy way to specify calender
 tell application "Calendar"
   set calId to uid of calendar 1 whose name is "Work"
+  get day view
 end tell
 set timeNow to current date
 set timeInAnHour to timeNow + 3600
@@ -80,4 +84,5 @@ on deletEventWithID:theID inCalName:calTitle
   repeat with anEvent in theEvents
     (theEKEventStore's removeEvent:anEvent span:1 commit:true |error|:(missing value))
   end repeat
+
 end deletEventWithID:inCalName:

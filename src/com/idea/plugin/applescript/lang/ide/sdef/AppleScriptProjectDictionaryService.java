@@ -13,18 +13,18 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AppleScriptDictionaryProjectService {
+public class AppleScriptProjectDictionaryService {
 
-  private static final Logger LOG = Logger.getInstance("#" + AppleScriptDictionaryProjectService.class
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptProjectDictionaryService.class
           .getName());
 
 
   @NotNull private final Project project;
-  @NotNull private final AppleScriptDictionarySystemRegistryService dictionaryRegistryService;
+  @NotNull private final AppleScriptSystemDictionaryRegistryService dictionaryRegistryService;
   private final Map<String, ApplicationDictionary> dictionaryMap = new HashMap<String, ApplicationDictionary>();
 
-  public AppleScriptDictionaryProjectService(@NotNull Project project,
-                                             @NotNull AppleScriptDictionarySystemRegistryService
+  public AppleScriptProjectDictionaryService(@NotNull Project project,
+                                             @NotNull AppleScriptSystemDictionaryRegistryService
                                                      dictionaryRegistryService) {
     this.project = project;
     this.dictionaryRegistryService = dictionaryRegistryService;
@@ -81,7 +81,7 @@ public class AppleScriptDictionaryProjectService {
   public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
                                                              @Nullable VirtualFile applicationFile) {
     // TODO: 15/11/15 create exception for not scriptable application and throw it from
-    // AppleScriptDictionarySystemRegistryService
+    // AppleScriptSystemDictionaryRegistryService
     if (!dictionaryRegistryService.isApplicationScriptable(applicationName)) {
       LOG.info("Application " + applicationName + " is not scriptable. Can not create dictionary for it.");
       return null;

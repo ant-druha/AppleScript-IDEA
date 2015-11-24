@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.resolve;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
@@ -68,8 +68,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     boolean collectAll = state.get(COLLECT_ALL_DECLARATIONS) == Boolean.TRUE;
 
     if (!collectAll && myElement != null) {
-      AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-              .getService(element.getProject(), AppleScriptDictionaryProjectService.class);
+      AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+              .getService(element.getProject(), AppleScriptProjectDictionaryService.class);
       String appName = ((ApplicationDictionaryDeclarator) element).getApplicationName();
       ApplicationDictionary importedDictionary;
 
@@ -114,8 +114,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
       }
       return true;
     } else {//collecting all declarations
-      AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-              .getService(element.getProject(), AppleScriptDictionaryProjectService.class);
+      AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+              .getService(element.getProject(), AppleScriptProjectDictionaryService.class);
       String appName = ((ApplicationDictionaryDeclarator) element).getApplicationName();
       ApplicationDictionary importedDictionary = null;
       if (appName != null && dictionaryRegistry != null) {
@@ -138,16 +138,16 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
   }
 
   private boolean setResultFromCocoaStandardLibrary(@NotNull DictionaryCompositeElement element) {
-    AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-            .getService(element.getProject(), AppleScriptDictionaryProjectService.class);
+    AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+            .getService(element.getProject(), AppleScriptProjectDictionaryService.class);
     if (dictionaryRegistry == null) return false;
     ApplicationDictionary cocoaStandard = dictionaryRegistry.getDefaultCocoaTerminology();
     return cocoaStandard != null && setResult(cocoaStandard, element);
   }
 
   private boolean setResultFromStandardAdditionsLibrary(@NotNull DictionaryCompositeElement element) {
-    AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-            .getService(element.getProject(), AppleScriptDictionaryProjectService.class);
+    AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+            .getService(element.getProject(), AppleScriptProjectDictionaryService.class);
     if (dictionaryRegistry == null) return false;
     ApplicationDictionary standardAdditions = dictionaryRegistry.getStandardAdditionsTerminology();
     return standardAdditions != null && setResult(standardAdditions, element);
@@ -204,8 +204,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     List<DictionaryComponent> result = new ArrayList<DictionaryComponent>();
     boolean filterFromStdCocoaDictionaryFlag = false; //if there are at least one dictionary from a real app imported
     List<ApplicationDictionary> fromUseStatements = new ArrayList<ApplicationDictionary>();
-    AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-            .getService(myProject, AppleScriptDictionaryProjectService.class);
+    AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+            .getService(myProject, AppleScriptProjectDictionaryService.class);
     for (AppleScriptUseStatement useStmt : mySortedUseStatements) {
       if (!useStmt.withImporting()) continue;
 
@@ -239,8 +239,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
                                             @NotNull Project project,
                                             boolean areThereUseStatements,
                                             boolean filterStandardAdditions, boolean filterCocoaStandard) {
-    AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-            .getService(project, AppleScriptDictionaryProjectService.class);
+    AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+            .getService(project, AppleScriptProjectDictionaryService.class);
     if (dictionaryRegistry == null) return;
     if (!filterStandardAdditions && !areThereUseStatements) {
       ApplicationDictionary stdAdditions = dictionaryRegistry.getStandardAdditionsTerminology();
@@ -256,8 +256,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
                                                         List<DictionaryComponent> dictionaryComponents,
                                                         boolean withCocoaStdLibFiltering) {
     if (withCocoaStdLibFiltering) {
-      AppleScriptDictionaryProjectService dictionaryRegistry = ServiceManager
-              .getService(importedDict.getProject(), AppleScriptDictionaryProjectService.class);
+      AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
+              .getService(importedDict.getProject(), AppleScriptProjectDictionaryService.class);
       ApplicationDictionary cocoaStandard = null;
       if (dictionaryRegistry != null) {
         cocoaStandard = dictionaryRegistry.getDefaultCocoaTerminology();

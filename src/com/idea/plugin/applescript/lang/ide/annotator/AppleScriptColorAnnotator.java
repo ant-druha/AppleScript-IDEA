@@ -3,8 +3,8 @@ package com.idea.plugin.applescript.lang.ide.annotator;
 import com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterColors;
 import com.idea.plugin.applescript.lang.ide.intentions.AddApplicationDictionaryQuickFix;
 import com.idea.plugin.applescript.lang.ide.intentions.RenameParameterLabelQuickFix;
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService;
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
@@ -64,10 +64,10 @@ public class AppleScriptColorAnnotator implements Annotator {
     } else if (element instanceof AppleScriptTellSimpleStatement
             || element instanceof AppleScriptTellCompoundStatement) {
       String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);
-      AppleScriptDictionarySystemRegistryService dictionaryRegistryService = ServiceManager.getService
-              (AppleScriptDictionarySystemRegistryService.class);
-      AppleScriptDictionaryProjectService dictionaryProjectService = ServiceManager.getService
-              (element.getProject(), AppleScriptDictionaryProjectService.class);
+      AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService
+              (AppleScriptSystemDictionaryRegistryService.class);
+      AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
+              (element.getProject(), AppleScriptProjectDictionaryService.class);
       ApplicationDictionary dictionary = !StringUtil.isEmpty(appName) ?
               dictionaryProjectService.getDictionary(appName) : null;
       // TODO: 15/11/15 should we create application dictionary here?? it makes sense. but on the other hand it is

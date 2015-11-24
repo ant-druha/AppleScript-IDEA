@@ -5,14 +5,16 @@ property qtVolMax: 256
 property reveilleVol: 30 -- reduce to 10 for external speakers
 property logfile: "MacBook Pro:Users:sjc:Documents:Development:cron:Debug Log.txt"
 
-
 get logfile
-
+get Web servers
 make
 --use application "Finder"
 use scripting additions
 use application "QuickTime Player"
 tell application "QuickTime Player"
+  play Web servers
+  get Web servers
+  adding folder items to
   try
     set logFileID to open for access file logfile with write permission
   on error
@@ -42,9 +44,8 @@ tell application "QuickTime Player"
   end repeat
   -- display dialog "quitting"
   quit
+  open URL
 end tell
-
-
 
 set volume 111 output volume 123
 -- Restore System Volume Settings
@@ -59,4 +60,3 @@ closing folder window for
 write ¬
 "System Volume = : " & saveSysVol & return to logFileID ¬
 starting at get eof of logFileID
-

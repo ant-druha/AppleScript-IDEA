@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.actions;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionaryProjectService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.ide.IdeView;
@@ -56,8 +56,8 @@ public class LoadDictionaryAction extends AnAction {
             if (StringUtil.isEmpty(applicationName)) {
               return;
             } else {
-              AppleScriptDictionaryProjectService projectDictionaryRegistry = ServiceManager
-                      .getService(project, AppleScriptDictionaryProjectService.class);
+              AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager
+                      .getService(project, AppleScriptProjectDictionaryService.class);
               if (projectDictionaryRegistry != null) {
                 projectDictionaryRegistry.createDictionary(applicationName, file);
               }

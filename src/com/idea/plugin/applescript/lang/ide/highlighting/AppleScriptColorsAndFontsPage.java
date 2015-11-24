@@ -69,10 +69,11 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                 "    end tell\n" +
                 "end if ## had some reports to print\n" +
                 "tell application \"TextEdit\"\n" +
-                "  make new document with properties {name:\"Doc Name\", text:\"Now I can create new documents using " +
+                "  <command>make</command> new <dictionary class>document</dictionary class> with properties " +
+                "{name:\"Doc Name\", text:\"Now I can create new documents using " +
                 "AppleScript.\"}\n" +
-                "  close\n" +
-                "  get character\n" +
+                "  <command>close</command>\n" +
+                "  get <dictionary class>character</dictionary class>\n" +
                 "  set character to 1234\n" +
                 "end tell";
     }

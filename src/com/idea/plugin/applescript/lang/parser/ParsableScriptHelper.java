@@ -19,23 +19,31 @@ public interface ParsableScriptHelper {
 
   boolean isApplicationClassPluralName(@NotNull String applicationName, @NotNull String pluralClassName);
 
-  int countStdClassesStartingWithName(@NotNull String namePrefix);
+  boolean isStdClassWithPrefixExist(@NotNull String classNamePrefix);
 
-  int countApplicationClassesStartingWithName(@NotNull String applicationName, @NotNull String classNamePrefix);
+  boolean isClassWithPrefixExist(@NotNull String applicationName, @NotNull String classNamePrefix);
 
-  int countStdClassesStartingWithPluralName(@NotNull String namePrefix);
+  boolean isStdClassPluralWithPrefixExist(@NotNull String namePrefix);
 
-  int countApplicationClassesStartingWithPluralName(@NotNull String applicationName,
-                                                    @NotNull String pluralClassNamePrefix);
+  boolean isClassPluralWithPrefixExist(@NotNull String applicationName, @NotNull String pluralClassNamePrefix);
+
+//  int countStdClassesStartingWithName(@NotNull String namePrefix);
+//  int countApplicationClassesStartingWithName(@NotNull String applicationName, @NotNull String classNamePrefix);
+//  int countStdClassesStartingWithPluralName(@NotNull String namePrefix);
+//  int countApplicationClassesStartingWithPluralName(@NotNull String applicationName,
+//                                                    @NotNull String pluralClassNamePrefix);
 
   // Application commands
   boolean isStdCommand(@NotNull String name);
 
   boolean isApplicationCommand(@NotNull String applicationName, @NotNull String commandName);
 
-  int countStdCommandsStartingWithName(@NotNull String namePrefix);
+  boolean isCommandWithPrefixExist(@NotNull String applicationName, @NotNull String commandNamePrefix);
 
-  int countApplicationCommandsStartingWithName(@NotNull String applicationName, @NotNull String commandNamePrefix);
+  boolean isStdCommandWithPrefixExist(@NotNull String namePrefix);
+
+//  int countStdCommandsStartingWithName(@NotNull String namePrefix);
+//  int countApplicationCommandsStartingWithName(@NotNull String applicationName, @NotNull String commandNamePrefix);
 
   @NotNull
   List<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName);
@@ -47,11 +55,14 @@ public interface ParsableScriptHelper {
   // Application properties
   boolean isStdProperty(@NotNull String name);
 
+  boolean isStdPropertyWithPrefixExist(@NotNull String namePrefix);
+
   boolean isApplicationProperty(@NotNull String applicationName, @NotNull String propertyName);
 
-  int countStdPropertiesStartingWithName(@NotNull String namePrefix);
+  boolean isPropertyWithPrefixExist(@NotNull String applicationName, @NotNull String propertyNamePrefix);
 
-  int countApplicationPropertiesStartingWithName(@NotNull String applicationName, @NotNull String propertyNamePrefix);
+//  int countStdPropertiesStartingWithName(@NotNull String namePrefix);
+//  int countApplicationPropertiesStartingWithName(@NotNull String applicationName, @NotNull String propertyNamePrefix);
 
 
   // Application constants (enumerators)
@@ -59,8 +70,11 @@ public interface ParsableScriptHelper {
 
   boolean isApplicationConstant(@NotNull String applicationName, @NotNull String constantName);
 
-  int countStdConstantStartingWithName(@NotNull String namePrefix);
+  boolean isStdConstantWithPrefixExist(@NotNull String namePrefix);
 
-  int countApplicationConstantStartingWithName(@NotNull String applicationName, @NotNull String constantNamePrefix);
+  boolean isConstantWithPrefixExist(@NotNull String applicationName, @NotNull String namePrefix);
+
+//  int countStdConstantStartingWithName(@NotNull String namePrefix);
+//  int countApplicationConstantStartingWithName(@NotNull String applicationName, @NotNull String constantNamePrefix);
 
 }

@@ -1,6 +1,6 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptDictionarySystemRegistryService;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -67,8 +67,8 @@ public class SDEF_Parser {
             int index = fName.lastIndexOf('.');
             fName = index < 0 ? fName : fName.substring(0, index);
           }
-          AppleScriptDictionarySystemRegistryService dictionarySystemRegistry = ServiceManager
-                  .getService(AppleScriptDictionarySystemRegistryService.class);
+          AppleScriptSystemDictionaryRegistryService dictionarySystemRegistry = ServiceManager
+                  .getService(AppleScriptSystemDictionaryRegistryService.class);
           VirtualFile vFile = dictionarySystemRegistry.getGeneratedDictionaryFile(fName);
           if (vFile==null || !vFile.isValid()) vFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
 //          VirtualFile includedVFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
