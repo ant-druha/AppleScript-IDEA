@@ -22,6 +22,7 @@ public class AppleScriptSyntaxHighlighterColors {
   private static final String APPLE_SCRIPT_COMMENT = "APPLE_SCRIPT_COMMENT";
   private static final String DICTIONARY_COMMAND = "DICTIONARY_COMMAND";
   private static final String DICTIONARY_CLASS = "DICTIONARY_CLASS";
+  private static final String DICTIONARY_PROPERTY = "DICTIONARY_PROPERTY";
   private static final String UNRESOLVED_ACCESS_ID = "UNRESOLVED_REFERENCE";
 
   public static final TextAttributes UNRESOLVED_REFERENCE_ATTRIBUTES = HighlighterColors.TEXT.getDefaultAttributes()
@@ -47,9 +48,11 @@ public class AppleScriptSyntaxHighlighterColors {
   public static final TextAttributesKey UNRESOLVED_REFERENCE =
           createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
   public static final TextAttributesKey DICTIONARY_COMMAND_ATTR =
-          createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.PREDEFINED_SYMBOL);
+          createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.STATIC_METHOD);
   public static final TextAttributesKey DICTIONARY_CLASS_ATTR =
           createTextAttributesKey(DICTIONARY_CLASS, DefaultLanguageHighlighterColors.CLASS_NAME);
+  public static final TextAttributesKey DICTIONARY_PROPERTY_ATTR =
+          createTextAttributesKey(DICTIONARY_PROPERTY, DefaultLanguageHighlighterColors.INSTANCE_FIELD);
 
 
 }

@@ -43,15 +43,20 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
     super.runTest();
   }
 
-  protected void doParseAllInPackageTest() throws IOException {
+  protected void doParseAllInPackageTest() {
     LOG.info("Parsing files in the package: " + getMyTargetDirectoryPath());
     System.out.println("Parsing files in the package: " + getMyTargetDirectoryPath());
     for (PsiFile psiFile : myPsiFiles) {
       LOG.info("File: " + psiFile.getName());
       System.out.print("File: " + psiFile.getName());
-      ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(),
-              psiFile.getVirtualFile().getNameWithoutExtension(), skipSpaces(), printRanges());
-      System.out.println(": Ok");
+      try {
+        ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(),
+                psiFile.getVirtualFile().getNameWithoutExtension(), skipSpaces(), printRanges());
+        System.out.println(": Ok");
+      } catch (IOException e) {
+        System.out.println(": Parsing failed" + psiFile.getName());
+        e.printStackTrace();
+      }
     }
   }
 

@@ -40,8 +40,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private final Map<String, String> applicationNameToGeneratedDictionaryPathMap = new HashMap<String, String>();
   private final Map<String, VirtualFile> applicationNameToGeneratedDictionaryFileMap = new HashMap<String,
           VirtualFile>();
-  private final List<String> notScriptableApplicationList = new ArrayList<String>();
 
+  private final List<String> notScriptableApplicationList = new ArrayList<String>();
   private final List<String> unknownApplicationList = new ArrayList<String>();
 
   private final List<String> allSystemApplicationNames = new ArrayList<String>();
@@ -53,33 +53,36 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
           HashSet<String>>();
   private final Map<String, HashSet<String>> applicationNameToCommandNameSetMap = new HashMap<String,
           HashSet<String>>();
-  private final Map<String, List<String>> recordNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, HashSet<String>> applicationNameToRecordNameSetMap = new HashMap<String, HashSet<String>>();
   private final Map<String, HashSet<String>> applicationNameToPropertySetMap = new HashMap<String, HashSet<String>>();
-  private final Map<String, List<String>> enumerationNameToApplicationNameListMap = new HashMap<String, List<String>>();
+  private final Map<String, HashSet<String>> applicationNameToEnumerationNameSetMap = new HashMap<String,
+          HashSet<String>>();
   private final Map<String, HashSet<String>> applicationNameToEnumeratorConstantNameSetMap = new HashMap<String,
           HashSet<String>>();
-  private final Map<String, List<String>> stdClassNameToApplicationNameListMap = new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdClassNamePluralToApplicationNameListMap = new HashMap<String,
-          List<String>>();
-  private final Map<String, List<String>> stdCommandNameToApplicationNameListMap = new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdRecordNameToApplicationNameListMap = new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdPropertyNameToApplicationNameListMap = new HashMap<String, List<String>>();
-  private final Map<String, List<String>> stdEnumerationNameToApplicationNameListMap = new HashMap<String,
-          List<String>>();
-  private final Map<String, List<String>> stdEnumeratorConstantNameToApplicationNameListMap = new HashMap<String,
-          List<String>>();
+  private final Map<String, HashSet<String>> stdClassNameToApplicationNameSetMap = new HashMap<String,
+          HashSet<String>>();
+  private final Map<String, HashSet<String>> stdClassNamePluralToApplicationNameSetMap = new HashMap<String,
+          HashSet<String>>();
+  private final Map<String, HashSet<String>> stdCommandNameToApplicationNameSetMap = new HashMap<String,
+          HashSet<String>>();
+  private final Map<String, HashSet<String>> stdRecordNameToApplicationNameSetMap = new HashMap<String,
+          HashSet<String>>();
+  private final Map<String, HashSet<String>> stdPropertyNameToDictionarySetMap = new HashMap<String, HashSet<String>>();
+  private final Map<String, HashSet<String>> stdEnumerationNameToApplicationNameSetMap = new HashMap<String,
+          HashSet<String>>();
+  private final Map<String, HashSet<String>> stdEnumeratorConstantNameToApplicationNameListMap = new HashMap<String,
+          HashSet<String>>();
 
   public AppleScriptSystemDictionaryRegistryService(@NotNull AppleScriptSystemDictionaryRegistryComponent
                                                             systemDictionaryRegistry) {
-    initCachedForApplicationDictionariesPath(systemDictionaryRegistry);
+    initDictionaryPathsFromCache(systemDictionaryRegistry);
     initStandardSuite();
-    initOSXApplicationsDictionary();
-    initSystemApplicationNames();
-
+    initDictionariesFromCachedFiles();
+    discoverInstalledApplicationNames();
   }
 
-  private void initCachedForApplicationDictionariesPath(@NotNull AppleScriptSystemDictionaryRegistryComponent
-                                                                systemDictionaryRegistry) {
+  private void initDictionaryPathsFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent
+                                                    systemDictionaryRegistry) {
     applicationNameToGeneratedDictionaryPathMap
             .putAll(systemDictionaryRegistry.getApplicationNameToGeneratedDictionaryUrlMap());
     for (Map.Entry<String, String> stringEntry : applicationNameToGeneratedDictionaryPathMap.entrySet()) {
@@ -102,7 +105,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return applicationNameToClassNameSetMap;
   }
 
-  private void initSystemApplicationNames() {
+  private void discoverInstalledApplicationNames() {
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
       VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
       if (appsDirVFile != null && appsDirVFile.exists()) {
@@ -132,7 +135,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdLibClass(@NotNull String name) {
-    return stdClassNameToApplicationNameListMap.containsKey(name);
+    return stdClassNameToApplicationNameSetMap.containsKey(name);
   }
 
   @Override
@@ -143,7 +146,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdLibClassPluralName(@NotNull String pluralName) {
-    return stdClassNamePluralToApplicationNameListMap.containsKey(pluralName);
+    return stdClassNamePluralToApplicationNameSetMap.containsKey(pluralName);
   }
 
   @Override
@@ -154,7 +157,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdClassWithPrefixExist(@NotNull String classNamePrefix) {
-    return isNameWithPrefixExist(classNamePrefix, stdClassNameToApplicationNameListMap.keySet());
+    return isNameWithPrefixExist(classNamePrefix, stdClassNameToApplicationNameSetMap.keySet());
   }
 
   @Override
@@ -164,43 +167,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdClassPluralWithPrefixExist(@NotNull String namePrefix) {
-    return isNameWithPrefixExist(namePrefix, stdClassNamePluralToApplicationNameListMap.keySet());
+    return isNameWithPrefixExist(namePrefix, stdClassNamePluralToApplicationNameSetMap.keySet());
   }
 
   @Override
   public boolean isClassPluralWithPrefixExist(@NotNull String applicationName, @NotNull String pluralClassNamePrefix) {
     return isNameWithPrefixExist(pluralClassNamePrefix, applicationNameToClassNamePluralSetMap.get(applicationName));
   }
-
-//  @Override
-//  public int countStdClassesStartingWithName(@NotNull String namePrefix) {
-//    int result = 0;
-//    for (String className : stdClassNameToApplicationNameListMap.keySet()) {
-//      if (startsWithWord(className, namePrefix)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
-//
-//  @Override
-//  public int countApplicationClassesStartingWithName(@NotNull String applicationName, @NotNull String
-// classNamePrefix) {
-//    return countApplicationObjectsStartingWithName(classNamePrefix,
-//            applicationNameToClassNameSetMap.get(applicationName));
-//  }
-
-//  private int countApplicationObjectsStartingWithName(@NotNull String objectNamePrefix,
-//                                                      HashSet<String> appObjectNameSet) {
-//    if (appObjectNameSet == null) return 0;
-//    int result = 0;
-//    for (String objectName : appObjectNameSet) {
-//      if (startsWithWord(objectName, objectNamePrefix)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
 
   private boolean isNameWithPrefixExist(@NotNull String namePrefix,
                                         Set<String> nameSet) {
@@ -210,24 +183,6 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     }
     return false;
   }
-
-//  @Override
-//  public int countStdClassesStartingWithPluralName(@NotNull String namePrefix) {
-//    int result = 0;
-//    for (String className : stdClassNamePluralToApplicationNameListMap.keySet()) {
-//      if (startsWithWord(className, namePrefix)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
-//
-//  @Override
-//  public int countApplicationClassesStartingWithPluralName(@NotNull String applicationName,
-//                                                           @NotNull String pluralClassNamePrefix) {
-//    return countApplicationObjectsStartingWithName(pluralClassNamePrefix,
-//            applicationNameToClassNamePluralSetMap.get(applicationName));
-//  }
 
   //todo: think about performance enhancement
   public boolean ensureDictionaryInitialized(@NotNull String applicationName) {
@@ -241,7 +196,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdCommand(@NotNull String name) {
-    return stdCommandNameToApplicationNameListMap.containsKey(name);
+    return stdCommandNameToApplicationNameSetMap.containsKey(name);
   }
 
   @Override
@@ -257,41 +212,16 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdCommandWithPrefixExist(@NotNull String namePrefix) {
-    return isNameWithPrefixExist(namePrefix, stdCommandNameToApplicationNameListMap.keySet());
+    return isNameWithPrefixExist(namePrefix, stdCommandNameToApplicationNameSetMap.keySet());
   }
-
-//  @Override
-//  public int countStdCommandsStartingWithName(@NotNull String namePrefix) {
-//    int result = 0;
-//    for (String commandName : stdCommandNameToApplicationNameListMap.keySet()) {
-//      if (startsWithWord(commandName, namePrefix)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
-
-//  @Override
-//  public int countApplicationCommandsStartingWithName(@NotNull String applicationName,
-//                                                      @NotNull String commandNamePrefix) {
-//    int result = 0;
-//// must not violate contract => use *std* methods
-//    for (Map.Entry<String, List<String>> stringListEntry : applicationNameToCommandNameSetMap.entrySet()) {
-//      if (startsWithWord(stringListEntry.getKey(), commandNamePrefix)
-//              && stringListEntry.getValue().contains(applicationName)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
 
   @NotNull
   @Override
-  public List<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
-    List<String> appNameList = stdCommandNameToApplicationNameListMap.get(commandName);
-    if (appNameList == null) return new ArrayList<AppleScriptCommand>(0);
+  public Collection<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
+    HashSet<String> appNameList = stdCommandNameToApplicationNameSetMap.get(commandName);
+    if (appNameList == null) return new HashSet<AppleScriptCommand>(0);
 
-    List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>();
+    HashSet<AppleScriptCommand> result = new HashSet<AppleScriptCommand>();
     for (String applicationName : appNameList) {
       result.addAll(findApplicationCommands(project, applicationName, commandName));
     }
@@ -320,12 +250,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Override
   public boolean isStdProperty(@NotNull String name) {
-    return stdPropertyNameToApplicationNameListMap.containsKey(name);
+    return stdPropertyNameToDictionarySetMap.containsKey(name);
   }
 
   @Override
   public boolean isStdPropertyWithPrefixExist(@NotNull String namePrefix) {
-    return isNameWithPrefixExist(namePrefix, stdPropertyNameToApplicationNameListMap.keySet());
+    return isNameWithPrefixExist(namePrefix, stdPropertyNameToDictionarySetMap.keySet());
   }
 
   @Override
@@ -338,24 +268,6 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   public boolean isPropertyWithPrefixExist(@NotNull String applicationName, @NotNull String propertyNamePrefix) {
     return isNameWithPrefixExist(propertyNamePrefix, applicationNameToPropertySetMap.get(applicationName));
   }
-
-//  @Override
-//  public int countStdPropertiesStartingWithName(@NotNull String namePrefix) {
-//    int result = 0;
-//    for (String propertyName : stdPropertyNameToApplicationNameListMap.keySet()) {
-//      if (startsWithWord(propertyName, namePrefix)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
-
-//  @Override
-//  public int countApplicationPropertiesStartingWithName(@NotNull String applicationName,
-//                                                        @NotNull String propertyNamePrefix) {
-//    return countApplicationObjectsStartingWithName(propertyNamePrefix, applicationNameToPropertySetMap.get
-//            (applicationName));
-//  }
 
   @Override
   public boolean isStdConstant(@NotNull String name) {
@@ -378,25 +290,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return isNameWithPrefixExist(namePrefix, applicationNameToEnumeratorConstantNameSetMap.get(applicationName));
   }
 
-//  @Override
-//  public int countStdConstantStartingWithName(@NotNull String namePrefix) {
-//    int result = 0;
-//    for (String constantName : stdEnumeratorConstantNameToApplicationNameListMap.keySet()) {
-//      if (startsWithWord(constantName, namePrefix)) {
-//        result++;
-//      }
-//    }
-//    return result;
-//  }
-//
-//  @Override
-//  public int countApplicationConstantStartingWithName(@NotNull String applicationName,
-//                                                      @NotNull String constantNamePrefix) {
-//    return countApplicationObjectsStartingWithName(constantNamePrefix,
-//            applicationNameToEnumeratorConstantNameSetMap.get(applicationName));
-//  }
-
-  private void initOSXApplicationsDictionary() {
+  private void initDictionariesFromCachedFiles() {
     Collection<String> myCachedApplications = applicationNameToGeneratedDictionaryPathMap.keySet();
     Collection<String> myCachedApplicationNames = applicationNameToGeneratedDictionaryFileMap.keySet();
     //init from previously generated files
@@ -721,24 +615,24 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     for (Element classTag : suiteClasses) {
       parseClassElement(applicationName, classTag, false);
       List<Element> propertyElements = classTag.getChildren("property");
-      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToApplicationNameListMap);
+      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToDictionarySetMap);
     }
 
     for (Element classTag : suiteClassExtensions) {
       parseClassElement(applicationName, classTag, false);
       List<Element> propertyElements = classTag.getChildren("property");
-      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToApplicationNameListMap);
+      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToDictionarySetMap);
     }
 
-    parseElementsForApplication(suiteCommands, applicationName, stdCommandNameToApplicationNameListMap);
-    parseElementsForApplication(recordTypeTags, applicationName, stdRecordNameToApplicationNameListMap);
+    parseElementsForApplication(suiteCommands, applicationName, stdCommandNameToApplicationNameSetMap);
+    parseElementsForApplication(recordTypeTags, applicationName, stdRecordNameToApplicationNameSetMap);
 
     for (Element recordTag : recordTypeTags) {
       List<Element> propertyElements = recordTag.getChildren("property");
-      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToApplicationNameListMap);
+      parseElementsForApplication(propertyElements, applicationName, stdPropertyNameToDictionarySetMap);
     }
 
-    parseElementsForApplication(enumerationTags, applicationName, stdEnumerationNameToApplicationNameListMap);
+    parseElementsForApplication(enumerationTags, applicationName, stdEnumerationNameToApplicationNameSetMap);
 
     for (Element enumerationTag : enumerationTags) {
       List<Element> enumeratorTags = enumerationTag.getChildren("enumerator");
@@ -784,14 +678,14 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     }
 
     parseHashElementsForApplication(suiteCommands, applicationName, applicationNameToCommandNameSetMap);
-    parseElementsForApplication(recordTypeTags, applicationName, recordNameToApplicationNameListMap);
+    parseHashElementsForApplication(recordTypeTags, applicationName, applicationNameToRecordNameSetMap);
 
     for (Element recordTag : recordTypeTags) {
       List<Element> propertyElements = recordTag.getChildren("property");
       parseHashElementsForApplication(propertyElements, applicationName, applicationNameToPropertySetMap);
     }
 
-    parseElementsForApplication(enumerationTags, applicationName, enumerationNameToApplicationNameListMap);
+    parseHashElementsForApplication(enumerationTags, applicationName, applicationNameToEnumerationNameSetMap);
 
     for (Element enumerationTag : enumerationTags) {
       List<Element> enumeratorTags = enumerationTag.getChildren("enumerator");
@@ -802,7 +696,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   private static void parseElementsForApplication(List<Element> xmlElements, @NotNull String applicationName,
-                                                  @NotNull Map<String, List<String>>
+                                                  @NotNull Map<String, HashSet<String>>
                                                           objectTagNameToApplicationNameListMap) {
     for (Element applicationObjectTag : xmlElements) {
       parseSimpleElementForObject(applicationObjectTag, applicationName, objectTagNameToApplicationNameListMap);
@@ -818,12 +712,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   private static void parseSimpleElementForObject(@NotNull Element suiteObjectElement, @NotNull String applicationName,
-                                                  Map<String, List<String>> objectNameToApplicationNameListMap) {
+                                                  Map<String, HashSet<String>> objectNameToApplicationNameSetMap) {
     final String objectName = suiteObjectElement.getAttributeValue("name");
     final String code = suiteObjectElement.getAttributeValue("code");
     if (objectName == null || code == null) return;
 
-    updateApplicationNameListFor(objectName, applicationName, objectNameToApplicationNameListMap);
+    updateApplicationNameSetFor(objectName, applicationName, objectNameToApplicationNameSetMap);
   }
 
   private static void hashSimpleElementForObject(@NotNull Element suiteObjectElement, @NotNull String applicationName,
@@ -846,40 +740,39 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     updateObjectNameSetForApplication(className, applicationName, applicationNameToClassNameSetMap);
     updateObjectNameSetForApplication(pluralClassName, applicationName, applicationNameToClassNamePluralSetMap);
     if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
-      updateApplicationNameListFor(className, applicationName, stdClassNameToApplicationNameListMap);
-      updateApplicationNameListFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameListMap);
+      updateApplicationNameSetFor(className, applicationName, stdClassNameToApplicationNameSetMap);
+      updateApplicationNameSetFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameSetMap);
     }
   }
 
-  private static void updateApplicationNameListFor(@NotNull String applicationObjectName,
-                                                   @NotNull String applicationName,
-                                                   Map<String, List<String>> applicationNameListMap) {
-    List<String> appNameListForObject = applicationNameListMap.get(applicationObjectName);
-    if (appNameListForObject == null) {
-      appNameListForObject = new ArrayList<String>();
-      appNameListForObject.add(applicationName);
-      if (!StringUtil.isEmpty(applicationName)) {
-        applicationNameListMap.put(applicationObjectName, appNameListForObject);
+  private static void updateApplicationNameSetFor(@NotNull String applicationObjectName,
+                                                  @NotNull String applicationName,
+                                                  Map<String, HashSet<String>> applicationNameSetMap) {
+    HashSet<String> appNameSetForObject = applicationNameSetMap.get(applicationObjectName);
+    updateSetForMappedObjectName(applicationObjectName, applicationName, applicationNameSetMap, appNameSetForObject);
+  }
+
+  private static void updateSetForMappedObjectName(@NotNull String objectName,
+                                                   @NotNull String nameToAdd,
+                                                   @NotNull Map<String, HashSet<String>> objectNameToNameSetMap,
+                                                   @Nullable HashSet<String> nameSetForObject) {
+    if (nameSetForObject == null) {
+      nameSetForObject = new HashSet<String>();
+      if (!StringUtil.isEmpty(objectName)) {
+        objectNameToNameSetMap.put(objectName, nameSetForObject);
       }
-    } else if (!appNameListForObject.contains(applicationName)) {
-      appNameListForObject.add(applicationName);
+    }
+    if (!nameSetForObject.contains(nameToAdd)) {
+      nameSetForObject.add(nameToAdd);
     }
   }
 
   private static void updateObjectNameSetForApplication(@NotNull String applicationObjectName,
                                                         @NotNull String applicationName,
-                                                        Map<String, HashSet<String>> applicationNameListMap) {
-    HashSet<String> objectNameSetForApplication = applicationNameListMap.get(applicationName);
-//    HashSet<String> objectNameSetForApplication = applicationNameListMap.get(applicationObjectName);
-    if (objectNameSetForApplication == null) {
-      objectNameSetForApplication = new HashSet<String>();
-      objectNameSetForApplication.add(applicationObjectName);
-      if (!StringUtil.isEmpty(applicationName)) {
-        applicationNameListMap.put(applicationName, objectNameSetForApplication);
-      }
-    } else if (!objectNameSetForApplication.contains(applicationObjectName)) {
-      objectNameSetForApplication.add(applicationObjectName);
-    }
+                                                        Map<String, HashSet<String>> applicationNameSetMap) {
+    HashSet<String> objectNameSetForApplication = applicationNameSetMap.get(applicationName);
+    updateSetForMappedObjectName(applicationName, applicationObjectName, applicationNameSetMap,
+            objectNameSetForApplication);
   }
 
   @Contract("_, null -> false")

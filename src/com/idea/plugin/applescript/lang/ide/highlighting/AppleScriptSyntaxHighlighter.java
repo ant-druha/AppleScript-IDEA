@@ -27,6 +27,7 @@ public class AppleScriptSyntaxHighlighter extends SyntaxHighlighterBase {
     fillMap(ATTRIBUTES, KEYWORDS, AppleScriptSyntaxHighlighterColors.KEYWORD);
     fillMap(ATTRIBUTES, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR, DICTIONARY_COMMAND_NAME);
     fillMap(ATTRIBUTES, AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR, DICTIONARY_CLASS_NAME);
+    fillMap(ATTRIBUTES, AppleScriptSyntaxHighlighterColors.DICTIONARY_PROPERTY_ATTR, DICTIONARY_PROPERTY_NAME);
     fillMap(ATTRIBUTES, STRINGS, AppleScriptSyntaxHighlighterColors.STRING);
     fillMap(ATTRIBUTES, NUMBERS, AppleScriptSyntaxHighlighterColors.NUMBER);
     ATTRIBUTES.put(COMMENT, AppleScriptSyntaxHighlighterColors.COMMENT);

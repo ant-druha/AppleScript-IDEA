@@ -33,6 +33,8 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                         .DICTIONARY_COMMAND_ATTR),
                 new AttributesDescriptor("Dictionary class", AppleScriptSyntaxHighlighterColors
                         .DICTIONARY_CLASS_ATTR),
+                new AttributesDescriptor("Dictionary property", AppleScriptSyntaxHighlighterColors
+                        .DICTIONARY_PROPERTY_ATTR),
         };
 
       ourTags.put("keyword", AppleScriptSyntaxHighlighterColors.KEYWORD);
@@ -41,6 +43,7 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
       ourTags.put("comment", AppleScriptSyntaxHighlighterColors.COMMENT);
       ourTags.put("command", AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
       ourTags.put("dictionary class", AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);
+      ourTags.put("dictionary property", AppleScriptSyntaxHighlighterColors.DICTIONARY_PROPERTY_ATTR);
     }
 
 
@@ -70,8 +73,10 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                 "end if ## had some reports to print\n" +
                 "tell application \"TextEdit\"\n" +
                 "  <command>make</command> new <dictionary class>document</dictionary class> with properties " +
-                "{name:\"Doc Name\", text:\"Now I can create new documents using " +
+                "{name:\"Doc Name\", text:\"Now I can create new documents ¬ \nusing " +
                 "AppleScript.\"}\n" +
+                "  get <dictionary property>message id</dictionary property> of it's " +
+                "<dictionary class>mailbox</dictionary class>\n" +
                 "  <command>close</command>\n" +
                 "  get <dictionary class>character</dictionary class>\n" +
                 "  set character to 1234\n" +

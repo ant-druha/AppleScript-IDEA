@@ -156,6 +156,7 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   }
 
   private void addLookupElement(List<LookupElement> lookupElements, PsiElement el) {
+    if (!el.isValid()) return;
     LookupElementBuilder builder;
     if (el instanceof AppleScriptComponent) {
       builder = LookupElementBuilder.createWithIcon((AppleScriptComponent) el);

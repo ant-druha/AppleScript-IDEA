@@ -6,6 +6,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -103,7 +104,7 @@ public class ParsableScriptSuiteRegistryHelper {
 //  }
 
   @NotNull
-  public static List<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
+  public static Collection<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
     return getParsableScriptHelper().findStdCommands(project, commandName);
   }
 

@@ -268,39 +268,23 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean parseAssignmentStatementInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseAssignmentStatementInner")) return false;
-    boolean r = false;
-    boolean oldParsingAssignmentState = b.getUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT) == Boolean.TRUE;
+    boolean r;
     b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, true);
-    boolean isApplicationCommandName = false;
-    boolean completeCommandCall = false;
+//    boolean isApplicationCommandName = false;
 //    if (nextTokenIs(b, "parseAssignmentStatementInner", COPY, SET)) {
-    StringHolder parsedCommandName = new StringHolder();
-    final String toldApplicationName = getTargetApplicationName(b);
-    boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
-    Set<String> applicationsToImport = null;
-    if (areThereUseStatements) {
-      applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
-    }
-    PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Command Handler Call Expression>");
-    isApplicationCommandName = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName,
-            areThereUseStatements, applicationsToImport);
-    exit_section_(b, l, mComName, null, isApplicationCommandName, false, null);
+//      StringHolder parsedCommandName = new StringHolder();
+//      final String toldApplicationName = getTargetApplicationName(b);
+//      boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
+//      Set<String> applicationsToImport = null;
+//      if (areThereUseStatements) {
+//        applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
+//      }
+//      PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Command Handler Call Expression>");
+//      isApplicationCommandName = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName,
+//              areThereUseStatements, applicationsToImport);
+//      exit_section_(b, l, mComName, null, isApplicationCommandName, false, null);
 //    }
-//    if (isApplicationCommandName) {
-//      PsiBuilder.Marker isAppleScriptAssignment = enter_section_(b, l, _AND_, "<parseAssignmentStatementInner>");
-//      r = AppleScriptParser.assignmentStatement(b, l + 1);
-//      exit_section_(b, l, isAppleScriptAssignment, null, r, false, null);
-//    }
-//    if (!isApplicationCommandName || r)
-    if (!isApplicationCommandName)
-      r = AppleScriptParser.assignmentStatement(b, l + 1);
-    else {
-      PsiBuilder.Marker isAppleScriptAssignment = enter_section_(b, l, _AND_, "<parseAssignmentStatementInner>");
-      r = AppleScriptParser.assignmentStatement(b, l + 1);
-      exit_section_(b, l, isAppleScriptAssignment, null, r, false, null);
-      if (r)
-        r = AppleScriptParser.assignmentStatement(b, l + 1);
-    }
+    r = AppleScriptParser.assignmentStatement(b, l + 1);
     b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, false);
     return r;
   }
@@ -1083,7 +1067,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         if (classWithPrefixExists) {
           currentTokenText.value = nextTokenText;
         } else if (ParsableScriptSuiteRegistryHelper
-                .isApplicationClassPluralName(applicationName, currentTokenText.value)) return true;
+                .isApplicationClassPluralName(applicationName, currentTokenText.value)) {
+          // TODO: 24/11/15 need to check if there is a property with name longer than currentTokenText
+//          if (ParsableScriptSuiteRegistryHelper.isPropertyWithPrefixExist(applicationName))
+          return true;
+        }
       }
       return false;
     } else {
