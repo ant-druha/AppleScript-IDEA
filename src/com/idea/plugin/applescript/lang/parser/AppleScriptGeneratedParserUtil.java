@@ -138,9 +138,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       PsiBuilder.Marker m = enter_section_(b);
       r = parseParametersForCommand(b, l + 1, command);
       //todo NLS does not work in the cases when command is written in parenthesis
-      r = r && (b.getTokenType() == NLS || b.getTokenType() == COMMENT || b.eof() //todo could not be correct
-              // condition in some cases???
-              || b.getTokenType() == RPAREN || b.getTokenType() == THEN);// THEN - inside IF statements
+//      r = r && (b.getTokenType() == NLS || b.getTokenType() == COMMENT || b.eof() //todo could not be correct
+//               condition in some cases???
+//              || b.getTokenType() == COMMA ||  b.getTokenType() == RCURLY //if inside list literal
+//              || b.getTokenType() == RPAREN || b.getTokenType() == THEN);// THEN - inside IF statements
       exit_section_(b, m, null, r);
       if (r) {
         break;
@@ -277,7 +278,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //        applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
 //      }
 //      PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Command Handler Call Expression>");
-//      isApplicationCommandName = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName,
+//      isApplicationCommandName = parseDictionaryCommandName(b, l + 1, parsedCommandName, toldApplicationName,
 //              areThereUseStatements, applicationsToImport);
 //      exit_section_(b, l, mComName, null, isApplicationCommandName, false, null);
 //    }
@@ -743,17 +744,27 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    return parseDeclaredNameInner(b, l, DeclaredType.SDEF_COMMAND_PARAMETER_SELECTOR);
   }
 
-  public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l) {
-    StringHolder parsedCommandName = new StringHolder();
+  public static boolean parseDictionaryCommandName(PsiBuilder b, int l) {
     boolean r;
+    if (nextTokenIs(b, NLS)) {
+      return false;
+    }
+    StringHolder parsedCommandName = new StringHolder();
+    String toldApplicationName = getTargetApplicationName(b);
+    boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
+    Set<String> applicationsToImport = null;
+    if (areThereUseStatements) {
+      applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
+    }
     PsiBuilder.Marker m = enter_section_(b, l, _COLLAPSE_, "<parse ApplicationDictionary Command Name>");
-    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, null, false, null);
+    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
+            applicationsToImport);
     exit_section_(b, l, m, DICTIONARY_COMMAND_NAME, r, false, null);
     return r;
   }
 
   public static boolean parseIncompleteCommandCall(PsiBuilder b, int l) {
-    return parseDictionaryCommandNameInner(b, l + 1);
+    return parseDictionaryCommandName(b, l + 1);
   }
 
 

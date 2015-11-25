@@ -185,13 +185,14 @@ private compilation_unit_ ::=
                       | RAW_CODE
                       | sep
                       )*
-//                      sep?
-//                      {pin('.*')=2 recoverWhile="mainScriptRecover"}
-//                      {pin('.*')=1}
+//                          ( (( statement | expression | COMMENT | RAW_CODE)
+//                                ( sep ( statement | expression | COMMENT | RAW_CODE)?)*
+//                            ) | sep
+//                          )*
 //mainScriptRecover ::= !(sep (expression|statement))
                       //{recoverWhile = not_next_expression}
 
-private sep ::= NLS|COMMENT //one or more new lines and spaces
+private sep ::= COMMENT? NLS //possible comment and  one new lines and spaces
 private nls ::= NLS* // zero or more new lines and spaces
 
 identifier ::= var_identifier//|appleScriptProperty
@@ -222,7 +223,12 @@ exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
-blockBody ::= (statement|COMMENT|expression|RAW_CODE)? (nls (statement|COMMENT|expression|RAW_CODE))* {pin=1}
+blockBody ::= (statement|COMMENT|expression|RAW_CODE) (nls (statement|COMMENT|expression|RAW_CODE))*
+{pin=1
+//recoverWhile=bodyRecover
+}
+//private bodyRecover ::= !(nls (end|(on error)|else))
+//private blockBodyNls ::= blockBody nls
 
 repeatForeverStatement ::= repeat nls
                             blockBody? nls
@@ -270,10 +276,10 @@ private offendingObject ::= typeSpecifier|objectReferenceWrapper
 
 tryStatement ::= try nls
                      blockBody? nls
-                     on error [errorMessageVar] [number errorNumberVar] [from offendingObjectVar]
+                     (on error [errorMessageVar] [number errorNumberVar] [from offendingObjectVar]
                      [to expectedTypeVar] [partial result resultListVar] nls
                      [varDeclarationList] nls
-                     blockBody? nls
+                     blockBody? nls)?
                  end [error|try] {pin=1}
 
 varDeclarationListPart ::= identifier
@@ -379,7 +385,7 @@ private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 ifSimpleStatement ::= if expression then (/*!(ifCompoundStatement)*/ (statement|expression) )
 //                                    {pin=4}
 //todo: need to fix issue with detection simple vs compound statement
-ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep
+ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep+
                                        blockBody? nls
                                    (else if expression [then] nls
                                        blockBody? nls )*
@@ -654,6 +660,9 @@ private propertyInitializerExpression ::= expression
 // or derive values. The simplest kinds of expressions, called literal expressions, are representations of values
 // in scripts. More complex expressions typically combine literals, variables, operators, and object specifiers.
 expression ::= logicalOrExpressionWrapper
+//{recoverWhile=expressionRecover}
+private expressionRecover ::= !(sep|identifier|tell|try|repeat|with|local|global|get|set|end|copy|in|front
+|return|BAND|from|of|handlerParameterLabel|dictionaryCommandName)
 
 parenthesizedExpression ::= LPAREN expressionInParentheses RPAREN
 
@@ -731,7 +740,7 @@ handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParamet
                                          [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
                                          [varDeclarationList] nls
                                            blockBody? nls
-                                        end [handlerNameStrict] //!expression// sep or EOF here todo think: sep is needed for validation but could be issues with not included handlerNameStrict
+                                        end [referenceIdentifier]
 //                                        {pin=2}
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"
@@ -749,7 +758,7 @@ labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? identifier //u
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-private handlerNameStrict ::=(referenceIdentifier !handlerParameterLabel)*
+//private handlerNameStrict ::=(referenceIdentifier !handlerParameterLabel)*
 
 //todo may be include these keywords on the top level script only not for the all the expressions...??
 //todo should we made it left associative with identifier only??
@@ -934,6 +943,7 @@ private composite_value ::= listLiteralExpression|recordLiteralExpression
 // AppleScript syntax
 //private cmd_get_expression ::= [get] expression [as class_name]
 getCommandExpression ::= get expression
+//{recoverWhile=commandCallRecover}
                       //|([get] objectReferenceWrapper [coercion_expression])//Application syntax ()
                               //when application (ref -> gmd_get->obj_ref_>...)object_ref turns into get command
 
@@ -1018,13 +1028,17 @@ private valueExpression ::= primaryExpression coercionExpression*
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
  implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall"}
+//{recoverWhile=commandCallRecover}
+//private commandCallRecover ::= expressionRecover//!(sep)
+//private expressionRecover ::= !(sep|identifier|tell|try|repeat|with|local|global|get|set|end|copy|in|front
+//|return|BAND|from|of|handlerParameterLabel|dictionaryCommandName)
 //commandHandlerCallExpression ::= dictionaryCommandName dictionaryCommandParameters?
 //external dictionaryCommandParameters ::= parseParametersForCommand parsingCommand
 //see parseCommandHandlerCallExpression
-dictionaryCommandName ::= <<parseDictionaryCommandNameInner>>
+dictionaryCommandName ::= <<parseDictionaryCommandName>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
 implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
-//private dictionaryCommandName ::= <<parseDictionaryCommandNameInner parsedCommandName>> //dictionaryCommandNameExternalRule
+//private dictionaryCommandName ::= <<parseDictionaryCommandName parsedCommandName>> //dictionaryCommandNameExternalRule
 
 private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel
 |run|count|script//|with|without|given set/copy ??

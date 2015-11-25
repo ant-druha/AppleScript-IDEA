@@ -72,8 +72,6 @@ AppleScript File(0,186)
       AppleScriptApplicationNameStringImpl(APPLICATION_NAME_STRING)(162,176)
         PsiElement(AppleScriptTokenType.STRING_LITERAL)('"iMovie 9.0.9"')(162,176)
     PsiElement(AppleScriptTokenType.NLS)('\n\n')(176,178)
-    AppleScriptBlockBodyImpl(BLOCK_BODY)(178,178)
-      <empty list>
     PsiElement(AppleScriptTokenType.end)('end')(178,181)
     PsiWhiteSpace(' ')(181,182)
     PsiElement(AppleScriptTokenType.tell)('tell')(182,186)

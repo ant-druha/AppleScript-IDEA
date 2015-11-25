@@ -8,8 +8,6 @@ AppleScript File(0,152)
       AppleScriptApplicationNameStringImpl(APPLICATION_NAME_STRING)(17,38)
         PsiElement(AppleScriptTokenType.STRING_LITERAL)('"CoreServicesUIAgent"')(17,38)
     PsiElement(AppleScriptTokenType.NLS)('\n\n')(38,40)
-    AppleScriptBlockBodyImpl(BLOCK_BODY)(40,40)
-      <empty list>
     PsiElement(AppleScriptTokenType.end)('end')(40,43)
     PsiWhiteSpace(' ')(43,44)
     PsiElement(AppleScriptTokenType.tell)('tell')(44,48)
