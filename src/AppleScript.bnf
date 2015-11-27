@@ -217,13 +217,11 @@ exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
-//blockBody ::= (statement|COMMENT|expression|RAW_CODE) (nls (statement|COMMENT|expression|RAW_CODE))*
 blockBody ::= blockBodyPart ( blockBodyPart)*
 {pin=1
 //recoverWhile=bodyRecover
 }
 //private bodyRecover ::= !(nls (end|(on error)|else))
-//private blockBodyNls ::= blockBody nls
 private blockBodyPart ::= (statement|expression|RAW_CODE) sep
 {pin=1
 //recoverWhile=bodyPartRecover
@@ -238,7 +236,7 @@ repeatNumTimesStatement ::= repeat numTimes [times] sep
                             blockBody?
                             end [repeat]
 
-private numTimes ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
+private numTimes ::= expression//integerLiteralExpression|referenceIdentifier|parenthesizedExpression
 
 repeatWhileStatement ::= repeat while expression sep
                             blockBody?
@@ -252,8 +250,7 @@ repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopVal
                              blockBody?
                              end [repeat] {pin=4}
 
-//todo may be just use expression here (does not always work..)
-//repeat with i from len to 1 by -1
+//todo expression does not always work.. (because of 'to' )
 private stepValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
 private stopValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
 private startValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
@@ -262,17 +259,17 @@ private loopVariable ::= directParameterDeclaration
 repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression sep
                          blockBody?
                          end [repeat] {pin=4}
-//todo test all possible list expressions (may be it is better to specify any expansion here)
-private listOrReferenceExpression ::= listLiteralExpression|objectReferenceWrapper
+private listOrReferenceExpression ::= expression//listLiteralExpression|objectReferenceWrapper
 
 errorCommandExpression ::= error [errorMessage] [number errorNumber]
                                  [from offendingObject]
                                  [to expectedType]
                                  [partial result resultList] //{pin=1}
-private resultList ::= listLiteralExpression|referenceIdentifier
-//offendingObject is a reference to the object, if any, that caused the error. If you provide a partial reference,
-// AppleScript completes it using the value of the default object (for example, the target of a Tell statement).
-private offendingObject ::= typeSpecifier|objectReferenceWrapper
+private resultList ::= expression//listLiteralExpression|referenceIdentifier
+private offendingObject ::= expression//typeSpecifier|objectReferenceWrapper
+private expectedType ::= expression//typeSpecifier|referenceIdentifier
+private errorNumber ::= expression//integerLiteralExpression|referenceIdentifier
+private errorMessage ::= expression//stringLiteralExpression|referenceIdentifier
 
 tryStatement ::= try sep
                      blockBody?
@@ -293,79 +290,72 @@ varDeclarationList ::= varAccessDeclaration (COMMA varDeclarationListPart)*
 
 private errorMessageVar ::= directParameterDeclaration
 private errorNumberVar ::= directParameterDeclaration
-private offendingObjectVar ::= referenceIdentifier
-private resultListVar ::= referenceIdentifier
-private expectedTypeVar ::= referenceIdentifier
+private offendingObjectVar ::= directParameterDeclaration
+private resultListVar ::= directParameterDeclaration
+private expectedTypeVar ::= directParameterDeclaration
 
-//todo: Using it, me, and my in Tell Statements ! p.242
-private tellStatement ::= parseTellSimpleStatement|parseTellCompoundStatement// |tellCompoundStatement
-// it - ref to object, me - ref to current script
+private tellStatement ::= parseTellSimpleStatement|parseTellCompoundStatement
 
 private applicationClass ::= APPLICATION|app
 
 private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
-//object_specifier_statement is a reference to an application object, system object, or script object.
 //see <<parseTellCompoundStatementInner>>
-tellCompoundStatement ::= tell objectReferenceWrapper sep //todo not to count Ø -| and CRLF char as a sep
+tellCompoundStatement ::= tell objectReferenceWrapper sep
                                         blockBody?
                           end [tell] //{pin=6}
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName getApplicationReference]}
-
 //                      {recoverWhile="tellRecover"}
 //tellRecover ::= !(sep)
-private expectedType ::= typeSpecifier|referenceIdentifier
-private errorNumber ::= integerLiteralExpression|referenceIdentifier|expression
-private errorMessage ::= stringLiteralExpression|referenceIdentifier|expression
 
-consideringStatement ::= considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)?
-                           [but ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? ] sep
+consideringStatement ::= considering considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)?
+                           [but ignoring considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)? ] sep
                            blockBody?
                          end considering {pin=2}
 
-ignoringStatement ::= ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)?
-                        [but considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? ] sep
+ignoringStatement ::= ignoring considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)?
+                        [but considering considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)? ] sep
                            blockBody?
                       end ignoring {pin=2}
-private considerOrIgnoreAttribute ::= expression
+private considerOrIgnoreAttr ::= expression
 
-withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second /*!(classTypeName)*/) sep //index ref
+withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second) sep
                            blockBody?
                          end [timeout] {pin=2}
-private timeoutIntegerExpression ::= integerLiteralExpression|parenthesizedExpression
+private timeoutIntegerExpression ::= expression//integerLiteralExpression|parenthesizedExpression
 
 withTransactionStatement ::= with transaction [sessionSpecificator] sep
                                blockBody?
                              end [transaction] {pin=2}
-private sessionSpecificator ::= referenceIdentifier
+private sessionSpecificator ::= expression//referenceIdentifier
 
-//todo may define just single 'use' statement?
 useStatement ::= useAppleScriptStatement|useApplicationOrScriptStatement|useFrameworkStatement
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName useStandardAdditions withImporting]}
 //todo 'considering numeric strings'
 
-private useAppleScriptStatement ::= use 'AppleScript' [version stringLiteralExpression] {pin=2}
+private useAppleScriptStatement ::= use 'AppleScript' [version expression/*stringLiteralExpression*/] {pin=2}
 
 private useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
                                    [((with importing)|(without importing)|importing) expression ] {pin=2}
 
+//todo handle application id "stringWithId"
+//use application "com.microsoft.Word" i.e. should not find application with such name -> create new map for app id
 //see <<parseUseApplicationOrScriptStatementInner>>
-private useApplicationOrScriptStatement ::= use [referenceIdentifier COLON]
+private useApplicationOrScriptStatement ::= use [directParameterDeclaration COLON]
                     (
-                     (   <<parseUsedApplicationNameExternal withDictionaryImportPredicate>>
+                     (   <<parseUsedApplicationNameExternal withImportPredicate>>//application "string" &(importing)
                       |
                          dataSpecifier
                       |
                         (script dataSpecifier)
                      )
-                        [version stringLiteralExpression] [(with importing)|(without importing)|(importing expression)]
+                        [versionSpecifier] [(with importing)|(without importing)|(importing expression)]
                     )
 
-private withDictionaryImportPredicate ::= &([version stringLiteralExpression ] !((without importing)|(importing false)))
-
-
-private dataSpecifier ::= referenceExpression|stringLiteralExpression
+private withImportPredicate ::= &([versionSpecifier] !((without importing)|(importing false)))
+private dataSpecifier ::= expression//referenceExpression|stringLiteralExpression
+private versionSpecifier ::= version stringLiteralExpression
 
 private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
 
@@ -385,16 +375,15 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
 private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 
-ifSimpleStatement ::= if expression then (/*!(ifCompoundStatement)*/ (statement|expression) )
-//                                    {pin=4}
-//todo: need to fix issue with detection simple vs compound statement
-ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep
+ifSimpleStatement ::= if expression then (statement|expression)
+
+ifCompoundStatement ::= if expression [then] sep
                                        blockBody?
                                    (else if expression [then] sep
                                        blockBody?  )*
                                    (else sep
                                         blockBody? )?
-                                   end [if] {pin=8}
+                        end [if] {pin=8}
 
 // value class types
 private literalExpression ::=
@@ -433,7 +422,7 @@ builtInClassIdentifier ::= builtInClassIdCommon|builtInClassIdNative //|script
 
 //there is no need to define in SDEF these classes:
 private builtInClassIdNative::= ANY|BOOLEAN|DATE|FILE|INTEGER|LOCATION_SPECIFIER|NUMBER|POINT|REAL|RECORD|RECTANGLE|
-SPECIFIER|TEXT|TYPE     |ALIAS
+SPECIFIER|TEXT|TYPE|ALIAS
 
 private builtInClassIdCommon::= STRING|CLASS|CONSTANT|LIST|DATA|REFERENCE|STYLED_TEXT|TEXT_ITEM|ITEM|FILE_SPECIFICATION|
 INTERNATIONAL_TEXT|RGB_COLOR|STYLED_CLIPBOARD_TEXT|UNICODE_TEXT|unitTypeValueClasses
@@ -1090,9 +1079,7 @@ private referenceForm ::=
         | middleElemReference
         | relativeReference
         | indexReference
-        | propertyReference  //may be we can accept here previously parsed class names if there is no such property OR
-                            // if property name fits (either prev. classname + some suffix of the current remaining
-                            // property or just prev. class name ?
+        | propertyReference
        )
       )
 

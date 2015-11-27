@@ -312,43 +312,34 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
   }
 
-  public static boolean parseUsedApplicationNameExternal(PsiBuilder b, int l, Parser isWithDictionaryImport) {
+  public static boolean parseUsedApplicationNameExternal(PsiBuilder b, int l, Parser isImporting) {
     if (!recursion_guard_(b, l, "parseUsedApplicationNameExternal")) return false;
     boolean r;
     if (!nextTokenIs(b, "parseUsedApplicationNameExternal", APPLICATION, APP, SCRIPTING_ADDITIONS)) return false;
-//    if (!nextTokenIs(b, STRING_LITERAL) && !nextTokenIs(b, SCRIPTING_ADDITIONS)) {
-//      return false;
-//    }
-    List<String> appNames = new ArrayList<String>();
+    String appName = null;
     r = consumeToken(b, SCRIPTING_ADDITIONS);
     if (r) {
-      appNames.add(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
-//      for (String stdLibName : ApplicationDictionary.STD_LIBRARY_NAMES) {
-//        appNames.add(stdLibName);
-//      }
+      appName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
     } else {
       r = consumeToken(b, APPLICATION);
       if (!r) r = consumeToken(b, APP);
 
       if (r) {
-        String appName = b.getTokenText();
-        if (!StringUtil.isEmpty(appName)) {
-          appNames.add(appName.replace("\"", ""));
-        }
+        String appNameStr = b.getTokenText();
         r = consumeToken(b, STRING_LITERAL);
+        if (r && !StringUtil.isEmpty(appNameStr)) {
+          appName = appNameStr.replace("\"", "");
+        }
       }
     }
-
-    boolean isImportTerms = isWithDictionaryImport.parse(b, l + 1);
-    if (isImportTerms) {
+    boolean doTermsImport = isImporting.parse(b, l + 1);
+    if (doTermsImport && !StringUtil.isEmpty(appName)) {
       Set<String> usedAppNames = b.getUserData(USED_APPLICATION_NAMES);
       if (usedAppNames == null) {
         usedAppNames = new HashSet<String>();
         b.putUserData(USED_APPLICATION_NAMES, usedAppNames);
       }
-      if (r) {
-        usedAppNames.addAll(appNames);
-      }
+      usedAppNames.add(appName);
     }
     return r;
   }
@@ -449,16 +440,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r;
     r = consumeToken(b, SCRIPTING_ADDITIONS);
     if (r) {
-//      Stack<String> currentTargetAppNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
       pushTargetApplicationName(b, ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
-//      if (importingApps == null) {
-//        importingApps = new HashSet<String>();
-//        b.putUserData(USED_APPLICATION_NAMES, importingApps);
-//      }
-//      importingApps.add(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
-//      for (String stdLib : ApplicationDictionary.STD_LIBRARY_NAMES) {
-//        importingApps.add(stdLib);
-//      }
     }
     return r;
   }
