@@ -64,6 +64,8 @@ public class AppleScriptColorAnnotator implements Annotator {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);
     } else if (element instanceof AppleScriptDictionaryPropertyName) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_PROPERTY_ATTR);
+    } else if (element instanceof AppleScriptDictionaryConstant) {
+      createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_CONSTANT_ATTR);
     } else if (element instanceof AppleScriptTellSimpleStatement
             || element instanceof AppleScriptTellCompoundStatement) {
       String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);

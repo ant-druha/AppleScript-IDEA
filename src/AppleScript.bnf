@@ -181,19 +181,13 @@ private compilation_unit_ ::=
                       (
                         statement
                       | expression
-                      | COMMENT
                       | RAW_CODE
                       | sep
                       )*
-//                          ( (( statement | expression | COMMENT | RAW_CODE)
-//                                ( sep ( statement | expression | COMMENT | RAW_CODE)?)*
-//                            ) | sep
-//                          )*
 //mainScriptRecover ::= !(sep (expression|statement))
                       //{recoverWhile = not_next_expression}
-
-private sep ::= COMMENT? NLS //possible comment and  one new lines and spaces
-private nls ::= NLS* // zero or more new lines and spaces
+private sep ::= (COMMENT? NLS COMMENT?)+ // one or more new lines and spaces
+private nls ::= COMMENT? NLS+ // one or more new lines and spaces
 
 identifier ::= var_identifier//|appleScriptProperty
 //dictionaryIdentifier ::= var_identifier|builtInClassIdCommon|builtInClassIdNative|script
@@ -223,33 +217,39 @@ exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
-blockBody ::= (statement|COMMENT|expression|RAW_CODE) (nls (statement|COMMENT|expression|RAW_CODE))*
+//blockBody ::= (statement|COMMENT|expression|RAW_CODE) (nls (statement|COMMENT|expression|RAW_CODE))*
+blockBody ::= blockBodyPart ( blockBodyPart)*
 {pin=1
 //recoverWhile=bodyRecover
 }
 //private bodyRecover ::= !(nls (end|(on error)|else))
 //private blockBodyNls ::= blockBody nls
+private blockBodyPart ::= (statement|expression|RAW_CODE) sep
+{pin=1
+//recoverWhile=bodyPartRecover
+}
+private bodyPartRecover ::= !(blockBodyPart| (end|(on error)|else))
 
-repeatForeverStatement ::= repeat nls
-                            blockBody? nls
+repeatForeverStatement ::= repeat sep
+                            blockBody?
                            end [repeat]
 
-repeatNumTimesStatement ::= repeat numTimes [times] nls
-                            blockBody? nls
+repeatNumTimesStatement ::= repeat numTimes [times] sep
+                            blockBody?
                             end [repeat]
 
 private numTimes ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression
 
-repeatWhileStatement ::= repeat while expression nls
-                            blockBody? nls
+repeatWhileStatement ::= repeat while expression sep
+                            blockBody?
                          end [repeat] {pin=2}
 
-repeatUntilStatement ::= repeat until expression nls
-                         blockBody? nls
+repeatUntilStatement ::= repeat until expression sep
+                         blockBody?
                          end [repeat] {pin=2}
 
-repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopValue [by stepValue] nls
-                             blockBody? nls
+repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopValue [by stepValue] sep
+                             blockBody?
                              end [repeat] {pin=4}
 
 //todo may be just use expression here (does not always work..)
@@ -259,8 +259,8 @@ private stopValue ::= integerLiteralExpression|referenceIdentifier|parenthesized
 private startValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
 private loopVariable ::= directParameterDeclaration
 
-repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression nls
-                         blockBody? nls
+repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression sep
+                         blockBody?
                          end [repeat] {pin=4}
 //todo test all possible list expressions (may be it is better to specify any expansion here)
 private listOrReferenceExpression ::= listLiteralExpression|objectReferenceWrapper
@@ -274,13 +274,16 @@ private resultList ::= listLiteralExpression|referenceIdentifier
 // AppleScript completes it using the value of the default object (for example, the target of a Tell statement).
 private offendingObject ::= typeSpecifier|objectReferenceWrapper
 
-tryStatement ::= try nls
-                     blockBody? nls
+tryStatement ::= try sep
+                     blockBody?
                      (on error [errorMessageVar] [number errorNumberVar] [from offendingObjectVar]
-                     [to expectedTypeVar] [partial result resultListVar] nls
-                     [varDeclarationList] nls
-                     blockBody? nls)?
+                     [to expectedTypeVar] [partial result resultListVar] sep
+                     [varDeclarationList sep]
+                     blockBody?)?
                  end [error|try] {pin=1}
+//{recoverWhile=tryRecover}
+
+private tryRecover ::= !<<parseTryRecover>>
 
 varDeclarationListPart ::= identifier
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
@@ -303,8 +306,8 @@ private applicationClass ::= APPLICATION|app
 private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
 //object_specifier_statement is a reference to an application object, system object, or script object.
 //see <<parseTellCompoundStatementInner>>
-tellCompoundStatement ::= tell objectReferenceWrapper nls //todo not to count Ø -| and CRLF char as a sep
-                                        blockBody? nls
+tellCompoundStatement ::= tell objectReferenceWrapper sep //todo not to count Ø -| and CRLF char as a sep
+                                        blockBody?
                           end [tell] //{pin=6}
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName getApplicationReference]}
@@ -312,27 +315,27 @@ tellCompoundStatement ::= tell objectReferenceWrapper nls //todo not to count Ø
 //                      {recoverWhile="tellRecover"}
 //tellRecover ::= !(sep)
 private expectedType ::= typeSpecifier|referenceIdentifier
-private errorNumber ::= integerLiteralExpression|referenceIdentifier
-private errorMessage ::= stringLiteralExpression|referenceIdentifier
+private errorNumber ::= integerLiteralExpression|referenceIdentifier|expression
+private errorMessage ::= stringLiteralExpression|referenceIdentifier|expression
 
-consideringStatement ::= considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls
-                           [but ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls]
-                           blockBody? nls
+consideringStatement ::= considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)?
+                           [but ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? ] sep
+                           blockBody?
                          end considering {pin=2}
 
-ignoringStatement ::= ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls
-                        [but considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? nls]
-                           blockBody? nls
+ignoringStatement ::= ignoring considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)?
+                        [but considering considerOrIgnoreAttribute ((COMMA considerOrIgnoreAttribute)* (LAND considerOrIgnoreAttribute)?)? ] sep
+                           blockBody?
                       end ignoring {pin=2}
 private considerOrIgnoreAttribute ::= expression
 
-withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second /*!(classTypeName)*/) nls //index ref
-                           blockBody? nls
+withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second /*!(classTypeName)*/) sep //index ref
+                           blockBody?
                          end [timeout] {pin=2}
 private timeoutIntegerExpression ::= integerLiteralExpression|parenthesizedExpression
 
-withTransactionStatement ::= with transaction [sessionSpecificator] nls
-                               blockBody? nls
+withTransactionStatement ::= with transaction [sessionSpecificator] sep
+                               blockBody?
                              end [transaction] {pin=2}
 private sessionSpecificator ::= referenceIdentifier
 
@@ -367,8 +370,8 @@ private dataSpecifier ::= referenceExpression|stringLiteralExpression
 private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
 
 //see <<parseUsingTermsFromStatement>>
-usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<putStdLibrary>>) nls
-                               blockBody? nls
+usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<putStdLibrary>>) sep
+                               blockBody?
                             end [using terms from] //{pin=3}
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName withImportingStdLibrary]}
@@ -385,13 +388,13 @@ private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 ifSimpleStatement ::= if expression then (/*!(ifCompoundStatement)*/ (statement|expression) )
 //                                    {pin=4}
 //todo: need to fix issue with detection simple vs compound statement
-ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep+
-                                       blockBody? nls
-                                   (else if expression [then] nls
-                                       blockBody? nls )*
-                                   (else nls
-                                        blockBody? nls)?
-                                   end [if] {pin=9}
+ifCompoundStatement ::= if expression [then] /*(then (statement|expression) | [then])*/ sep
+                                       blockBody?
+                                   (else if expression [then] sep
+                                       blockBody?  )*
+                                   (else sep
+                                        blockBody? )?
+                                   end [if] {pin=8}
 
 // value class types
 private literalExpression ::=
@@ -701,11 +704,9 @@ appleScriptProperty ::= BUILT_IN_PROPERTY|resultProperty|versionProperty/*|missi
 |textItemDelimitersProperty|parentProperty//|itMeProperty//|text_constant /*?? */
 
 private itMeProperty ::= it|me
-
-handlerParameterLabel ::=
-about|above|against|'apart from'|around|'aside from'|at|below|beneath|beside|between   // spaces ??
-                     |by|for|from|'instead of'|into|on|onto|'out of'|over|since|thru|through|under
-|to //no such label in documentation but it works!
+//todo add via regexp (spaces)
+handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|at|below|beneath|beside|between|by|for
+|from|'instead of'|into|on|onto|'out of'|over|since|thru|through|under|to //there is no 'to' label in documentation but it works!
 
 argumentSelector ::= identifier COLON
 {methods=[getSelectorIdentifier getSelectorName]}
@@ -720,8 +721,8 @@ private userLabelReference ::= THE_KW? referenceIdentifier
 //===HANDLERS===
 // handler is a collection of statements which can be invoked by name
 //todo consider add all in handlerLabeledParametersDefinition and handledLabeledParametersName
-handlerRunDefinition ::= on run nls
-                            blockBody? nls
+handlerRunDefinition ::= on run sep
+                            blockBody?
                           end run {pin=2}
 
 //handlerOpenDefinition ::= on open directParameterDeclaration? nls
@@ -738,8 +739,8 @@ handlerRunDefinition ::= on run nls
 
 handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
                                          [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
-                                         [varDeclarationList] nls
-                                           blockBody? nls
+                                         [varDeclarationList] sep
+                                           blockBody?
                                         end [referenceIdentifier]
 //                                        {pin=2}
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
@@ -826,8 +827,8 @@ to (statement | handlerInterleavedParametersCall | expression )
 //{pin=1}
 
 handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
-                                            [varDeclarationList] nls
-                                               blockBody? nls
+                                            [varDeclarationList] sep
+                                               blockBody?
                                             end [referenceIdentifier]
 //                                            {pin=3  //or Grammar kit will also make formalParameterList as Component
 //                                            recoverWhile="statementRecover"
@@ -867,8 +868,8 @@ simpleFormalParameter ::= THE_KW? identifier
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
 implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 
-handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersSelectorPart+ nls
-                                               blockBody? nls
+handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersSelectorPart+ sep
+                                               blockBody?
                                              end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
 implements="com.idea.plugin.applescript.psi.AppleScriptHandler"}
@@ -891,15 +892,15 @@ implements="com.idea.plugin.applescript.psi.AppleScriptHandlerCall"}
 
 handlerArgument ::= argumentSelector userParameterVal
 
-scriptObjectDefinition ::= script scriptObjectName nls
-                                  blockBody nls
+scriptObjectDefinition ::= script scriptObjectName sep
+                                  blockBody
                            end [script] //{pin=2}
 {mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptScriptObject"
 implements="com.idea.plugin.applescript.psi.AppleScriptScriptObject"}
 
-scriptObjectUnnamedDefinition ::= script nls
-                                  blockBody? nls
-                                 end [script] {pin=5}
+scriptObjectUnnamedDefinition ::= script sep
+                                  blockBody?
+                                 end [script] {pin=4}
 
 private scriptObjectName ::= identifier
 
@@ -991,28 +992,28 @@ private targetVariablePattern ::= targetVariable|targetListLiteral|targetRecordL
 // performing Boolean evaluations(logical ex), and coercing values.
 // todo operator precedence (coercion and not order amend) also & insert here
 private logicalOrExpressionWrapper ::= logicalAndExpressionWrapper logicalOrExpression*
-left logicalOrExpression ::= LOR nls logicalAndExpressionWrapper
+left logicalOrExpression ::= LOR NLS* logicalAndExpressionWrapper
 
 private logicalAndExpressionWrapper ::= compareExpressionWrapper logicalAndExpression*
-left logicalAndExpression ::= LAND nls compareExpressionWrapper
+left logicalAndExpression ::= LAND NLS* compareExpressionWrapper
 
 private compareExpressionWrapper ::= concatenationExpressionWrapper compareExpression*
-left compareExpression ::= (equalityOperator|relational_operator) nls concatenationExpressionWrapper
+left compareExpression ::= (equalityOperator|relational_operator) NLS* concatenationExpressionWrapper
 
 private concatenationExpressionWrapper ::= additiveExpressionWrapper concatenationExpression*
 left concatenationExpression ::= BAND additiveExpressionWrapper
 
 private additiveExpressionWrapper ::= multiplicativeExpressionWrapper additiveExpression*
-left additiveExpression ::= (PLUS|MINUS) nls multiplicativeExpressionWrapper
+left additiveExpression ::= (PLUS|MINUS) NLS* multiplicativeExpressionWrapper
 
 private multiplicativeExpressionWrapper ::= powerExpressionWrapper multiplicativeExpression*
-left multiplicativeExpression ::= multiplicativeOperator nls powerExpressionWrapper
+left multiplicativeExpression ::= multiplicativeOperator NLS* powerExpressionWrapper
 
 private powerExpressionWrapper ::= objectReferenceWrapper powerExpression*
 left powerExpression ::= POW objectReferenceWrapper
 
 
-private prefixExpression ::= (prefixOperator nls prefixExpression) | valueExpression
+private prefixExpression ::= (prefixOperator NLS* prefixExpression) | valueExpression
 private prefixOperator ::= PLUS|MINUS|LNOT
 
 private objectReferenceWrapper ::= THE_KW? prefixExpression filterReference? <<parseObjectReference>>* // objectReference*
@@ -1106,5 +1107,5 @@ private containment_any_part_operator ::= IS_CONTAIN|DOES_NOT_CONTAIN|IS_IN|IS_N
 private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
 
 left coercionExpression ::= coercionStrictExpression|coercionUserDefinedExpression
-private coercionStrictExpression ::= AS nls typeSpecifier {pin=3}
-private coercionUserDefinedExpression ::= AS nls referenceIdentifier {pin=3}
+private coercionStrictExpression ::= AS typeSpecifier {pin=3}
+private coercionUserDefinedExpression ::= AS referenceIdentifier {pin=3}

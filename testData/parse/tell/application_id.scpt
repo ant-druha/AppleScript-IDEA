@@ -3,8 +3,10 @@ tell application "Microsoft PowerPoint"
   property effect
   property effect
   properties
-  animate level third level
-  autoshape flowchart summing junction
+
+  get animate level second level
+  get animate level third level
+  get autoshape flowchart summing junction
   set color for
   get slide range -- todo class is not detected
   property set effect

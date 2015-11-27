@@ -108,7 +108,7 @@ on makeRelativeAlias(_item) --todo item as parameter
     set end of expandedPathTo to path to (get contents of i) from user domain
   end repeat
 
-  add line numbers
+  --add line numbers
 
   set AppleScript's text item delimiters to linefeed
   set expandedPathTo to paragraphs of (expandedPathTo as text)

@@ -60,12 +60,17 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
     }
   }
 
-  protected void doParseScriptInPackageTest(String fileNameWithoutExtension) throws IOException {
+  protected void doParseScriptInPackageTest(String fileNameWithoutExtension) {
     for (PsiFile psiFile : myPsiFiles) {
       String dataName = psiFile.getVirtualFile().getNameWithoutExtension();
       if (dataName.equals(fileNameWithoutExtension)) {
-        ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(), dataName, skipSpaces(),
-                printRanges());
+        try {
+          ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(), dataName, skipSpaces(),
+                  printRanges());
+        } catch (IOException e) {
+          System.out.println(": Parsing failed" + psiFile.getName());
+          e.printStackTrace();
+        }
       }
     }
   }

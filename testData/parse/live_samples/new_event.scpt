@@ -9,6 +9,7 @@ get afp URL
 -- lazy way to specify calender
 tell application "Calendar"
   set calId to uid of calendar 1 whose name is "Work"
+  beep day view
   get day view
 end tell
 set timeNow to current date

@@ -387,12 +387,32 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     b.putUserData(APPLICATION_NAME_PUSHED, false);
     boolean compoundBefore = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
     b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, true);//not used anywhere actually
+
+    ErrorState state = ErrorState.get(b);
+
     r = AppleScriptParser.tellCompoundStatement(b, l + 1);
     b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, compoundBefore);
     if (r) {
       popApplicationNameIfNeeded(b);
     }
     b.putUserData(APPLICATION_NAME_PUSHED, pushedBefore);
+    return r;
+  }
+
+  // TODO: 26/11/15 implement custom try parsing: add static counter for inner rty statements..
+  public static boolean parseTryRecover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseTryRecover")) return false;
+    boolean r = false;
+    int currStmt = 1;
+    while (!b.eof() && b.getTokenType() != null) {
+      IElementType tt = b.getTokenType();
+      if (tt == TRY) {
+        currStmt += 1;
+      } else if (tt == END && currStmt < 2) {
+        b.advanceLexer();
+        return true;
+      }
+    }
     return r;
   }
 

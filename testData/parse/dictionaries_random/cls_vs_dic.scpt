@@ -42,7 +42,7 @@ tell application "Mail"
   delete ((some message whose message id is theTempID) of mailbox "* items to shift")
 
   exists --process "Mail"
---if not (exists process "Mail") then ddd
+  --if not (exists process "Mail") then ddd
 
 end tell
 

@@ -35,6 +35,8 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                         .DICTIONARY_CLASS_ATTR),
                 new AttributesDescriptor("Dictionary property", AppleScriptSyntaxHighlighterColors
                         .DICTIONARY_PROPERTY_ATTR),
+                new AttributesDescriptor("Dictionary constant", AppleScriptSyntaxHighlighterColors
+                        .DICTIONARY_CONSTANT_ATTR),
         };
 
       ourTags.put("keyword", AppleScriptSyntaxHighlighterColors.KEYWORD);
@@ -44,6 +46,7 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
       ourTags.put("command", AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
       ourTags.put("dictionary class", AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);
       ourTags.put("dictionary property", AppleScriptSyntaxHighlighterColors.DICTIONARY_PROPERTY_ATTR);
+      ourTags.put("dictionary constant", AppleScriptSyntaxHighlighterColors.DICTIONARY_CONSTANT_ATTR);
     }
 
 
@@ -79,6 +82,7 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
                 "<dictionary class>mailbox</dictionary class>\n" +
                 "  <command>close</command>\n" +
                 "  get <dictionary class>character</dictionary class>\n" +
+                "  set pathToSpec to <dictionary constant>application support</dictionary constant>\n" +
                 "  set character to 1234\n" +
                 "end tell";
     }
