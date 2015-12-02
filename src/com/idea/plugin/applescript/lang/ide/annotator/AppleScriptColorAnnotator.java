@@ -3,9 +3,7 @@ package com.idea.plugin.applescript.lang.ide.annotator;
 import com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterColors;
 import com.idea.plugin.applescript.lang.ide.intentions.AddApplicationDictionaryQuickFix;
 import com.idea.plugin.applescript.lang.ide.intentions.RenameParameterLabelQuickFix;
-import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService;
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
-import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -71,24 +69,21 @@ public class AppleScriptColorAnnotator implements Annotator {
       String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);
       AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService
               (AppleScriptSystemDictionaryRegistryService.class);
-      AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
-              (element.getProject(), AppleScriptProjectDictionaryService.class);
-      ApplicationDictionary dictionary = !StringUtil.isEmpty(appName) ?
-              dictionaryProjectService.getDictionary(appName) : null;
-      // TODO: 15/11/15 should we create application dictionary here?? it makes sense. but on the other hand it is
-      // created when resolve or completing the code
       if (dictionaryRegistryService != null) {
-        if (!StringUtil.isEmpty(appName) && !dictionaryRegistryService.isApplicationKnown(appName)) {
-          AppleScriptApplicationReference appRef = PsiTreeUtil
-                  .findChildOfType(element, AppleScriptApplicationReference.class);
-          String warningText;
-          if (!dictionaryRegistryService.isApplicationScriptable(appName)) {
-            warningText = "Application \"" + appName + "\" is not scriptable";
-          } else {
-            warningText = "Application \"" + appName + "\" not found";
+        if (!StringUtil.isEmpty(appName) && !dictionaryRegistryService.wasDictionaryGenerated(appName)) {
+          dictionaryRegistryService.ensureDictionaryInitialized(appName);
+          String warningReason = null;
+          if (dictionaryRegistryService.isNotScriptable(appName)) {
+            warningReason = "Application \"" + appName + "\" is not scriptable";
+          } else if (dictionaryRegistryService.isInUnknownList(appName)) {
+            warningReason = "Application \"" + appName + "\" not found";
           }
-          holder.createWarningAnnotation(appRef != null ? appRef : element, warningText)
-                  .registerFix(new AddApplicationDictionaryQuickFix(appName));
+          if (warningReason != null || !dictionaryRegistryService.wasDictionaryGenerated(appName)) {
+            AppleScriptApplicationReference appRef = PsiTreeUtil
+                    .findChildOfType(element, AppleScriptApplicationReference.class);
+            holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
+                    .registerFix(new AddApplicationDictionaryQuickFix(appName));
+          }
         }
       }
     }

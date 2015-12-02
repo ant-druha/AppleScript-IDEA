@@ -22,7 +22,7 @@ public interface ApplicationDictionary extends DictionarySuite {
   String STANDARD_COCOA_LIBRARY = "CocoaStandard";
   // standard suite, provided by Mac OS X
   String STANDARD_ADDITIONS_LIBRARY = "StandardAdditions";
-  List<String> STD_LIBRARY_NAMES = Arrays.asList(STANDARD_COCOA_LIBRARY, STANDARD_ADDITIONS_LIBRARY);
+  List<String> STD_LIBRARY_NAMES = Arrays.asList(STANDARD_ADDITIONS_LIBRARY);
   String[] STANDARD_DEFINITION_FILES = {"sdef/CocoaStandard.xml", "sdef/StandardAdditions.xml"};
   String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications", "/System/Library/CoreServices",
           "/Library/ScriptingAdditions"};

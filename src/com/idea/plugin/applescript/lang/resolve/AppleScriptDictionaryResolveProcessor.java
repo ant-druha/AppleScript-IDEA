@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -235,7 +236,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     return result;
   }
 
-  private static void appendResultsIfNeeded(@NotNull List<DictionaryComponent> result,
+  private static void appendResultsIfNeeded(@NotNull Collection<DictionaryComponent> result,
                                             @NotNull Project project,
                                             boolean areThereUseStatements,
                                             boolean filterStandardAdditions, boolean filterCocoaStandard) {
@@ -252,9 +253,10 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     }
   }
 
-  public static void collectAllComponentsFromDictionary(ApplicationDictionary importedDict,
-                                                        List<DictionaryComponent> dictionaryComponents,
+  public static void collectAllComponentsFromDictionary(@Nullable ApplicationDictionary importedDict,
+                                                        @NotNull Collection<DictionaryComponent> dictionaryComponents,
                                                         boolean withCocoaStdLibFiltering) {
+    if (importedDict == null) return;
     if (withCocoaStdLibFiltering) {
       AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
               .getService(importedDict.getProject(), AppleScriptProjectDictionaryService.class);

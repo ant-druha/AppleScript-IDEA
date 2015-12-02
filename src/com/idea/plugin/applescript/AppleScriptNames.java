@@ -28,4 +28,9 @@ public class AppleScriptNames {
           "altering line endings", "buttons", "from", "with title"};
 
   public static final String[] PARSED_CLASS_NAMES = {"word", "file", "application"};
+
+  public static boolean isIdentifierStart(char c){
+    //    r = Character.isLetter(c) || c == '|';
+    return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '|';
+  }
 }

@@ -14,6 +14,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.util.Consumer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -35,33 +37,34 @@ public class LoadDictionaryAction extends AnAction {
 
   }
 
-  public static void openLoadDirectoryDialog(final Project project, VirtualFile directoryFile, final String appName) {
-    FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, true);
+  public static void openLoadDirectoryDialog(@NotNull final Project project,
+                                             @Nullable VirtualFile directoryFile,
+                                             @Nullable final String appName) {
+    final boolean chooseMultiply = StringUtil.isEmpty(appName);
+    FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, chooseMultiply);
     FileChooser.chooseFiles(descriptor, project, directoryFile, new Consumer<List<VirtualFile>>() {
       @Override
       public void consume(final List<VirtualFile> files) {
+        AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager
+                .getService(project, AppleScriptProjectDictionaryService.class);
+        if (projectDictionaryRegistry == null) return;
+
         for (VirtualFile file : files) {
-          if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
+          if (!ApplicationDictionaryImpl.extensionSupported(file.getExtension())) continue;
+
+          if (chooseMultiply) {
             String applicationName;
-            if (StringUtil.isEmpty(appName)) {
-              if (!ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
-                applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
-                        + file.getName(), "Enter application name", null, file.getNameWithoutExtension(), null);
-              } else {
-                applicationName = file.getNameWithoutExtension();
-              }
+            if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
+              applicationName = file.getNameWithoutExtension();
             } else {
-              applicationName = appName;
+              applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
+                      + file.getName(), "Enter Application Name", null, file.getNameWithoutExtension(), null);
             }
-            if (StringUtil.isEmpty(applicationName)) {
-              return;
-            } else {
-              AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager
-                      .getService(project, AppleScriptProjectDictionaryService.class);
-              if (projectDictionaryRegistry != null) {
-                projectDictionaryRegistry.createDictionary(applicationName, file);
-              }
-            }
+            if (StringUtil.isEmpty(applicationName)) continue;
+            projectDictionaryRegistry.createDictionary(applicationName, file);
+          } else {
+            projectDictionaryRegistry.createDictionary(appName, file);
+            return;
           }
         }
       }

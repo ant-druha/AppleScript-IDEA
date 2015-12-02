@@ -173,6 +173,7 @@
 
   ]
     extends(".*Expression")="expression"
+    consumeTokenMethod(".*(Expression|Recover)")="consumeTokenFast"
 }
 
 appleScriptFile ::= compilation_unit_
@@ -217,16 +218,14 @@ exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
-blockBody ::= blockBodyPart ( blockBodyPart)*
+blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
 {pin=1
 //recoverWhile=bodyRecover
 }
-//private bodyRecover ::= !(nls (end|(on error)|else))
-private blockBodyPart ::= (statement|expression|RAW_CODE) sep
-{pin=1
-//recoverWhile=bodyPartRecover
-}
-private bodyPartRecover ::= !(blockBodyPart| (end|(on error)|else))
+//private bodyRecover ::= !((end|(on error)|else))
+private blockBodyPart ::= statement|expression|RAW_CODE
+{recoverWhile=bodyPartRecover}
+private bodyPartRecover ::= !(sep)
 
 repeatForeverStatement ::= repeat sep
                             blockBody?
@@ -299,7 +298,10 @@ private tellStatement ::= parseTellSimpleStatement|parseTellCompoundStatement
 private applicationClass ::= APPLICATION|app
 
 private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
-//see <<parseTellCompoundStatementInner>>
+/**
+todo handle: 'tell my application "App Name"'...end tell
+see <<parseTellCompoundStatementInner>>
+ */
 tellCompoundStatement ::= tell objectReferenceWrapper sep
                                         blockBody?
                           end [tell] //{pin=6}
@@ -391,8 +393,8 @@ private literalExpression ::=
               |styledTextLiteralExpression
               //|built_in_type
               |numberLiteralExpression
-              |builtInConstantLiteralExpression | (/*!(dictionaryClassName) */dictionaryConstant)//if there is a class with
-              // the same name it is more likely it is typeSpecifier rather than a constant expression (enumerator)...
+              |dictionaryConstant
+              |builtInConstantLiteralExpression
               |listLiteralExpression
               |recordLiteralExpression
               |dateLiteralExpression
@@ -400,8 +402,9 @@ private literalExpression ::=
 
 /** Numeric, string, regexp, boolean, date, string(space,tab,return) constant*/
 builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|save_opt_constant|text_constant|itMeProperty
-|current_application_constant| missing_value_constant
+|current_application_constant| missing_value_constant | scriptingAdditionsFolderConstant
 //|appleScriptPropertiesConstant
+private scriptingAdditionsFolderConstant ::= SCRIPTING_ADDITIONS
 
 dictionaryConstant ::= <<parseDictionaryConstant>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier"
@@ -494,11 +497,27 @@ private boolean_constant ::= true|false
 //An AppleScript command is one that is built into the AppleScript language. There currently are five such
 // commands: get , set, count, copy, and run.
 // Except for copy , each of these commands can also be implemented by applications.
-//todo using the keyword anywhere in references (other cases perhaps?)
 
-private parseReferenceToApplication ::= <<parseApplicationReference>>
+/**
+todo refactor application reference parsing rule so to insert and use anywhere in the
+grammar: (tell/using terms/use statements). in general place do not push any app names, but redefine it for
+each specific case: tell/use/using.
+Examples:
+tell application "App name" .. end tell
+tell scripting additions ..end tell
+use application "App name"
+use scripting additions
+using terms of application "App Name" end using terms of
 
-//see <<parseApplicationReference>>
+<<parseApplicationName isCompoundStatement
+
+The same for script reference:
+tell script "Name" ... end tell
+use script "Name"
+
+see <<parseApplicationReference>>
+*/
+//private parseAppRef ::= THE_KW? <<f>>
 applicationReference ::= THE_KW? applicationClass applicationNameString
 [of THE_KW? machine machineNameString (of THE_KW? zone appleTalkZoneNameString)?] | THE_KW? current_application_constant
 {methods=[getApplicationName]}
@@ -1053,7 +1072,7 @@ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 // todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
 private referenceExpression ::=
 //  applicationReference
-  parseReferenceToApplication
+  <<parseApplicationReference>>
   | referenceForm
 //  | applicationReference
   | file_reference

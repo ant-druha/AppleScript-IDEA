@@ -59,25 +59,6 @@ public class ParsableScriptSuiteRegistryHelper {
     return getParsableScriptHelper().isClassPluralWithPrefixExist(applicationName, pluralClassNamePrefix);
   }
 
-//  public static int countStdClassesStartingWithName(@NotNull String namePrefix) {
-//    return getParsableScriptHelper().countStdClassesStartingWithName(namePrefix);
-//  }
-//
-//  public static int countApplicationClassesStartingWithName(@NotNull String applicationName,
-//                                                            @NotNull String classNamePrefix) {
-//    return getParsableScriptHelper().countApplicationClassesStartingWithName(applicationName, classNamePrefix);
-//  }
-//
-//  public static int countStdClassesStartingWithPluralName(@NotNull String namePrefix) {
-//    return getParsableScriptHelper().countStdClassesStartingWithPluralName(namePrefix);
-//  }
-//
-//  public static int countApplicationClassesStartingWithPluralName(@NotNull String applicationName,
-//                                                                  @NotNull String pluralClassNamePrefix) {
-//    return getParsableScriptHelper().countApplicationClassesStartingWithPluralName(applicationName,
-//            pluralClassNamePrefix);
-//  }
-
   public static boolean isStdCommand(@NotNull String name) {
     return getParsableScriptHelper().isStdCommand(name);
   }
@@ -93,15 +74,6 @@ public class ParsableScriptSuiteRegistryHelper {
   public static boolean isStdCommandWithPrefixExist(@NotNull String namePrefix) {
     return getParsableScriptHelper().isStdCommandWithPrefixExist(namePrefix);
   }
-
-//  public static int countStdCommandsStartingWithName(@NotNull String namePrefix) {
-//    return getParsableScriptHelper().countStdCommandsStartingWithName(namePrefix);
-//  }
-//
-//  public static int countApplicationCommandsStartingWithName(@NotNull String applicationName,
-//                                                             @NotNull String commandNamePrefix) {
-//    return getParsableScriptHelper().countApplicationCommandsStartingWithName(applicationName, commandNamePrefix);
-//  }
 
   @NotNull
   public static Collection<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
@@ -123,19 +95,9 @@ public class ParsableScriptSuiteRegistryHelper {
     return getParsableScriptHelper().isApplicationProperty(applicationName, propertyName);
   }
 
-//  public static int countStdPropertiesStartingWithName(@NotNull String namePrefix) {
-//    return getParsableScriptHelper().countStdPropertiesStartingWithName(namePrefix);
-//  }
-
   public static boolean isStdPropertyWithPrefixExist(@NotNull String namePrefix) {
     return getParsableScriptHelper().isStdPropertyWithPrefixExist(namePrefix);
   }
-
-
-//  public static int countApplicationPropertiesStartingWithName(@NotNull String applicationName,
-//                                                               @NotNull String propertyNamePrefix) {
-//    return getParsableScriptHelper().countApplicationPropertiesStartingWithName(applicationName, propertyNamePrefix);
-//  }
 
   public static boolean isPropertyWithPrefixExist(@NotNull String applicationName,
                                                   @NotNull String propertyNamePrefix) {
@@ -153,15 +115,6 @@ public class ParsableScriptSuiteRegistryHelper {
   public static boolean isStdConstantWithPrefixExist(@NotNull String namePrefix) {
     return getParsableScriptHelper().isStdConstantWithPrefixExist(namePrefix);
   }
-
-//  public static int countStdConstantStartingWithName(@NotNull String namePrefix) {
-//    return getParsableScriptHelper().countStdConstantStartingWithName(namePrefix);
-//  }
-//
-//  public static int countApplicationConstantStartingWithName(@NotNull String applicationName,
-//                                                             @NotNull String constantNamePrefix) {
-//    return getParsableScriptHelper().countApplicationConstantStartingWithName(applicationName, constantNamePrefix);
-//  }
 
   public static boolean isConstantWithPrefixExist(@NotNull String applicationName,
                                                   @NotNull String constantNamePrefix) {

@@ -123,13 +123,11 @@ AppleScript File(0,2004)
           AppleScriptReferenceIdentifierImpl(REFERENCE_IDENTIFIER)(518,521)
             AppleScriptIdentifierImpl(IDENTIFIER)(518,521)
               PsiElement(AppleScriptTokenType.var_identifier)('Web')(518,521)
-      PsiErrorElement:'.', <additive expression>, <built in class identifier plural>, <compare expression>, <filter reference>, <multiplicative expression>, <object reference>, AppleScriptTokenType.&, AppleScriptTokenType.'s, AppleScriptTokenType.(, AppleScriptTokenType.*, AppleScriptTokenType.+, AppleScriptTokenType.-, AppleScriptTokenType.BUILT_IN_PROPERTY, AppleScriptTokenType.COMMENT, AppleScriptTokenType.CUBIC_VOL, AppleScriptTokenType.CURRENT_APP, AppleScriptTokenType.CURRENT_APPLICATION, AppleScriptTokenType.DIGITS, AppleScriptTokenType.DIV, AppleScriptTokenType.DOES_NOT_CONTAIN, AppleScriptTokenType.ENDS_WITH, AppleScriptTokenType.EQ, AppleScriptTokenType.FILE_SPECIFICATION, AppleScriptTokenType.GE, AppleScriptTokenType.GT, AppleScriptTokenType.INTERNATIONAL_TEXT, AppleScriptTokenType.IS_CONTAIN, AppleScriptTokenType.IS_IN, AppleScriptTokenType.IS_NOT_IN, AppleScriptTokenType.LE, AppleScriptTokenType.LOCATION_SPECIFIER, AppleScriptTokenType.LT, AppleScriptTokenType.MISSING_VALUE, AppleScriptTokenType.NE, AppleScriptTokenType.NLS, AppleScriptTokenType.QUOTED_FORM, AppleScriptTokenType.REF_OP, AppleScriptTokenType.RGB_COLOR, AppleScriptTokenType.SQUARE_AREA, AppleScriptTokenType.STARTS_BEGINS_WITH, AppleScriptTokenType.STRING_LITERAL, AppleScriptTokenType.STYLED_CLIPBOARD_TEXT, AppleScriptTokenType.STYLED_TEXT, AppleScriptTokenType.TEMPERATURE, AppleScriptTokenType.TEXT_ITEM, AppleScriptTokenType.TEXT_ITEM_DELIMETERS, AppleScriptTokenType.UNICODE_TEXT, AppleScriptTokenType.^, AppleScriptTokenType.about and ... expected, got 'servers'(521,521)
-        <empty list>
       PsiWhiteSpace(' ')(521,522)
-      AppleScriptExpressionImpl(EXPRESSION)(522,529)
-        AppleScriptReferenceIdentifierImpl(REFERENCE_IDENTIFIER)(522,529)
-          AppleScriptIdentifierImpl(IDENTIFIER)(522,529)
-            PsiElement(AppleScriptTokenType.var_identifier)('servers')(522,529)
+      PsiElement(AppleScriptTokenType.var_identifier)('servers')(522,529)
+      PsiErrorElement:<compare expression>, <filter reference>, <handler labeled parameters call expression>, <handler parameter label>, <multiplicative expression> or <object reference> expected, got '
+  '(529,529)
+        <empty list>
       PsiElement(AppleScriptTokenType.NLS)('\n  ')(529,532)
       AppleScriptDictionaryCommandHandlerCallExpressionImpl(DICTIONARY_COMMAND_HANDLER_CALL_EXPRESSION)(532,554)
         AppleScriptDictionaryCommandNameImpl(DICTIONARY_COMMAND_NAME)(532,554)
