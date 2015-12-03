@@ -17,7 +17,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * for storing plain structure info about application name and it's classes/properties/constants/commands
+ * Store information about generated dictionary files for applications
  */
 @State(name = AppleScriptSystemDictionaryRegistryComponent.COMPONENT_NAME,
         storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml")})
@@ -106,7 +106,7 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     for (Map.Entry<String, String> stringPair : classToDictionariesMap.entrySet()) {
       List<String> applicationNames = new ArrayList<String>();
       for (String applicationName : stringPair.getValue().split(",")) {
-        if (!StringUtil.isEmpty(applicationName)
+        if (!StringUtil.isEmptyOrSpaces(applicationName)
                 && !ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {//if std class was
           // saved somehow, do not add it here - other map for std classes is used
           applicationNames.add(applicationName);
@@ -135,7 +135,7 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
 
   @Override
   public void disposeComponent() {
-    System.out.println("disposing component");
+    LOG.info("disposing component " + COMPONENT_NAME);
   }
 
   @NotNull

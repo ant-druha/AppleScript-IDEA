@@ -33,8 +33,8 @@ import java.util.*;
 
 public class AppleScriptSystemDictionaryRegistryService implements ParsableScriptHelper {
 
-  private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistryService.class.getName
-          ());
+  private static final Logger LOG = Logger.getInstance("#" +
+          AppleScriptSystemDictionaryRegistryService.class.getName());
 
   //persisted data
   private final Map<String, String> applicationNameToGeneratedDictionaryPathMap = new HashMap<String, String>();
@@ -97,10 +97,6 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return applicationNameToGeneratedDictionaryPathMap;
   }
 
-  public Map<String, VirtualFile> getApplicationNameToGeneratedDictionaryFileMap() {
-    return applicationNameToGeneratedDictionaryFileMap;
-  }
-
   public Map<String, HashSet<String>> getApplicationNameToClassNameSetMap() {
     return applicationNameToClassNameSetMap;
   }
@@ -112,8 +108,6 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         processApplicationsDirectory(appsDirVFile);
       }
     }
-    System.out.println("System.out: List of installed applications initialized. Count: " + allSystemApplicationNames
-            .size());
     LOG.info("List of installed applications initialized. Count: " + allSystemApplicationNames.size());
   }
 
@@ -186,13 +180,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   //todo: think about performance enhancement - where better to call this method in parser?
   public boolean ensureDictionaryInitialized(@NotNull String applicationName) {
-    boolean result = applicationNameToGeneratedDictionaryPathMap.containsKey(applicationName)
+    //    if (!result)
+//      LOG.warn("Dictionary was not initialized for application: " + applicationName);
+    return applicationNameToGeneratedDictionaryPathMap.containsKey(applicationName)
             || !StringUtil.isEmptyOrSpaces(applicationName)
             && !isNotScriptable(applicationName)
             && initializeDictionaryForApplication(applicationName) != null;
-    if (!result)
-      LOG.warn("Application dictionary was not initialized for application: " + applicationName);
-    return result;
   }
 
   @Override
@@ -291,55 +284,42 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return isNameWithPrefixExist(namePrefix, applicationNameToEnumeratorConstantNameSetMap.get(applicationName));
   }
 
+  /**
+   * init from saved, previously generated files
+   */
   private void initDictionariesFromCachedFiles() {
-    Collection<String> myCachedApplications = applicationNameToGeneratedDictionaryPathMap.keySet();
-    Collection<String> myCachedApplicationNames = applicationNameToGeneratedDictionaryFileMap.keySet();
-    //init from previously generated files
     for (Map.Entry<String, String> appNameToFile : applicationNameToGeneratedDictionaryPathMap.entrySet()) {
       VirtualFile dictionaryVFile = LocalFileSystem.getInstance().findFileByPath(appNameToFile.getValue());
       if (dictionaryVFile != null && dictionaryVFile.exists()) {
-        if (!initializeFromGeneratedFile(appNameToFile.getKey(), appNameToFile.getValue())) {
-          System.out.println("WARNING: failed to initialize dictionary for application: " + appNameToFile.getKey() +
-                  " from generated file " + appNameToFile.getValue());
+        if (!initializeFromGeneratedFile(appNameToFile.getKey(), new File(appNameToFile.getValue()))) {
           LOG.warn("Failed to initialize dictionary for application: " + appNameToFile.getKey() +
                   " from generated file " + appNameToFile.getValue());
         }
       } else {
-        System.out.println("WARNING: failed to initialize dictionary for application: " + appNameToFile.getKey() +
-                "Dictionary file " + appNameToFile.getValue() + " is not valid");
         LOG.warn("Failed to initialize dictionary for application: " + appNameToFile.getKey() +
                 "Dictionary file " + appNameToFile.getValue() + " is not valid");
       }
     }
-//    List<String> myDefaultApplicationList = Arrays.asList("Mail", "BBEdit", "Satimage", "Finder", "System Events",
-//            "TextEdit", "Smile");
-//    for (String defaultApp : myDefaultApplicationList) {
-//      if (!myCachedApplications.contains(defaultApp)) {
-//        if (initializeDictionaryForApplication(defaultApp) == null) {
-//          System.out.println("WARNING: failed to initialize dictionary for application: " + defaultApp);
-//          LOG.warn("Failed to initialize dictionary for application: " + defaultApp);
-//        }
-//      }
-//    }
   }
 
   /**
-   * Initializes dictionary information for given application. Caches (if was not previously) generated dictionary
-   * file for later use <br> by {@link ApplicationDictionary} psi class. Standard application paths are
-   * checked when searching the application
+   * Initializes dictionary information for given application either from previously generated and saved dictionary
+   * file or creates new dictionary file for this application and saves it for later use <br> by
+   * {@link ApplicationDictionary} psi class. Standard folders are checked when searching for application's location
    *
    * @param applicationName Name of the Mac OS application
-   * @return File path of generated and cached dictionary for the application
+   * @return {@link File} of the generated and cached dictionary for the application
    */
   @Nullable
-  public String initializeDictionaryForApplication(@NotNull String applicationName) {
+  public File initializeDictionaryForApplication(@NotNull final String applicationName) {
     if (StringUtil.isEmptyOrSpaces(applicationName) || isNotScriptable(applicationName)
             || isInUnknownList(applicationName))
       return null;
     final String savedDictionaryFilePath = getSavedDictionaryFilePath(applicationName);
     if (savedDictionaryFilePath != null) {
-      if (initializeFromGeneratedFile(applicationName, savedDictionaryFilePath)) {
-        return savedDictionaryFilePath;
+      final File initializedFile = new File(savedDictionaryFilePath);
+      if (initializeFromGeneratedFile(applicationName, initializedFile)) {
+        return initializedFile;
       }
     }
     final VirtualFile vAppFile = findApplicationBundleFile(applicationName);
@@ -350,7 +330,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   @Nullable
-  private VirtualFile findApplicationBundleFile(@NotNull String applicationName) {
+  private VirtualFile findApplicationBundleFile(@NotNull final String applicationName) {
     if (!SystemInfo.isMac) return null;
     //speed search first
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
@@ -374,7 +354,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return null;
   }
 
-  private VirtualFile findApplicationFileRecursively(@NotNull VirtualFile appsDirVFile,
+  @Nullable
+  private VirtualFile findApplicationFileRecursively(@NotNull final VirtualFile appsDirVFile,
                                                      @NotNull final String applicationName) {
     final VirtualFileVisitor<VirtualFile> fileVisitor = new VirtualFileVisitor<VirtualFile>(VirtualFileVisitor
             .limit(APP_DEPTH_SEARCH), VirtualFileVisitor.SKIP_ROOT, VirtualFileVisitor.NO_FOLLOW_SYMLINKS) {
@@ -395,35 +376,32 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       LOG.info("Application file found for application " + applicationName + " : " + e.geResult());
       return e.geResult();
     }
-//    LOG.warn("No file was found in root:" + appsDirVFile + " for application: " + applicationName);
     return null;
   }
 
   // TODO: 29/11/15 throw and catch exceptions with different failed reasons
 
   /**
-   * Initializes dictionary information for given application from application file and caches generated
-   * dictionary file for later use by {@link ApplicationDictionary} PSI class
+   * Initializes dictionary information for given application from application bundle file (or xml/sdef dictionary file)
+   * and saves generated dictionary file for later use by {@link ApplicationDictionary} PSI class
    *
-   * @param applicationVFile Path to the application bundle or dictionary file (.app, .xml, .sdef, osax extensions
+   * @param applicationVFile File of the application bundle or dictionary file (.app, .osax, .xml, .sdef extensions
    *                         are supported)
    * @param applicationName  Name of the Mac OS X application
-   * @return File path String of generated and initialized dictionary for application
+   * @return {@link File} of the generated, saved and initialized dictionary for the application
    */
-  public synchronized String initializeDictionaryFromApplicationFile(@NotNull VirtualFile applicationVFile,
-                                                                     @NotNull String applicationName) {
+  public synchronized File initializeDictionaryFromApplicationFile(@NotNull VirtualFile applicationVFile,
+                                                                   @NotNull String applicationName) {
     if (isNotScriptable(applicationName)) return null;
     if (!ApplicationDictionaryImpl.extensionSupported(applicationVFile.getExtension())) return null;
     if (getGeneratedDictionaryFile(applicationName) != null) {
       LOG.warn("Dictionary for application " + applicationName + " was already initialized. Generating new " +
               "dictionary file any way.");
-      System.out.println("Dictionary for application " + applicationName + " was already initialized. Generating new " +
-              "dictionary file any way.");
     }
-    final String generatedDictionaryFilePath = generateDictionaryFileForApplication(applicationName, applicationVFile);
-    if (generatedDictionaryFilePath != null) {
-      if (initializeFromGeneratedFile(applicationName, generatedDictionaryFilePath))
-        return generatedDictionaryFilePath;
+    final File generatedDictionaryFile = generateDictionaryFileForApplication(applicationName, applicationVFile);
+    if (generatedDictionaryFile != null) {
+      if (initializeFromGeneratedFile(applicationName, generatedDictionaryFile))
+        return generatedDictionaryFile;
     }
     return null;
   }
@@ -431,18 +409,16 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   /**
    * Parses given file and initializes this dictionary's terms
    *
-   * @param applicationName             name of the application
-   * @param generatedDictionaryFilePath path to dictionary file
+   * @param applicationName  name of the application
+   * @param generatedXmlFile generated dictionary xml file
    * @return true if file parsed successfully, false otherwise
    */
-  private boolean initializeFromGeneratedFile(@NotNull String applicationName,
-                                              @NotNull String generatedDictionaryFilePath) {
-    File generatedXmlFile = new File(generatedDictionaryFilePath);
-    if (parseDictionaryFromGeneratedFile(generatedXmlFile, applicationName)) {
+  private boolean initializeFromGeneratedFile(@NotNull final String applicationName,
+                                              @NotNull final File generatedXmlFile) {
+    if (generatedXmlFile.exists() && parseDictionaryFromGeneratedFile(generatedXmlFile, applicationName)) {
       return true;
     }
     //if parsing failed for some reason, remove that generated dictionary file from cached files
-    System.out.println("WARNING: initialization failed for application [" + applicationName + "].");
     LOG.warn("Initialization failed for application [" + applicationName + "].");
     applicationNameToGeneratedDictionaryPathMap.remove(applicationName);
     applicationNameToGeneratedDictionaryFileMap.remove(applicationName);
@@ -471,38 +447,33 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   @Nullable
-  private String generateDictionaryFileForApplication(@NotNull final String applicationName,
-                                                      @NotNull final VirtualFile virtualApplicationFile) {
-    if (!SystemInfo.isMac && !"xml".equals(virtualApplicationFile.getExtension())) return null;
+  private File generateDictionaryFileForApplication(@NotNull final String applicationName,
+                                                    @NotNull final VirtualFile applicationVFile) {
+    if (!SystemInfo.isMac && !"xml".equals(applicationVFile.getExtension())) return null;
 
-    System.out.println("=== Caching Dictionary for application [" + applicationName + "] ===");
     LOG.info("=== Caching Dictionary for application [" + applicationName + "] ===");
     final String serializePath = serializeDictionaryPathForApplication(applicationName);
     boolean fileGenerated = false;
     final File targetFile = new File(serializePath);
     if (!targetFile.getParentFile().exists() && !targetFile.getParentFile().mkdirs()) return null;
     try {
-      if (!SystemInfo.isMac && "xml".equals(virtualApplicationFile.getExtension())) {
-        // TODO: 02/12/15 refactor method to return Virtual file
-        fileGenerated = copyDictionaryFileToCacheDir(applicationName, virtualApplicationFile, serializePath, true);
+      if (!SystemInfo.isMac && "xml".equals(applicationVFile.getExtension())) {
+        fileGenerated = copyDictionaryFileToCacheDir(applicationName, applicationVFile, targetFile, true);
       } else if (SystemInfo.isMac) {
         String cmdName;
-        if ("xml".equals(virtualApplicationFile.getExtension())) {
+        if ("xml".equals(applicationVFile.getExtension())) {
           cmdName = "cat";
         } else {
           cmdName = "sdef";
         }
-        // TODO: 02/12/15 refactor method to return Virtual file
         fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName,
-                virtualApplicationFile.getPath());
+                applicationVFile.getPath());
       }
     } catch (NotScriptableApplicationException e) {
-      System.out.println("WARNING: Generation failed: " + e.getMessage() + ". Adding to ignore list");
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
       notScriptableApplicationList.add(e.getApplicationName());
     } finally {
       if (!fileGenerated && targetFile.delete()) {
-        System.out.println("Error occurred while generating file. Created file was deleted");
         LOG.warn("Error occurred while generating file. Created file was deleted");
       } else if (fileGenerated) {
         applicationNameToGeneratedDictionaryPathMap.put(applicationName, serializePath);
@@ -513,34 +484,26 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         unknownApplicationList.remove(applicationName);
       }
     }
-    return fileGenerated ? serializePath : null;
+    return fileGenerated && targetFile.exists() ? targetFile : null;
   }
 
   private boolean doGenerateDictionaryFile(@NotNull final String applicationName,
                                            @NotNull final String serializePath,
                                            @NotNull final String cmdName,
                                            @NotNull final String appFilePath) throws NotScriptableApplicationException {
-    final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
-            "> " + serializePath};
-    System.out.println("executing command: " + Arrays.toString(shellCommand));
-    LOG.info("executing command: " + Arrays.toString(shellCommand));
-    Integer exitCode;
     try {
+      final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
+              "> " + serializePath};
+      LOG.info("executing command: " + Arrays.toString(shellCommand));
+      Integer exitCode;
       long execStart = System.currentTimeMillis();
       exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
       long execEnd = System.currentTimeMillis();
-      if (exitCode != 0) throw new NotScriptableApplicationException(applicationName, "Command " +
-              Arrays.toString(shellCommand) + "failed with code=" + exitCode + ". Looks like application \""
-              + applicationName + "\" is not scriptable.");
+      if (exitCode != 0) throw new NotScriptableApplicationException(applicationName,
+              "Command " + Arrays.toString(shellCommand) + "failed with code=" + exitCode + ". Looks like application" +
+                      " \"" + applicationName + "\" is not scriptable.");
 
-      System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
       LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
-
-//      applicationNameToGeneratedDictionaryPathMap.put(applicationName, serializePath);
-//      final VirtualFile cachedFile = LocalFileSystem.getInstance().findFileByPath(serializePath);
-//      if (cachedFile != null) {
-//        applicationNameToGeneratedDictionaryFileMap.put(applicationName, cachedFile);
-//      }
       return true;
     } catch (InterruptedException e) {
       e.printStackTrace();
@@ -551,15 +514,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   private boolean copyDictionaryFileToCacheDir(@NotNull final String applicationName,
-                                               @NotNull final VirtualFile virtualApplicationFile,
-                                               @NotNull final String serializePath,
+                                               @NotNull final VirtualFile applicationVFile,
+                                               @NotNull final File targetFile,
                                                final boolean rewrite) {
-    // TODO: 12/1/2015 refactor: extract all needed parameters
-    final File targetFile = new File(serializePath);
-    final String fileName = targetFile.getName();
-    final VirtualFile vAppFileDir = LocalFileSystem.getInstance().findFileByIoFile(targetFile.getParentFile());
-    if (vAppFileDir == null) return false;
-    final VirtualFile targetVFile = vAppFileDir.findChild(fileName);
+    final String targetFileName = targetFile.getName();
+    final VirtualFile targetDir = LocalFileSystem.getInstance().findFileByIoFile(targetFile.getParentFile());
+    if (targetDir == null) return false;
+    final VirtualFile targetVFile = targetDir.findChild(targetFileName);
 
     final VirtualFile[] movedFile = new VirtualFile[1];
     if (targetVFile == null || rewrite) {
@@ -570,24 +531,20 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
             if (targetVFile != null && targetVFile.exists()) {
               targetVFile.delete(this);
             }
-            movedFile[0] = virtualApplicationFile.copy(this, vAppFileDir, fileName);
+            movedFile[0] = applicationVFile.copy(this, targetDir, targetFileName);
           } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("WARNING: Failed to move file " + virtualApplicationFile + " to cache directory: "
-                    + targetFile);
-            LOG.error("Failed to move file " + virtualApplicationFile + " to cache directory: "
+            LOG.error("Failed to move file " + applicationVFile + " to cache directory: "
                     + targetFile);
           }
         }
       });
-    } else if (vAppFileDir.findChild(targetFile.getName()) != null) {
-      movedFile[0] = vAppFileDir.findChild(targetFile.getName());
+    } else if (targetDir.findChild(targetFile.getName()) != null) {
+      movedFile[0] = targetDir.findChild(targetFile.getName());
       LOG.info("Generated file already exists for application " + applicationName);
-      System.out.println("Generated file already exists for application " + applicationName);
     }
     if (movedFile[0] != null && movedFile[0].exists()) {
-      System.out.println("Dictionary file moved to " + vAppFileDir + " directory");
-      LOG.info("Dictionary file moved to " + vAppFileDir + " directory");
+      LOG.info("Dictionary file moved to " + targetDir + " directory");
       return true;
     }
     return false;
@@ -638,7 +595,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return applicationNameToGeneratedDictionaryPathMap.containsKey(applicationName);
   }
 
-  private boolean parseDictionaryFromGeneratedFile(@NotNull File xmlFile, @NotNull String applicationName) {
+  private boolean parseDictionaryFromGeneratedFile(@NotNull final File xmlFile, @NotNull final String applicationName) {
     SAXBuilder builder = new SAXBuilder();
     Document document;
     try {
@@ -717,8 +674,6 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     List<Element> recordTypeTags = suiteElem.getChildren("record-type");
     List<Element> enumerationTags = suiteElem.getChildren("enumeration");
 
-    // todo: need to move this to a single generated xml file for a dictionary (psi file is just one). Or
-    // handle it (linking included file) transparently
     for (Element include : xiIncludes) {
       String hrefIncl = include.getAttributeValue("href");
       hrefIncl = hrefIncl.replace("localhost", "");

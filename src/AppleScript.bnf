@@ -144,6 +144,7 @@
     CURRENT_APP='regexp:current[\ \t\f]+app'
     CURRENT='current'
     APPLICATION='application'
+    APP='app'
     TEXT_ITEM_DELIMETERS='regexp:text[\ \t\f]+item[\ \t\f]+delimiters'
     MISSING_VALUE='regexp:missing[\ \t\f]+value'
 
@@ -173,7 +174,7 @@
 
   ]
     extends(".*Expression")="expression"
-    consumeTokenMethod(".*(Expression|Recover)")="consumeTokenFast"
+    consumeTokenMethod(".*(Expression|Recover|Condition)")="consumeTokenFast"
 }
 
 appleScriptFile ::= compilation_unit_
@@ -279,8 +280,6 @@ tryStatement ::= try sep
                  end [error|try] {pin=1}
 //{recoverWhile=tryRecover}
 
-private tryRecover ::= !<<parseTryRecover>>
-
 varDeclarationListPart ::= identifier
 {mixin="com.idea.plugin.applescript.psi.impl.BaseAppleScriptComponent"
  implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
@@ -295,18 +294,15 @@ private expectedTypeVar ::= directParameterDeclaration
 
 private tellStatement ::= parseTellSimpleStatement|parseTellCompoundStatement
 
-private applicationClass ::= APPLICATION|app
-
 private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
 /**
-todo handle: 'tell my application "App Name"'...end tell
 see <<parseTellCompoundStatementInner>>
  */
 tellCompoundStatement ::= tell objectReferenceWrapper sep
                                         blockBody?
                           end [tell] //{pin=6}
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
- methods=[getApplicationName getApplicationReference]}
+ methods=[getApplicationName /*getApplicationReference*/]}
 //                      {recoverWhile="tellRecover"}
 //tellRecover ::= !(sep)
 
@@ -346,7 +342,7 @@ private useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
 //see <<parseUseApplicationOrScriptStatementInner>>
 private useApplicationOrScriptStatement ::= use [directParameterDeclaration COLON]
                     (
-                     (   <<parseUsedApplicationNameExternal withImportPredicate>>//application "string" &(importing)
+                     (   <<parseUsedApplicationNameExternal withImportCondition>>//application "string" &(importing)
                       |
                          dataSpecifier
                       |
@@ -355,14 +351,14 @@ private useApplicationOrScriptStatement ::= use [directParameterDeclaration COLO
                         [versionSpecifier] [(with importing)|(without importing)|(importing expression)]
                     )
 
-private withImportPredicate ::= &([versionSpecifier] !((without importing)|(importing false)))
+private withImportCondition ::= &([versionSpecifier] !((without importing)|(importing false)))
 private dataSpecifier ::= expression//referenceExpression|stringLiteralExpression
 private versionSpecifier ::= version stringLiteralExpression
 
 private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
 
 //see <<parseUsingTermsFromStatement>>
-usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<putStdLibrary>>) sep
+usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<pushStdLibrary>>) sep
                                blockBody?
                             end [using terms from] //{pin=3}
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
@@ -402,7 +398,7 @@ private literalExpression ::=
 
 /** Numeric, string, regexp, boolean, date, string(space,tab,return) constant*/
 builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|save_opt_constant|text_constant|itMeProperty
-|current_application_constant| missing_value_constant | scriptingAdditionsFolderConstant
+|currentApplicationConstant| missing_value_constant | scriptingAdditionsFolderConstant
 //|appleScriptPropertiesConstant
 private scriptingAdditionsFolderConstant ::= SCRIPTING_ADDITIONS
 
@@ -517,38 +513,35 @@ use script "Name"
 
 see <<parseApplicationReference>>
 */
-//private parseAppRef ::= THE_KW? <<f>>
-applicationReference ::= THE_KW? applicationClass applicationNameString
-[of THE_KW? machine machineNameString (of THE_KW? zone appleTalkZoneNameString)?] | THE_KW? current_application_constant
+applicationReference ::= applicationName
+[of THE_KW? machine machineName (of THE_KW? zone appleTalkZoneName)?] | THE_KW? currentApplicationConstant
 {methods=[getApplicationName]}
-applicationNameString ::= <<pushApplicationNameString>> //id? STRING_LITERAL
+private applicationName ::= <<parseApplicationName tellStatementStartCondition>> //id? STRING_LITERAL
 
-machineNameString ::= STRING_LITERAL
-appleTalkZoneNameString ::= STRING_LITERAL
+private machineName ::= STRING_LITERAL
+private appleTalkZoneName ::= STRING_LITERAL
+private tellStatementStartCondition ::= <<isTellStatementStart>>
 
 file_reference ::= THE_KW?(FILE|ALIAS) expression // example p.193
 
 //left applicationObjectReference ::= (of|in) THE_KW? applicationReference
 
 private handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier ::= handlerInterleavedParametersCall |
-propertyReference
-| (referenceIdentifier handlerPositionalParametersCallExpression?)
+propertyReference | (referenceIdentifier handlerPositionalParametersCallExpression?)
 //| handlerPositionalParametersCallExpression | referenceIdentifier //does not work in case when disk (expr) ->detected as handler call
 
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
 
-private assertProperty ::= &(<<parseDictionaryPropertyName>> (of|in|COLON)) //dictionaryClassName
-private isNextContainerReference::= <<parseCheckForContainerReference>>//check if next token is (of|in)
+private assertPropertyCondition ::= &(<<parseDictionaryPropertyName>> (of|in|COLON)) //dictionaryClassName
 //todo check for longest match + check if inside tell stmt AND there is a class with
 // longer matching name -> do not parse as a property
 // !! + check the position -> priority to class name or command name if there is no (of|in) before and after
-dictionaryPropertyName ::=  (assertProperty <<parseDictionaryPropertyName>>)
+//todo do not check here for application classes! do it (if necessary) where the rule is used
+dictionaryPropertyName ::=  (assertPropertyCondition <<parseDictionaryPropertyName>>)
                            |(!dictionaryClassName <<parseDictionaryPropertyName>>)
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
 implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
-
-private dictionaryPropertyNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel|script
 
 private builtInClassProperty ::= stringProperty | BUILT_IN_PROPERTY |
 (&(builtInClassIdentifier of) builtInClassIdentifier) //this way or manually write all possible properties
@@ -592,7 +585,6 @@ private classNamePrimaryExpression ::= !(dictionaryPropertyName (of|in|COLON|!([
 left indexReferenceClassForm ::= [index] indexValueExpression
 
 private checkForUseStatements ::= <<parseCheckForUseStatements>>
-private checkIfInsideTellStatement ::= <<parseCheckIfInsideTellStatement>>
 
 dictionaryClassName ::= <<parseDictionaryClassName false checkForUseStatements>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
@@ -698,7 +690,7 @@ private weekday_constant ::= 'Monday'|'Tuesday'|'Wednesday'|'Thursday'|'Friday'|
 private month_constant ::= 'January'|'February'|'March'|'April'|'May'|'June'|'July'|'August'|'September'|'October'
                     |'November'|'December' |'Jan'|'Feb'|'Mar'|'Apr'|'Jun'|'Jul'|'Aug'|'Sep'|'Oct'|'Nov'|'Dec'
 
-private current_application_constant ::= CURRENT_APPLICATION|CURRENT_APP|(CURRENT APPLICATION) //'current application'|'current app'//current applicationClass
+private currentApplicationConstant ::= CURRENT_APPLICATION|CURRENT_APP|(CURRENT APPLICATION) //'current application'|'current app'//current applicationClass
 private missing_value_constant ::= MISSING_VALUE
 private save_opt_constant ::= yes|no|ask
 private text_constant ::=  return|space|tab|linefeed|quote
@@ -828,10 +820,10 @@ directParameterVal ::=  handlerCallDirectParameterWithGuardPredicate | expressio
 //todo add custom parsing (user data holder not, so not to detect as followed expression as labeled handler call)
 private parseTellSimpleStatement ::= <<parseTellSimpleStatementInner>>
 //see <<parseTellSimpleStatementInner>>
-tellSimpleStatement ::= tell (handlerCallDirectParameterWithGuardPredicate | objectReferenceWrapper | current_application_constant )
+tellSimpleStatement ::= tell (handlerCallDirectParameterWithGuardPredicate | objectReferenceWrapper | currentApplicationConstant )
 to (statement | handlerInterleavedParametersCall | expression )
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator" //may be not needed?
- methods=[getApplicationName getApplicationReference]}
+ methods=[getApplicationName]}
 //{pin=1}
 
 handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
@@ -1037,20 +1029,11 @@ private valueExpression ::= primaryExpression coercionExpression*
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
  implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall"}
-//{recoverWhile=commandCallRecover}
-//private commandCallRecover ::= expressionRecover//!(sep)
-//private expressionRecover ::= !(sep|identifier|tell|try|repeat|with|local|global|get|set|end|copy|in|front
-//|return|BAND|from|of|handlerParameterLabel|dictionaryCommandName)
-//commandHandlerCallExpression ::= dictionaryCommandName dictionaryCommandParameters?
-//external dictionaryCommandParameters ::= parseParametersForCommand parsingCommand
+
 //see parseCommandHandlerCallExpression
 dictionaryCommandName ::= <<parseDictionaryCommandName>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
 implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
-//private dictionaryCommandName ::= <<parseDictionaryCommandName parsedCommandName>> //dictionaryCommandNameExternalRule
-
-private dictionaryCommandNameTokens ::= identifier|builtInClassIdentifier|builtInClassIdentifierPlural|handlerParameterLabel
-|run|count|script//|with|without|given set/copy ??
 
 private primaryExpression ::=
      literalExpression
@@ -1071,8 +1054,9 @@ implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 
 // todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
 private referenceExpression ::=
-//  applicationReference
-  <<parseApplicationReference>>
+//  parseAppRefWithNormalCondition
+  applicationReference
+//  <<parseApplicationReference>>
   | referenceForm
 //  | applicationReference
   | file_reference

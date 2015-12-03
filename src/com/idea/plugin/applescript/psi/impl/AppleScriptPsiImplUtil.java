@@ -269,7 +269,10 @@ public class AppleScriptPsiImplUtil {
   @Nullable
   public static String getApplicationName(AppleScriptUseStatement useStatement) {
     if (useStatement.getText().contains("application")) {
-      ASTNode appNameNode = useStatement.getNode().findChildByType(AppleScriptTypes.STRING_LITERAL);
+      AppleScriptApplicationReference appRef = PsiTreeUtil.findChildOfType(useStatement,
+              AppleScriptApplicationReference.class);
+      if (appRef == null) return null;
+      ASTNode appNameNode = appRef.getNode().findChildByType(AppleScriptTypes.STRING_LITERAL);
       return appNameNode != null ? appNameNode.getText().replace("\"", "") : null;
     } else if (useStatement.getNode().findChildByType(AppleScriptTypes.SCRIPTING_ADDITIONS) != null) {
       return ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;

@@ -74,7 +74,7 @@ public class AppleScriptProjectDictionaryService {
    * {@link ApplicationDictionary} psi class.
    *
    * @param applicationName Name of the application
-   * @param applicationFile VirtualFile of the application
+   * @param applicationFile VirtualFile of the application bundle
    * @return Dictionary psi class for application, given or null if creation failed
    */
   @Nullable
@@ -82,27 +82,30 @@ public class AppleScriptProjectDictionaryService {
                                                              @Nullable VirtualFile applicationFile) {
     if (isInIgnoreList(applicationName, applicationFile)) return null;
 
-    final String cachedDictionaryFilePath = getDictionaryFilePath(applicationName, applicationFile);
-    if (cachedDictionaryFilePath != null) {
-      return createDictionaryFromGeneratedFile(applicationName, cachedDictionaryFilePath);
+    final File cachedDictionaryFile = getDictionaryFile(applicationName, applicationFile);
+    if (cachedDictionaryFile != null) {
+      return createDictionaryFromGeneratedFile(applicationName, cachedDictionaryFile);
     }
     LOG.warn("Failed to create dictionary for application: " + applicationName + ". Reason: file is null");
     return null;
   }
 
+  /**
+   * @param applicationName         Name of the application
+   * @param generatedDictionaryFile File of generated dictionary for the application
+   * @return {@link ApplicationDictionary} psi class for generated dictionary file
+   */
   @Nullable
-  private ApplicationDictionary createDictionaryFromGeneratedFile(@NotNull String applicationName,
-                                                                  @NotNull String cachedDictionaryFilePath) {
+  private ApplicationDictionary createDictionaryFromGeneratedFile(@NotNull final String applicationName,
+                                                                  @NotNull final File generatedDictionaryFile) {
     ApplicationDictionary newDictionary = getDictionary(applicationName);
-    //todo initialize map to virtualFile?
-    final File cachedXmlFileForApplication = new File(cachedDictionaryFilePath);
-    final VirtualFile applicationCachedVFile = LocalFileSystem.getInstance()
-            .findFileByIoFile(cachedXmlFileForApplication);
-    if (applicationCachedVFile != null) {
-      if (newDictionary != null && newDictionary.getCachedLibraryXmlFile().equals(applicationCachedVFile))
+    final VirtualFile generatedDictionaryVFile = LocalFileSystem.getInstance().findFileByIoFile
+            (generatedDictionaryFile);
+    if (generatedDictionaryVFile != null) {
+      if (newDictionary != null && newDictionary.getCachedLibraryXmlFile().equals(generatedDictionaryVFile))
         return newDictionary;//do not create dictionary for the same previously already added application
 
-      newDictionary = new ApplicationDictionaryImpl(project, applicationCachedVFile, applicationName);
+      newDictionary = new ApplicationDictionaryImpl(project, generatedDictionaryVFile, applicationName);
     }
     if (newDictionary != null) {
       dictionaryMap.put(applicationName, newDictionary);
@@ -111,28 +114,28 @@ public class AppleScriptProjectDictionaryService {
   }
 
   /**
-   * Returns file path to the dictionary for the application. Either previously saved or generates one
+   * Returns the file of the generated dictionary for the application. Either previously saved or generates one and
+   * initializes dictionary terms from it
    *
    * @param applicationName name of the application
    * @param applicationFile VirtualFile of the application or dictionary xml file or null
-   * @return returns file path to generated dictionary xml file
+   * @return returns file of generated dictionary xml file
    */
   @Nullable
-  private String getDictionaryFilePath(@NotNull String applicationName, @Nullable VirtualFile applicationFile) {
+  private File getDictionaryFile(@NotNull String applicationName, @Nullable VirtualFile applicationFile) {
     String savedDictionaryFilePath = dictionaryRegistryService.getSavedDictionaryFilePath(applicationName);
-    if (savedDictionaryFilePath != null) return savedDictionaryFilePath;
+    File savedDictionaryFile = savedDictionaryFilePath != null ? new File(savedDictionaryFilePath) : null;
+    if (savedDictionaryFile != null && savedDictionaryFile.exists()) return savedDictionaryFile;
 
-    System.out.println("WARNING: no pre-initialized dictionary found for application: [" + applicationName + "] " +
-            "Caching it now...");
     LOG.warn("No pre-initialized dictionary found for application: [" + applicationName + "] " +
             "Caching it now...");
     if (applicationFile != null) {
-      savedDictionaryFilePath = dictionaryRegistryService
+      savedDictionaryFile = dictionaryRegistryService
               .initializeDictionaryFromApplicationFile(applicationFile, applicationName);
     } else { //if file is null, searching in standard paths
-      savedDictionaryFilePath = dictionaryRegistryService.initializeDictionaryForApplication(applicationName);
+      savedDictionaryFile = dictionaryRegistryService.initializeDictionaryForApplication(applicationName);
     }
-    return savedDictionaryFilePath;
+    return savedDictionaryFile != null && savedDictionaryFile.exists() ? savedDictionaryFile : null;
   }
 
   /**

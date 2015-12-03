@@ -57,6 +57,8 @@ public class AppleScriptColorAnnotator implements Annotator {
     }
     if (element instanceof AppleScriptDictionaryCommandName) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
+    } else if (element instanceof AppleScriptCommandParameterSelector) {
+      createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_SELECTOR_ATTR);
     } else if (element instanceof AppleScriptDictionaryClassName
             || element instanceof AppleScriptDictionaryClassIdentifierPlural) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);

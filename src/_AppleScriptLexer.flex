@@ -141,6 +141,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "that"                       { return THAT; }
   "current"                    { return CURRENT; }
   "application"                { return APPLICATION; }
+  "app"                        { return APP; }
   "pi"                         { return PI_CONSTANT; }
   "minutes"                    { return MINUTES_CONSTANT; }
   "hours"                      { return HOURS_CONSTANT; }

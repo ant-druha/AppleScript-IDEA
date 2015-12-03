@@ -21,6 +21,7 @@ public class AppleScriptSyntaxHighlighterColors {
   private static final String APPLE_SCRIPT_OPERATION_SIGN = "APPLE_SCRIPT_OPERATION_SIGN";
   private static final String APPLE_SCRIPT_COMMENT = "APPLE_SCRIPT_COMMENT";
   private static final String DICTIONARY_COMMAND = "DICTIONARY_COMMAND";
+  private static final String DICTIONARY_COMMAND_SELECTOR = "DICTIONARY_COMMAND_SELECTOR";
   private static final String DICTIONARY_CLASS = "DICTIONARY_CLASS";
   private static final String DICTIONARY_PROPERTY = "DICTIONARY_PROPERTY";
   private static final String DICTIONARY_CONSTANT = "DICTIONARY_CONSTANT";
@@ -50,6 +51,8 @@ public class AppleScriptSyntaxHighlighterColors {
           createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
   public static final TextAttributesKey DICTIONARY_COMMAND_ATTR =
           createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE);
+  public static final TextAttributesKey DICTIONARY_COMMAND_SELECTOR_ATTR =
+          createTextAttributesKey(DICTIONARY_COMMAND_SELECTOR, DefaultLanguageHighlighterColors.PARAMETER);
   public static final TextAttributesKey DICTIONARY_CLASS_ATTR =
           createTextAttributesKey(DICTIONARY_CLASS, DefaultLanguageHighlighterColors.NUMBER);
   public static final TextAttributesKey DICTIONARY_PROPERTY_ATTR =
