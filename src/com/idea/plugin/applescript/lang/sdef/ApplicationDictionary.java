@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Andrey on 17.08.2015.
+ * Andrey 17.08.2015
  */
 public interface ApplicationDictionary extends DictionarySuite {
 

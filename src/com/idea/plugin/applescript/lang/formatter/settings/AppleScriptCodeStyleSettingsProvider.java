@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 11.04.2015.
+ * Andrey 11.04.2015
  */
 public class AppleScriptCodeStyleSettingsProvider extends CodeStyleSettingsProvider {
     @Nullable

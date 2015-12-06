@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 19.08.2015.
+ * Andrey 19.08.2015
  */
 public abstract class DictionaryComponentBase<P extends DictionaryComponent, D extends XmlElement>
         extends FakePsiElement implements AppleScriptPsiElement {

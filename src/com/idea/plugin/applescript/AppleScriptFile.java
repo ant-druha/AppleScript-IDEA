@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 /**
- * Created by Andrey on 22.02.2015.
+ * Andrey 22.02.2015
  */
 public class AppleScriptFile extends PsiFileBase implements AppleScriptPsiElement {
   public AppleScriptFile(@NotNull FileViewProvider viewProvider) {

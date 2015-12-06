@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Andrey on 04.04.2015.
+ * Andrey 04.04.2015
  */
 public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
   private static final AttributesDescriptor[] ATTRS;

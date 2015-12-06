@@ -13,7 +13,7 @@ import javax.swing.*;
 import java.util.List;
 
 /**
- * Created by Andrey on 16.05.2015.
+ * Andrey 16.05.2015
  */
 public abstract class AbstractAppleScriptScriptObject extends BaseAppleScriptComponent implements
         AppleScriptScriptObject {

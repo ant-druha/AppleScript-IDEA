@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement;
 import java.util.List;
 
 /**
- * Created by Andrey on 22.08.2015.
+ * Andrey 22.08.2015
  */
 public interface DictionaryCompositeName extends AppleScriptPsiElement {
 

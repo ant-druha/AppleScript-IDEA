@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Created by Andrey on 01.07.2015.
+ * Andrey 01.07.2015
  */
 public class ApplicationDictionaryImpl extends FakePsiElement implements ApplicationDictionary {
 

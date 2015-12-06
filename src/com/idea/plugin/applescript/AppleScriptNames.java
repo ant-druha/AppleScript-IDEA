@@ -1,7 +1,7 @@
 package com.idea.plugin.applescript;
 
 /**
- * Created by Andrey on 04.05.2015.
+ * Andrey 04.05.2015
  */
 public class AppleScriptNames {
 

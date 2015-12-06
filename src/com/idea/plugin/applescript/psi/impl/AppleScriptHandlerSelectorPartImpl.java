@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by andrey on 28/05/15.
+ * andrey 28/05/15
  */
 public class AppleScriptHandlerSelectorPartImpl extends AppleScriptNamedElementImpl implements
         AppleScriptHandlerSelectorPart {

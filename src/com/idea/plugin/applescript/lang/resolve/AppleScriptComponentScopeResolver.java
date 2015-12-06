@@ -18,7 +18,7 @@ import java.util.Set;
 import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.HANDLER_DEFINITIONS;
 
 /**
- * Created by Andrey on 20.04.2015.
+ * Andrey 20.04.2015
  */
 public class AppleScriptComponentScopeResolver implements ResolveCache.AbstractResolver<AppleScriptReferenceElement,
         List<? extends PsiElement>> {

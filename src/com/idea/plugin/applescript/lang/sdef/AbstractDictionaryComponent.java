@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Andrey on 09.07.2015.
+ * Andrey 09.07.2015
  */
 public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
         extends DictionaryComponentBase<P, XmlTag> implements DictionaryComponent {

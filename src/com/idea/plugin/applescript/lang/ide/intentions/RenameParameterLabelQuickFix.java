@@ -7,14 +7,13 @@ import com.intellij.codeInsight.intention.impl.BaseIntentionAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 12.04.2015.
+ * Andrey 12.04.2015
  */
 public class RenameParameterLabelQuickFix extends BaseIntentionAction {
     String myNewLabelName;

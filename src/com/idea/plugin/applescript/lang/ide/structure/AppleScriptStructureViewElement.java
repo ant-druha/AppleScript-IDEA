@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
- * Created by Andrey on 03.05.2015.
+ * Andrey 03.05.2015
  */
 public class AppleScriptStructureViewElement extends PsiTreeElementBase<NavigatablePsiElement>
         implements ItemPresentation, StructureViewTreeElement {

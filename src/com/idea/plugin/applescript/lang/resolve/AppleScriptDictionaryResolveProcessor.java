@@ -23,7 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by Andrey on 20.04.2015.
+ * Andrey 20.04.2015
  */
 public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopeProcessor {
 

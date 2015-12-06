@@ -20,7 +20,7 @@ import java.util.*;
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 
 /**
- * Created by Andrey on 13.04.2015.
+ * Andrey 13.04.2015
  */
 public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 

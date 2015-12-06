@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.HANDLER_PARAMETER_LABEL;
 
 /**
- * Created by Andrey on 12.04.2015.
+ * Andrey 12.04.2015
  */
 public class AppleScriptPsiElementFactory {
 

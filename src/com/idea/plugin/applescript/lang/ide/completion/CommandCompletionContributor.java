@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Created by Andrey on 31.08.2015.
+ * Andrey 31.08.2015
  */
 public class CommandCompletionContributor extends CompletionContributor {
 

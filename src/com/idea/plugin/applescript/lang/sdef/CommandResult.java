@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 03.07.2015.
+ * Andrey 03.07.2015
  */
 public class CommandResult {
   @NotNull private String type;

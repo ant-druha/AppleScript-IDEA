@@ -7,7 +7,7 @@ import com.intellij.psi.scope.PsiScopeProcessor;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 15.04.2015.
+ * Andrey 15.04.2015
  */
 public abstract class AppleScriptPsiScopeProcessor implements PsiScopeProcessor {
   @Override

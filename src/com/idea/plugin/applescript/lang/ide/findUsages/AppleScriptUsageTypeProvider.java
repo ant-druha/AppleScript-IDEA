@@ -10,7 +10,7 @@ import com.intellij.usages.impl.rules.UsageTypeProvider;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 22.06.2015.
+ * Andrey 22.06.2015
  */
 public class AppleScriptUsageTypeProvider implements UsageTypeProvider {
 

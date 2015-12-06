@@ -20,7 +20,7 @@ import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 22.02.2015.
+ * Andrey 22.02.2015
  */
 public class AppleScriptParserDefinition implements ParserDefinition {
   public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);

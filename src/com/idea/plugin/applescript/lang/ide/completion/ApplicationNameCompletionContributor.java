@@ -16,7 +16,7 @@ import java.util.Collection;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Created by Andrey on 15.10.2015.
+ * Andrey 15.10.2015
  */
 public class ApplicationNameCompletionContributor extends CompletionContributor {
 

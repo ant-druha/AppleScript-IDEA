@@ -6,7 +6,7 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 03.05.2015.
+ * Andrey 03.05.2015
  */
 public class AppleScriptElementRefactoringSupportProvider extends RefactoringSupportProvider {
   @Override

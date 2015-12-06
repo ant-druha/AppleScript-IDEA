@@ -9,7 +9,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 03.05.2015.
+ * Andrey 03.05.2015
  */
 public class AppleScriptStructureViewExtension implements StructureViewExtension {
     @Override

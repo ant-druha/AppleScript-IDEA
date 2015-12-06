@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 
 /**
- * Created by Andrey on 20.06.2015.
+ * Andrey 20.06.2015
  */
 public class AppleScriptReadWriteAccessDetector extends ReadWriteAccessDetector {
   @Override

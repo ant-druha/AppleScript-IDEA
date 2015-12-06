@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 13.04.2015.
+ * Andrey 13.04.2015
  */
 public class AppleScriptPsiImplUtil {
 

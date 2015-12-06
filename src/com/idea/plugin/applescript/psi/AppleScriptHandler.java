@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Created by andrey on 29/05/15.
+ * andrey 29/05/15
  */
 public interface AppleScriptHandler extends AppleScriptComponent {
 

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Comparator;
 
 /**
- * Created by Andrey on 15.04.2015.
+ * Andrey 15.04.2015
  */
 public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 

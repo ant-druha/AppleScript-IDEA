@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Created by Andrey on 09.07.2015.
+ * Andrey 09.07.2015
  */
 public interface DictionaryComponent extends AppleScriptComponent {
 

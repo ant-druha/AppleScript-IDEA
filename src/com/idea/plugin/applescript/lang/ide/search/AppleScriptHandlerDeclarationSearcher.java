@@ -9,7 +9,7 @@ import com.intellij.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 17.06.2015.
+ * Andrey 17.06.2015
  */
 public class AppleScriptHandlerDeclarationSearcher extends PomDeclarationSearcher {
   @Override

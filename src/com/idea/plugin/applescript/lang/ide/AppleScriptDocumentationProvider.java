@@ -7,7 +7,7 @@ import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 22.08.2015.
+ * Andrey 22.08.2015
  */
 public class AppleScriptDocumentationProvider extends AbstractDocumentationProvider {
   @Nullable

@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by Andrey on 24.08.2015.
+ * Andrey 24.08.2015
  */
 public class AppleScriptDocHelper {
   public static final String URL_PREFIX_DICTIONARY = "dictionary#";

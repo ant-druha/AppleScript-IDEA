@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 22.04.2015.
+ * Andrey 22.04.2015
  */
 public class AppleScriptTargetReferenceImpl extends AppleScriptReferenceElementImpl implements
         AppleScriptTargetReference {

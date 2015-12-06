@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 18.04.2015.
+ * Andrey 18.04.2015
  */
 public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
 

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 03.05.2015.
+ * Andrey 03.05.2015
  */
 public class AppleScriptStructureViewFactory implements PsiStructureViewFactory {
     @Nullable

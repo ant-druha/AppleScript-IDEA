@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 08.04.2015.
+ * Andrey 08.04.2015
  */
 public class AppleScriptBlock extends AbstractBlock implements BlockWithParent {
     private final Indent myIndent;

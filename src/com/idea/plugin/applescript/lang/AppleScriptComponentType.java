@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 /**
- * Created by Andrey on 17.06.2015.
+ * Andrey 17.06.2015
  */
 public enum AppleScriptComponentType {
   PROPERTY(PlatformIcons.PROPERTY_ICON) {

@@ -17,7 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by Andrey on 15.04.2015.
+ * Andrey 15.04.2015
  */
 public class AppleScriptResolveUtil {
 

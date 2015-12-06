@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Created by Andrey on 16.05.2015.
+ * Andrey 16.05.2015
  */
 public interface AppleScriptScriptObject extends AppleScriptComponent {
 

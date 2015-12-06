@@ -5,7 +5,7 @@ import com.intellij.openapi.fileTypes.FileTypeFactory;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey.Dernov on 2/5/2015.
+ * Andrey.Dernov 2/5/2015
  */
 public class AppleScriptFileTypeFactory extends FileTypeFactory {
     @Override

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Created by Andrey on 16.08.2015.
+ * Andrey 16.08.2015
  */
 public class AbstractAppleScriptCommandHandlerCall extends AppleScriptExpressionImpl//AppleScriptPsiElementImpl
         implements AppleScriptCommandHandlerCall {

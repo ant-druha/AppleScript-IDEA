@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 07.06.2015.
+ * Andrey 07.06.2015
  */
 public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiElementImpl implements
         AppleScriptHandlerCall {

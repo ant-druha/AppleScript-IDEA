@@ -5,10 +5,10 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.tree.IElementType;
 
-import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
+import static com.idea.plugin.applescript.psi.AppleScriptTypes.COMMA;
 
 /**
- * Created by Andrey on 12.04.2015.
+ * Andrey 12.04.2015
  */
 public class AppleScriptWrappingProcessor {
     private final ASTNode myNode;

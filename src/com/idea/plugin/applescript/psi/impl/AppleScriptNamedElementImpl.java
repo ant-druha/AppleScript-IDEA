@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 08.04.2015.
+ * Andrey 08.04.2015
  */
 //todo !!! use it for selectorIdentifier and handlerSelectorPart !!!
 public abstract class AppleScriptNamedElementImpl extends AppleScriptPsiElementImpl implements

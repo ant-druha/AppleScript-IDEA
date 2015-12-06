@@ -3,7 +3,7 @@ package com.idea.plugin.applescript.lang.sdef;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 16.08.2015.
+ * Andrey 16.08.2015
  */
 public interface Suite extends DictionaryComponent {
 

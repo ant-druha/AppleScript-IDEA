@@ -7,7 +7,7 @@ import com.intellij.lang.ASTNode;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 22.08.2015.
+ * Andrey 22.08.2015
  */
 public class AbstractDictionaryPropertySpecifier extends DictionaryCompositeNameImpl
         implements DictionaryCompositeElement, DictionaryCompositeName {

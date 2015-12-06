@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Created by Andrey on 07.06.2015.
+ * Andrey 07.06.2015
  */
 public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiReference, ReferencesSearch
         .SearchParameters> {

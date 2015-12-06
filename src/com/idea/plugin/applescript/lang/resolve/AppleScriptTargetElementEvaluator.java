@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 13.06.2015.
+ * Andrey 13.06.2015
  */
 public class AppleScriptTargetElementEvaluator extends TargetElementEvaluatorEx2 {
 

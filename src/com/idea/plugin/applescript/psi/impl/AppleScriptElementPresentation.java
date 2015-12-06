@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 /**
- * Created by Andrey on 04.05.2015.
+ * Andrey 04.05.2015
  */
 public class AppleScriptElementPresentation implements ColoredItemPresentation {
 

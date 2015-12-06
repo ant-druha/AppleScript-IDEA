@@ -6,7 +6,7 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 12.04.2015.
+ * Andrey 12.04.2015
  */
 public class AppleScriptCommenter implements CodeDocumentationAwareCommenter {
     @Nullable

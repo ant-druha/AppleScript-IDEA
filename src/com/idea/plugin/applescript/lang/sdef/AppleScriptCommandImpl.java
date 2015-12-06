@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Andrey on 02.07.2015.
+ * Andrey 02.07.2015
  */
 public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> implements AppleScriptCommand {
 

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 22.08.2015.
+ * Andrey 22.08.2015
  */
 public class AbstractDictionaryConstantSpecifier extends AppleScriptPsiElementImpl
         implements DictionaryCompositeElement, DictionaryCompositeName {

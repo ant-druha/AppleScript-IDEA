@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Created by andrey on 28/05/15.
+ * andrey 28/05/15
  */
 public interface AppleScriptHandlerSelectorPart extends AppleScriptNamedElement, PsiNameIdentifierOwner {
 

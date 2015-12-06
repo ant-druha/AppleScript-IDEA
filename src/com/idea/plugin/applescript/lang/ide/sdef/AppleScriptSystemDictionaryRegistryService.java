@@ -79,9 +79,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     discoveredApplicationNames.add(info.getApplicationName());
   }
 
-  public List<DictionaryInfo> getDictionaryInfoList() {
-
-    return new ArrayList<DictionaryInfo>(dictionaryInfoMap.values());
+  public Collection<DictionaryInfo> getDictionaryInfoList() {
+    return dictionaryInfoMap.values();
   }
 
   public AppleScriptSystemDictionaryRegistryService(@NotNull AppleScriptSystemDictionaryRegistryComponent
@@ -99,8 +98,10 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       String dictionaryUrl = dInfoState.dictionaryUrl;
       String applicationUrl = dInfoState.applicationUrl;
       if (!StringUtil.isEmptyOrSpaces(appName) && !StringUtil.isEmptyOrSpaces(dictionaryUrl)) {
-        VirtualFile dictionaryFile = LocalFileSystem.getInstance().findFileByPath(dictionaryUrl);
-        VirtualFile applicationFile = LocalFileSystem.getInstance().findFileByPath(applicationUrl);
+        VirtualFile dictionaryFile = !StringUtil.isEmpty(dictionaryUrl) ?
+                LocalFileSystem.getInstance().findFileByPath(dictionaryUrl) : null;
+        VirtualFile applicationFile = !StringUtil.isEmpty(applicationUrl) ?
+                LocalFileSystem.getInstance().findFileByPath(applicationUrl) : null;
         if (dictionaryFile != null) {
           DictionaryInfo dInfo = new DictionaryInfo(appName, dictionaryFile, applicationFile);
           addDictionaryInfo(dInfo);

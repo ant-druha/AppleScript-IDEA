@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 /**
- * Created by Andrey on 15.02.2015.
+ * Andrey 15.02.2015
  */
 public class AppleScriptFileType extends LanguageFileType {
     public static final AppleScriptFileType INSTANCE = new AppleScriptFileType();

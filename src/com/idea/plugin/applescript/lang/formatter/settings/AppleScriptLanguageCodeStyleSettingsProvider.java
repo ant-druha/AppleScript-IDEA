@@ -10,7 +10,7 @@ import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 11.04.2015.
+ * Andrey 11.04.2015
  */
 public class AppleScriptLanguageCodeStyleSettingsProvider extends LanguageCodeStyleSettingsProvider {
     @NotNull

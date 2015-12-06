@@ -3,14 +3,13 @@ package com.idea.plugin.applescript.lang.formatter;
 import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.tree.IElementType;
 
-import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
+import static com.idea.plugin.applescript.psi.AppleScriptTypes.BLOCK_BODY;
 
 /**
- * Created by Andrey on 08.04.2015.
+ * Andrey 08.04.2015
  */
 public class AppleScriptIndentProcessor {
     private final CommonCodeStyleSettings settings;

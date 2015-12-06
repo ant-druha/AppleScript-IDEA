@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey.Dernov on 8/21/2015.
+ * Andrey.Dernov 8/21/2015
  */
 public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantCachingReference
         implements DictionaryReference {

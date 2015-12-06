@@ -5,7 +5,7 @@ import com.intellij.openapi.fileTypes.LanguageFileType;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Created by Andrey on 15.02.2015.
+ * Andrey 15.02.2015
  */
 public class AppleScriptLanguage extends Language {
     public static final AppleScriptLanguage INSTANCE = new AppleScriptLanguage();

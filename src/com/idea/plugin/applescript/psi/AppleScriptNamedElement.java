@@ -5,7 +5,7 @@ import com.intellij.psi.PsiNamedElement;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 08.04.2015.
+ * Andrey 08.04.2015
  */
 public interface AppleScriptNamedElement extends AppleScriptPsiElement, PsiNamedElement, NavigationItem {
 

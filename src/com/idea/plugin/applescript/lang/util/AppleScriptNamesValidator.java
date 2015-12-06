@@ -16,7 +16,7 @@ import com.intellij.refactoring.rename.PsiElementRenameHandler;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 18.06.2015.
+ * Andrey 18.06.2015
  */
 public class AppleScriptNamesValidator implements NamesValidator {
   @Override

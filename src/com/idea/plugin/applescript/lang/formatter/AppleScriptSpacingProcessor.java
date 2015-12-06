@@ -14,7 +14,7 @@ import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.KEYWORDS
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 
 /**
- * Created by Andrey on 08.04.2015.
+ * Andrey 08.04.2015
  */
 public class AppleScriptSpacingProcessor {
 

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 16.05.2015.
+ * Andrey 16.05.2015
  */
 public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComponent implements
         AppleScriptHandler, NavigatablePsiElement, PsiNameIdentifierOwner, PomNamedTarget {

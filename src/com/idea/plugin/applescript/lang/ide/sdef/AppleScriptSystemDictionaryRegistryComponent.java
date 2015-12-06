@@ -9,9 +9,7 @@ import com.intellij.util.xmlb.annotations.AbstractCollection;
 import com.intellij.util.xmlb.annotations.Tag;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Stores information about generated dictionary files for applications
@@ -39,10 +37,11 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     State state = new State();
     AppleScriptSystemDictionaryRegistryService dictionaryRegistry = ServiceManager.getService
             (AppleScriptSystemDictionaryRegistryService.class);
-    List<DictionaryInfo> dictionaryInfos = dictionaryRegistry.getDictionaryInfoList();
+    Collection<DictionaryInfo> dictionaryInfos = dictionaryRegistry.getDictionaryInfoList();
     state.dictionariesInfo = new DictionaryInfo.State[dictionaryInfos.size()];
+    Iterator<DictionaryInfo> it = dictionaryInfos.iterator();
     for (int i = 0; i < dictionaryInfos.size(); i++) {
-      state.dictionariesInfo[i] = dictionaryInfos.get(i).getState();
+      state.dictionariesInfo[i] = it.next().getState();
     }
     return state;
   }

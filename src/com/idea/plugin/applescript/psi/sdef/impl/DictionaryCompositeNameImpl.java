@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 22.08.2015.
+ * Andrey 22.08.2015
  */
 public class DictionaryCompositeNameImpl extends AppleScriptPsiElementImpl implements DictionaryCompositeName {
   public DictionaryCompositeNameImpl(ASTNode node) {

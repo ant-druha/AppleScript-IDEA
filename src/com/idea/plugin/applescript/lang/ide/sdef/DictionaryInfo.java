@@ -5,7 +5,6 @@ import com.intellij.util.xml.Required;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.OptionTag;
 import com.intellij.util.xmlb.annotations.Tag;
-import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +44,6 @@ public class DictionaryInfo {
     return state;
   }
 
-  @Transient
   public boolean isInitialized() {
     return initialized;
   }

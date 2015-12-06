@@ -18,7 +18,7 @@ import javax.swing.*;
 import java.util.List;
 
 /**
- * Created by Andrey on 21.04.2015.
+ * Andrey 21.04.2015
  */
 public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl implements AppleScriptComponent {
 

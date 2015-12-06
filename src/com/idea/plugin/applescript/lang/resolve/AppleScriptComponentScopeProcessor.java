@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by Andrey on 20.04.2015.
+ * Andrey 20.04.2015
  */
 public class AppleScriptComponentScopeProcessor extends AppleScriptPsiScopeProcessor {
 
