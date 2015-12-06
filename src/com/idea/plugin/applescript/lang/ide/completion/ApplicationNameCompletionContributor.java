@@ -2,7 +2,6 @@ package com.idea.plugin.applescript.lang.ide.completion;
 
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
 import com.idea.plugin.applescript.psi.AppleScriptApplicationReference;
-import com.idea.plugin.applescript.psi.AppleScriptUseStatement;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.components.ServiceManager;
@@ -26,12 +25,14 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
     super.fillCompletionVariants(parameters, result);
   }
 
+  @Override
+  public void beforeCompletion(@NotNull CompletionInitializationContext context) {
+    super.beforeCompletion(context);
+  }
+
   public ApplicationNameCompletionContributor() {
-    final PsiElementPattern.Capture<AppleScriptApplicationReference> inApplicationReferenceString =
-            psiElement(AppleScriptApplicationReference.class);//.withParent(AppleScriptApplicationReference.class);
     final PsiElementPattern.Capture<PsiElement> inAppReferenceString =
-            psiElement().andOr(psiElement().withSuperParent(2, AppleScriptApplicationReference.class),
-                    psiElement().withSuperParent(2, AppleScriptUseStatement.class));
+            psiElement().withSuperParent(1, AppleScriptApplicationReference.class);
 
     final PsiElementPattern.Capture<PsiElement> any =
             psiElement();
@@ -49,7 +50,7 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
                 if (systemDictionaryRegistry != null) {
                   Collection<String> appNameList;
                   if (SystemInfo.isMac) {
-                    appNameList = systemDictionaryRegistry.getAllSystemApplicationNames();
+                    appNameList = systemDictionaryRegistry.getDiscoveredApplicationNames();
                   } else {
                     appNameList = systemDictionaryRegistry.getCachedApplicationNames();
                   }

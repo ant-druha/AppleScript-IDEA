@@ -24,7 +24,7 @@ import static com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets.HANDLER_
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 
 /**
- * Created by Andrey on 12.04.2015.
+ * Andrey 12.04.2015
  */
 public class AppleScriptColorAnnotator implements Annotator {
   private static void createInfoAnnotation(final @NotNull AnnotationHolder holder,
@@ -72,15 +72,15 @@ public class AppleScriptColorAnnotator implements Annotator {
       AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService
               (AppleScriptSystemDictionaryRegistryService.class);
       if (dictionaryRegistryService != null) {
-        if (!StringUtil.isEmpty(appName) && !dictionaryRegistryService.wasDictionaryGenerated(appName)) {
-          dictionaryRegistryService.ensureDictionaryInitialized(appName);
-          String warningReason = null;
-          if (dictionaryRegistryService.isNotScriptable(appName)) {
-            warningReason = "Application \"" + appName + "\" is not scriptable";
-          } else if (dictionaryRegistryService.isInUnknownList(appName)) {
-            warningReason = "Application \"" + appName + "\" not found";
+        if (!StringUtil.isEmptyOrSpaces(appName) && !dictionaryRegistryService.isDictionaryInitialized(appName)) {
+          String warningReason = checkWarningReason(appName, dictionaryRegistryService);
+          if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
+            System.out.println("Re-checking warning reason for " + appName);
+            warningReason = checkWarningReason(appName, dictionaryRegistryService);
           }
-          if (warningReason != null || !dictionaryRegistryService.wasDictionaryGenerated(appName)) {
+          // TODO: 05/12/15 may it is better to create a dictionary for it in order to make sure PSI is created
+          // (needed for icons for example)
+          if (warningReason != null) {
             AppleScriptApplicationReference appRef = PsiTreeUtil
                     .findChildOfType(element, AppleScriptApplicationReference.class);
             holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
@@ -114,5 +114,17 @@ public class AppleScriptColorAnnotator implements Annotator {
     }
 
 
+  }
+
+  @Nullable
+  private String checkWarningReason(@NotNull String appName, @NotNull AppleScriptSystemDictionaryRegistryService
+          dictionaryRegistryService) {
+    String warningReason = null;
+    if (dictionaryRegistryService.isNotScriptable(appName)) {
+      warningReason = "Application \"" + appName + "\" is not scriptable";
+    } else if (dictionaryRegistryService.isInUnknownList(appName)) {
+      warningReason = "Application \"" + appName + "\" not found";
+    }
+    return warningReason;
   }
 }

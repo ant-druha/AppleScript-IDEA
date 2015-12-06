@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
+import com.btr.proxy.util.PListParser;
 import com.idea.plugin.applescript.AppleScriptLanguage;
 import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.lang.ide.AppleScriptDocHelper;
@@ -13,10 +14,7 @@ import com.intellij.lang.Language;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -24,14 +22,20 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.FakePsiElement;
 import com.intellij.psi.xml.*;
 import com.intellij.util.IncorrectOperationException;
+import com.intellij.util.ui.JBImageIcon;
+import org.apache.sanselan.ImageReadException;
+import org.apache.sanselan.formats.icns.IcnsImageParser;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by Andrey on 01.07.2015.
@@ -40,14 +44,14 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   public static final Logger LOG = Logger.getInstance("#" + ApplicationDictionaryImpl.class.getName());
 
-  //todo add suites: several class unique only within a suite !
   @NotNull private final Project project;
-  @NotNull private final VirtualFile applicationFile;
+  @NotNull private final VirtualFile dictionaryFile;
   //cachedLibraryXmlFile is needed for navigation from PSI (getParent()) if dictionary was created from .app bundle
-  @NotNull private VirtualFile cachedLibraryXmlFile;
+  @Nullable private VirtualFile applicationBundleFile;
+  @Nullable private Icon applicationIcon;
   @NotNull private final List<PsiFile> includedFiles = new ArrayList<PsiFile>();
   @NotNull private String applicationName;
-  @NotNull private String displayName;
+  @NotNull private String dictionaryName;
   private XmlTag myRootTag;
 
   private final List<Suite> mySuites = new ArrayList<Suite>();
@@ -62,31 +66,64 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   private final Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
   private final Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<String, AppleScriptClass>();
 
-  public ApplicationDictionaryImpl(@NotNull Project project, @NotNull VirtualFile applicationBundleFile,
-                                   @NotNull String applicationName) {
+  public ApplicationDictionaryImpl(@NotNull Project project, @NotNull XmlFile dictionaryXmlFile,
+                                   @NotNull String applicationName, @Nullable VirtualFile applicationBundleFile) {
     this.project = project;
-    this.applicationFile = applicationBundleFile;
+    this.dictionaryFile = dictionaryXmlFile.getVirtualFile();
+    readDictionaryFromXmlFile(dictionaryXmlFile);
     this.applicationName = applicationName;
-    readDictionaryFromApplicationBundle();
-    if (StringUtil.isEmpty(displayName))
-      displayName = this.applicationName;
-    System.out.println("=== Dictionary [" + displayName + "] for application [" + this.applicationName + "] " +
-            "initialized " +
-            "In project[" + project.getName() + "] " + "====" +
-            " Commands: " + dictionaryCommandMap.size() + ". " + "Classes: " + dictionaryClassMap.size() + "\n");
-    LOG.info("=== Dictionary [" + displayName + "] for application [" + this.applicationName + "] " +
-            "initialized " +
-            "In project[" + project.getName() + "] " + "====" +
-            " Commands: " + dictionaryCommandMap.size() + ". " + "Classes: " + dictionaryClassMap.size() + "\n");
+    if (applicationBundleFile != null) {
+      this.applicationBundleFile = applicationBundleFile;
+      // TODO: 04/12/15 get icon from application bundle
+      setIconFromBundle(applicationBundleFile);
+    }
+    if (StringUtil.isEmpty(dictionaryName))
+      dictionaryName = this.applicationName;
+    LOG.info("=== Dictionary [" + dictionaryName + "] for application [" + this.applicationName + "] " +
+            "initialized In project[" + project.getName() + "] " + "==== Commands: " + dictionaryCommandMap.size() +
+            ". " + "Classes: " + dictionaryClassMap.size() + "\n");
   }
 
-  private void readDictionaryFromApplicationBundle() {
-    if (!extensionSupported(applicationFile.getExtension())) return;
-    if ("xml".equalsIgnoreCase(applicationFile.getExtension())
-            || "sdef".equalsIgnoreCase(applicationFile.getExtension())) {
-      readDictionaryFromXmlFile(applicationFile);
-    } else {
-      readDictionaryFromApplicationBundle(applicationFile, project);
+  private void setIconFromBundle(@NotNull VirtualFile applicationBundleFile) {
+    try {
+      final String appUrl = applicationBundleFile.getPath();
+      File file = new File(appUrl + "/Contents/Info.plist");
+      if (!file.exists() || file.isDirectory()) return;
+      PListParser.Dict dict = null;
+      try {
+        dict = PListParser.load(file);
+      } catch (PListParser.XmlParseException e) {
+        LOG.warn("Can not parse Info.plist for " + applicationName + ": " + e.getMessage());
+      } catch (IOException e) {
+        LOG.warn("Can not parse Info.plist for " + applicationName + ": " + e.getMessage());
+      }
+      Object imgFilename = null;
+      if (dict != null) {
+        imgFilename = dict.get("CFBundleIconFile");
+      }
+      if (imgFilename == null) {
+        imgFilename = applicationName; //trying to guess
+      }
+      String fileName = imgFilename.toString();
+      fileName = fileName.endsWith(".icns") ? fileName : fileName + ".icns";
+
+      File icnsFile = new File(appUrl + "/Contents/Resources/" + fileName);
+
+      if (!icnsFile.exists() || icnsFile.isDirectory()) return;
+
+      IcnsImageParser parser = new IcnsImageParser();
+
+      @SuppressWarnings("unchecked")
+      List<BufferedImage> list = parser.getAllBufferedImages(icnsFile);
+      if (list == null || list.size() == 0) return;
+      int index = list.size() > 1 ? 1 : 0;
+      Image img = list.get(index).getScaledInstance(13, 13, Image.SCALE_SMOOTH);
+      applicationIcon = new JBImageIcon(img);
+
+    } catch (ImageReadException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -110,12 +147,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @NotNull
   @Override
-  public VirtualFile getCachedLibraryXmlFile() {
-    return cachedLibraryXmlFile;
-  }
-
-  @NotNull
-  @Override
   public Project getProject() {
     return project;
   }
@@ -125,10 +156,9 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return suite != null && mySuites.add(suite);
   }
 
-  @Override
   @NotNull
-  public VirtualFile getApplicationFile() {
-    return applicationFile;
+  public VirtualFile getDictionaryFile() {
+    return dictionaryFile;
   }
 
   @NotNull
@@ -166,37 +196,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return dictionaryClassMap.get(name);
   }
 
-  private void readDictionaryFromApplicationBundle(@NotNull VirtualFile applicationFile, @NotNull Project project) {
-    if (!SystemInfo.isMac) return;
-    final String pathPrefix = FileUtil.getTempDirectory() + '/';
-    final String fileName = applicationFile.getNameWithoutExtension().replace(" ", "_");
-    final String finalFilePath = pathPrefix + fileName + "_generated.xml";
-    final String appFileFinalPath = '"' + applicationFile.getPath() + '"';
-//    todo add detection of .sdef files as xml file types
-    String[] shellCommand = new String[]{"/bin/bash", "-c", " sdef " + appFileFinalPath + " > " +
-            finalFilePath};
-    try {
-      System.out.println("executing command: " + Arrays.toString(shellCommand));
-      LOG.info("executing command: " + Arrays.toString(shellCommand));
-
-      long execStart = System.currentTimeMillis();
-      int exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
-      long execEnd = System.currentTimeMillis();
-
-      System.out.println("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
-      LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
-
-      File finalXmlFile = new File(finalFilePath);
-      VirtualFile virtualXmlFile = LocalFileSystem.getInstance().findFileByIoFile(finalXmlFile);
-      readDictionaryFromXmlFile(virtualXmlFile);
-      finalXmlFile.deleteOnExit();
-    } catch (IOException e1) {
-      e1.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
-
   @Override
   public List<String> getParameterNamesForCommand(String name) {
     AppleScriptCommand command = dictionaryCommandMap.get(name);
@@ -216,15 +215,18 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return dictionaryPropertyMap.get(name);
   }
 
+  // TODO: 06/12/15 redefine equals and hash code for AppleScriptCommand and store HashSet, not the Map
   @NotNull
   @Override
   public List<AppleScriptCommand> findAllCommandsWithName(String name) {
-    List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>();
-    for (AppleScriptCommand command : dictionaryCommandMap.values()) {
-      if (command.getName().equals(name)) {
-        result.add(command);
-      }
-    }
+    List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>(1);
+    AppleScriptCommand command = dictionaryCommandMap.get(name);
+    if (command != null) result.add(dictionaryCommandMap.get(name));
+//    for (AppleScriptCommand command : dictionaryCommandMap.values()) {
+//      if (command.getName().equals(name)) {
+//        result.add(command);
+//      }
+//    }
     return result;
   }
 
@@ -267,6 +269,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Nullable
   @Override
   public Icon getIcon(boolean open) {
+    if (applicationIcon != null) return applicationIcon;
     AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
     return componentType != null ? componentType.getIcon() : null;
   }
@@ -300,7 +303,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public String getDocumentation() {
     StringBuilder sb = new StringBuilder();
-    sb.append(getType()).append(" <b>").append(getDisplayName()).append("</b>");
+    sb.append(getType()).append(" <b>").append(getName()).append("</b>");
     sb.append("<p>");
     for (Suite suite : mySuites) {
       sb.append("<br>    <b>");
@@ -373,7 +376,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   @NotNull
   public String getName() {
-    return getDisplayName();
+    return dictionaryName;
   }
 
   @Override
@@ -383,19 +386,8 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   }
 
   @Override
-  public void setDisplayName(@NotNull String displayName) {
-    this.displayName = displayName;
-  }
-
-  @Override
-  @NotNull
-  public String getDisplayName() {
-    return displayName;
-  }
-
-  @Override
   public PsiElement setName(@NonNls @NotNull String name) throws IncorrectOperationException {
-    displayName = name;
+    dictionaryName = name;
     return this;
   }
 
@@ -446,7 +438,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @Override
   public PsiElement getParent() {
-    return PsiManager.getInstance(getProject()).findFile(cachedLibraryXmlFile);
+    return PsiManager.getInstance(getProject()).findFile(getDictionaryFile());
   }
 
   @Nullable
@@ -478,18 +470,11 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     return this;
   }
 
-  private void readDictionaryFromXmlFile(VirtualFile virtualFile) {
-    if (virtualFile != null) {
-      PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-      XmlFile xmlFile = (XmlFile) psiFile;
-      if (xmlFile != null && xmlFile.isValid()) {
-        setRootTag(xmlFile.getRootTag());
-        SDEF_Parser.parse(xmlFile, this);
-        cachedLibraryXmlFile = virtualFile;
-
-        System.out.println("dictionary loaded. Virtual file: " + virtualFile);
-        LOG.info("Dictionary loaded. Virtual file: " + virtualFile);
-      }
+  private void readDictionaryFromXmlFile(@NotNull XmlFile xmlFile1) {
+    if (xmlFile1.isValid()) {
+      setRootTag(xmlFile1.getRootTag());
+      SDEF_Parser.parse(xmlFile1, this);
+      LOG.info("Dictionary loaded. Virtual file: " + xmlFile1);
     }
   }
 
@@ -506,10 +491,10 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     if (titleAttr != null) {
       XmlAttributeValue attrValue = titleAttr.getValueElement();
       if (attrValue != null) {
-        myIdentifier = new DictionaryIdentifierImpl(this, getDisplayName(), attrValue);
+        myIdentifier = new DictionaryIdentifierImpl(this, getName(), attrValue);
       }
     }
-    return myIdentifier != null ? myIdentifier : new DictionaryIdentifierImpl(this, getDisplayName(), myRootTag);
+    return myIdentifier != null ? myIdentifier : new DictionaryIdentifierImpl(this, getName(), myRootTag);
   }
 
   @Nullable
@@ -562,5 +547,10 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public Collection<AppleScriptCommand> getAllCommands() {
     return dictionaryCommandMap.values();
+  }
+
+  @Nullable
+  public VirtualFile getApplicationBundle() {
+    return applicationBundleFile;
   }
 }

@@ -37,7 +37,7 @@ public class SDEF_Parser {
         if ("dictionary".equals(rootTag.getName()) && attr != null) {
           String dicTitle = attr.getValue();
           if (!StringUtil.isEmpty(dicTitle)) {
-            parsedDictionary.setDisplayName(dicTitle);
+            parsedDictionary.setName(dicTitle);
           }
         }
         parseRootTag(parsedDictionary, rootTag);
@@ -69,7 +69,7 @@ public class SDEF_Parser {
           }
           AppleScriptSystemDictionaryRegistryService dictionarySystemRegistry = ServiceManager
                   .getService(AppleScriptSystemDictionaryRegistryService.class);
-          VirtualFile vFile = dictionarySystemRegistry.getGeneratedDictionaryFile(fName);
+          VirtualFile vFile = dictionarySystemRegistry.getDictionaryFile(fName);
           if (vFile==null || !vFile.isValid()) vFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
 //          VirtualFile includedVFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
           if (vFile != null && vFile.isValid()) {

@@ -9,7 +9,15 @@ import java.util.List;
 
 public interface ParsableScriptHelper {
 
-  boolean ensureDictionaryInitialized(@NotNull String applicationName);
+  /**
+   * Does not perform initialization for application which name was not discovered in standard paths at start
+   * Condition is needed for the calls from the parser so not to try to initialize not yet completed by the user
+   * application names
+   *
+   * @param knownApplicationName Name of the application
+   * @return true if dictionary for the application was initialized
+   */
+  boolean ensureKnownApplicationDictionaryInitialized(@NotNull String knownApplicationName);
 
   // Application classes
   boolean isStdLibClass(@NotNull String name);

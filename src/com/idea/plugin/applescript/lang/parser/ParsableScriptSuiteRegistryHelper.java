@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by Andrey on 01.07.2015.
+ * Andrey 01.07.2015
  */
 public class ParsableScriptSuiteRegistryHelper {
 
@@ -22,8 +22,8 @@ public class ParsableScriptSuiteRegistryHelper {
     return scriptHelper;
   }
 
-  public static boolean ensureDictionaryInitialized(@NotNull String applicationName) {
-    return getParsableScriptHelper().ensureDictionaryInitialized(applicationName);
+  public static boolean ensureKnownApplicationInitialized(@NotNull String applicationName) {
+    return getParsableScriptHelper().ensureKnownApplicationDictionaryInitialized(applicationName);
   }
 
   public static boolean isStdLibClass(@NotNull String name) {

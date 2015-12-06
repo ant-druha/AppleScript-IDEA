@@ -62,12 +62,8 @@
         <lang.braceMatcher language="AppleScript"
                            implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptPairedBraceMatcher"/>
 
-        <!--<com.intellij.lang.braceMatcher-->
-        <!--language="AppleScript"-->
-        <!--implementationClass="com.idea.plugin.applescript.lang.ide.parser.AppleScriptPairedBraceMatcher"/>-->
-        <!--extensionPoint name="lang.braceMatcher"-->
-        <!--beanClass="com.intellij.lang.LanguageExtensionPoint">-->
-        <!--<with attribute="implementationClass" implements="com.intellij.lang.PairedBraceMatcher"/> -->
+        <codeInsight.lineMarkerProvider language="AppleScript"
+                                        implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptLineMarkerProvider"/>
 
 
         <lang.formatter language="AppleScript"

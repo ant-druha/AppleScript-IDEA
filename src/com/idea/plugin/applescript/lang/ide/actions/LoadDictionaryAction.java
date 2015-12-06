@@ -61,9 +61,9 @@ public class LoadDictionaryAction extends AnAction {
                       + file.getName(), "Enter Application Name", null, file.getNameWithoutExtension(), null);
             }
             if (StringUtil.isEmpty(applicationName)) continue;
-            projectDictionaryRegistry.createDictionary(applicationName, file);
+            projectDictionaryRegistry.createDictionaryFromFile(applicationName, file);
           } else {
-            projectDictionaryRegistry.createDictionary(appName, file);
+            projectDictionaryRegistry.createDictionaryFromFile(appName, file);
             return;
           }
         }

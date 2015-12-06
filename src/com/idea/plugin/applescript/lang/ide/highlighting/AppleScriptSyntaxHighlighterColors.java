@@ -34,6 +34,7 @@ public class AppleScriptSyntaxHighlighterColors {
     UNRESOLVED_REFERENCE_ATTRIBUTES.setForegroundColor(JBColor.BLACK);
     UNRESOLVED_REFERENCE_ATTRIBUTES.setEffectColor(JBColor.GRAY);
     UNRESOLVED_REFERENCE_ATTRIBUTES.setEffectType(EffectType.LINE_UNDERSCORE);
+    createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
   }
 
 
@@ -48,7 +49,7 @@ public class AppleScriptSyntaxHighlighterColors {
   public static final TextAttributesKey COMMENT =
           createTextAttributesKey(APPLE_SCRIPT_COMMENT, DefaultLanguageHighlighterColors.LINE_COMMENT);
   public static final TextAttributesKey UNRESOLVED_REFERENCE =
-          createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
+          createTextAttributesKey(UNRESOLVED_ACCESS_ID, DefaultLanguageHighlighterColors.CLASS_REFERENCE);
   public static final TextAttributesKey DICTIONARY_COMMAND_ATTR =
           createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE);
   public static final TextAttributesKey DICTIONARY_COMMAND_SELECTOR_ATTR =
@@ -60,8 +61,4 @@ public class AppleScriptSyntaxHighlighterColors {
   public static final TextAttributesKey DICTIONARY_CONSTANT_ATTR =
           createTextAttributesKey(DICTIONARY_CONSTANT, DefaultLanguageHighlighterColors.CONSTANT);
 
-
-  public AppleScriptSyntaxHighlighterColors() {
-    UNRESOLVED_REFERENCE.setFallbackAttributeKey(DefaultLanguageHighlighterColors.CLASS_REFERENCE);
-  }
 }

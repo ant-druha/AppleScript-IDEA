@@ -30,13 +30,13 @@ public interface ApplicationDictionary extends DictionarySuite {
   @Nullable
   PsiFile processInclude(@NotNull VirtualFile includedFile);
 
-  @NotNull
-  VirtualFile getCachedLibraryXmlFile();
-
   boolean addSuite(Suite suite);
 
   @NotNull
-  VirtualFile getApplicationFile();
+  VirtualFile getDictionaryFile();
+
+  @Nullable
+  VirtualFile getApplicationBundle();
 
   @NotNull
   Map<String, DictionaryEnumeration> getDictionaryEnumerationMap();
@@ -62,8 +62,6 @@ public interface ApplicationDictionary extends DictionarySuite {
   @NotNull
   String getApplicationName();
 
-  void setDisplayName(@NotNull String displayName);
-
   @Nullable
   DictionaryEnumerator findEnumerator(String name);
 
@@ -72,9 +70,6 @@ public interface ApplicationDictionary extends DictionarySuite {
 
   @Nullable
   AppleScriptPropertyDefinition findProperty(String name);
-
-  @NotNull
-  String getDisplayName();
 
   @NotNull
   Map<String, AppleScriptPropertyDefinition> getDictionaryPropertyMap();

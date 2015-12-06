@@ -4,19 +4,20 @@ import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AppleScriptProjectDictionaryService {
 
-  private static final Logger LOG = Logger.getInstance("#" + AppleScriptProjectDictionaryService.class
-          .getName());
+  private static final Logger LOG = Logger.getInstance("#" +
+          AppleScriptProjectDictionaryService.class.getName());
 
 
   @NotNull private final Project project;
@@ -64,78 +65,53 @@ public class AppleScriptProjectDictionaryService {
    * @return Dictionary psi class for application, given or null if creation failed
    */
   @Nullable
-  public ApplicationDictionary createDictionary(@NotNull String applicationName) {
-    return createDictionary(applicationName, null);
+  public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName) {
+    if (isInIgnoreList(applicationName, null)) return null;
+    ApplicationDictionary result = getDictionary(applicationName);
+    if (result != null) return result;
+    DictionaryInfo dictionaryInfo = dictionaryRegistryService.getInitializedInfo(applicationName);
+    if (dictionaryInfo != null) {
+      return createDictionaryFromInfo(dictionaryInfo);
+    }
+    LOG.warn("Failed to get initialized dictionary info for " + applicationName);
+    return null;
   }
 
-  /**
-   * Creates Dictionary psi class for specified application for Project. If dictionary was not initialized previously
-   * IDE <br> caches generated dictionary file and initializes it's structure for later use by
-   * {@link ApplicationDictionary} psi class.
-   *
-   * @param applicationName Name of the application
-   * @param applicationFile VirtualFile of the application bundle
-   * @return Dictionary psi class for application, given or null if creation failed
-   */
   @Nullable
-  public synchronized ApplicationDictionary createDictionary(@NotNull String applicationName,
-                                                             @Nullable VirtualFile applicationFile) {
-    if (isInIgnoreList(applicationName, applicationFile)) return null;
-
-    final File cachedDictionaryFile = getDictionaryFile(applicationName, applicationFile);
-    if (cachedDictionaryFile != null) {
-      return createDictionaryFromGeneratedFile(applicationName, cachedDictionaryFile);
+  private ApplicationDictionary createDictionaryFromInfo(final @NotNull DictionaryInfo dInfo) {
+    String applicationName = dInfo.getApplicationName();
+    PsiFile psiFile = PsiManager.getInstance(project).findFile(dInfo.getDictionaryFile());
+    XmlFile xmlFile = (XmlFile) psiFile;
+    if (xmlFile != null) {
+      ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, xmlFile, applicationName,
+              dInfo.getApplicationFile());
+      dictionaryMap.put(applicationName, dictionary);
+      return dictionary;
     }
-    LOG.warn("Failed to create dictionary for application: " + applicationName + ". Reason: file is null");
+    LOG.warn("Failed to create dictionary from info for application: " + applicationName + ". Reason: file is null");
     return null;
   }
 
   /**
-   * @param applicationName         Name of the application
-   * @param generatedDictionaryFile File of generated dictionary for the application
-   * @return {@link ApplicationDictionary} psi class for generated dictionary file
-   */
-  @Nullable
-  private ApplicationDictionary createDictionaryFromGeneratedFile(@NotNull final String applicationName,
-                                                                  @NotNull final File generatedDictionaryFile) {
-    ApplicationDictionary newDictionary = getDictionary(applicationName);
-    final VirtualFile generatedDictionaryVFile = LocalFileSystem.getInstance().findFileByIoFile
-            (generatedDictionaryFile);
-    if (generatedDictionaryVFile != null) {
-      if (newDictionary != null && newDictionary.getCachedLibraryXmlFile().equals(generatedDictionaryVFile))
-        return newDictionary;//do not create dictionary for the same previously already added application
-
-      newDictionary = new ApplicationDictionaryImpl(project, generatedDictionaryVFile, applicationName);
-    }
-    if (newDictionary != null) {
-      dictionaryMap.put(applicationName, newDictionary);
-    }
-    return newDictionary;
-  }
-
-  /**
-   * Returns the file of the generated dictionary for the application. Either previously saved or generates one and
-   * initializes dictionary terms from it
+   * Generates dictionary file for application, initializes it's terms for parser and creates
+   * {@link ApplicationDictionary} psi class for the Project.
    *
-   * @param applicationName name of the application
-   * @param applicationFile VirtualFile of the application or dictionary xml file or null
-   * @return returns file of generated dictionary xml file
+   * @param applicationName Name of the application
+   * @param applicationFile VirtualFile of the application bundle
+   * @return Dictionary psi class for the application or null if creation failed
    */
   @Nullable
-  private File getDictionaryFile(@NotNull String applicationName, @Nullable VirtualFile applicationFile) {
-    String savedDictionaryFilePath = dictionaryRegistryService.getSavedDictionaryFilePath(applicationName);
-    File savedDictionaryFile = savedDictionaryFilePath != null ? new File(savedDictionaryFilePath) : null;
-    if (savedDictionaryFile != null && savedDictionaryFile.exists()) return savedDictionaryFile;
+  public synchronized ApplicationDictionary createDictionaryFromFile(@NotNull String applicationName,
+                                                                     @NotNull VirtualFile applicationFile) {
+    if (isInIgnoreList(applicationName, applicationFile)) return null;
 
-    LOG.warn("No pre-initialized dictionary found for application: [" + applicationName + "] " +
-            "Caching it now...");
-    if (applicationFile != null) {
-      savedDictionaryFile = dictionaryRegistryService
-              .initializeDictionaryFromApplicationFile(applicationFile, applicationName);
-    } else { //if file is null, searching in standard paths
-      savedDictionaryFile = dictionaryRegistryService.initializeDictionaryForApplication(applicationName);
+    final DictionaryInfo dictionaryInfo = dictionaryRegistryService.createAndInitializeInfo(applicationFile,
+            applicationName);
+    if (dictionaryInfo != null) {
+      return createDictionaryFromInfo(dictionaryInfo);
     }
-    return savedDictionaryFile != null && savedDictionaryFile.exists() ? savedDictionaryFile : null;
+    LOG.warn("Failed to get initialized dictionary info for " + applicationName + " from " + applicationFile);
+    return null;
   }
 
   /**

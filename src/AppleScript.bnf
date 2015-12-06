@@ -332,7 +332,7 @@ useStatement ::= useAppleScriptStatement|useApplicationOrScriptStatement|useFram
  methods=[getApplicationName useStandardAdditions withImporting]}
 //todo 'considering numeric strings'
 
-private useAppleScriptStatement ::= use 'AppleScript' [version expression/*stringLiteralExpression*/] {pin=2}
+private useAppleScriptStatement ::= use 'AppleScript' [version expression] {pin=2}
 
 private useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
                                    [((with importing)|(without importing)|importing) expression ] {pin=2}

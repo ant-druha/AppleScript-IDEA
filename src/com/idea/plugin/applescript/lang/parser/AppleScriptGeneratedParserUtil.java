@@ -76,14 +76,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // CocoaStandard dictionary or in use application dictionary. write all code here?? to find the longest
     // dictionary term
     boolean checkStdLib = !areThereUseStatements;
-    ParsableScriptSuiteRegistryHelper.ensureDictionaryInitialized(toldApplicationName);
+    ParsableScriptSuiteRegistryHelper.ensureKnownApplicationInitialized(toldApplicationName);
     r = parseCommandNameForApplication(b, l + 1, parsedName, toldApplicationName, checkStdLib);
     if (r) return true;
     if (areThereUseStatements) {
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
         for (String appName : applicationsToImportFrom) {
           //in case of SCRIPTING_ADDITIONS 'StandardAdditions' app name is added to app names import list
-          ParsableScriptSuiteRegistryHelper.ensureDictionaryInitialized(appName);
+          ParsableScriptSuiteRegistryHelper.ensureKnownApplicationInitialized(appName);
           r = parseCommandNameForApplication(b, l + 1, parsedName, appName, false);
           if (r) return true;
         }
@@ -123,6 +123,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
 
     if (!r) return false;
+    // TODO: 06/12/15 may be try to avoid creating PSI here!..
     List<AppleScriptCommand> allCommandsWithName = getAllCommandsWithName(b, parsedCommandName.value,
             toldApplicationName, areThereUseStatements, applicationsToImport);
 
@@ -220,8 +221,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   // of? directParameterValue? commandParameters?
-  public static boolean parseParametersForCommand(PsiBuilder b, int l, final AppleScriptCommand
-          parsedCommandDefinition) {
+  public static boolean parseParametersForCommand(PsiBuilder b, int l,
+                                                  @NotNull final AppleScriptCommand parsedCommandDefinition) {
     if (!recursion_guard_(b, l, "parseParametersForCommand")) return false;
     boolean r = true;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse command handler call parameters>");
