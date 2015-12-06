@@ -76,7 +76,7 @@ public abstract class DictionaryComponentBase<P extends DictionaryComponent, D e
   @Override
   public PsiFile getContainingFile() {
 //    return super.getContainingFile();
-    return myXmlElement.getContainingFile();
+    return myXmlElement.isValid() ? myXmlElement.getContainingFile() : getParent().getContainingFile();
   }
 
   @Nullable

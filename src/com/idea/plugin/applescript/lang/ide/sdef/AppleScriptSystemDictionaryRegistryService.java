@@ -473,11 +473,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     final File targetFile = new File(serializePath);
     if (!targetFile.getParentFile().exists() && !targetFile.getParentFile().mkdirs()) return null;
     try {
-      if (!SystemInfo.isMac && "xml".equals(applicationVFile.getExtension())) {
+      if (!SystemInfo.isMac && ("xml".equals(applicationVFile.getExtension())
+              || "sdef".equals(applicationVFile.getExtension()))) {
         fileGenerated = copyDictionaryFileToCacheDir(applicationName, applicationVFile, targetFile, true);
       } else if (SystemInfo.isMac) {
         String cmdName;
-        if ("xml".equals(applicationVFile.getExtension())) {
+        if ("xml".equals(applicationVFile.getExtension()) || "sdef".equals(applicationVFile.getExtension())) {
           cmdName = "cat";
         } else {
           cmdName = "sdef";

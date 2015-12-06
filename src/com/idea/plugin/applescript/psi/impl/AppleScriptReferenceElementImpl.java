@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Andrey on 13.04.2015.
+ * Andrey 13.04.2015
  */
 public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl implements
         AppleScriptReferenceElement, PsiPolyVariantReference {
@@ -149,7 +149,8 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
         addLookupElement(lookupElements, el);
       }
     }
-    for (PsiElement el : dictionaryComponents) {
+    for (DictionaryComponent el : dictionaryComponents) {
+      el.getDictionary().getName();
       addLookupElement(lookupElements, el);
     }
     return !lookupElements.isEmpty() ? lookupElements.toArray() : LookupElement.EMPTY_ARRAY;
@@ -158,7 +159,13 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   private void addLookupElement(List<LookupElement> lookupElements, PsiElement el) {
     if (!el.isValid()) return;
     LookupElementBuilder builder;
-    if (el instanceof AppleScriptComponent) {
+    if (el instanceof DictionaryComponent) {
+      DictionaryComponent dc = (DictionaryComponent) el;
+      String dName = dc.getDictionary().getName();
+//      builder = LookupElementBuilder.createWithIcon(dc);
+      builder = LookupElementBuilder.createWithIcon(dc).appendTailText("   " + dName, true);
+//      builder = LookupElementBuilder.createWithIcon(dc).withTypeText(": " + dName, dc.getIcon(0), false);
+    } else if (el instanceof AppleScriptComponent) {
       builder = LookupElementBuilder.createWithIcon((AppleScriptComponent) el);
     } else {
       builder = LookupElementBuilder.create(el);
