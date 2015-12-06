@@ -72,15 +72,21 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   private void removeDictionaryInfo(@NotNull String applicationName) {
     dictionaryInfoMap.remove(applicationName);
+    notScriptableApplicationList.add(applicationName);
   }
 
   private void addDictionaryInfo(@NotNull DictionaryInfo info) {
     dictionaryInfoMap.put(info.getApplicationName(), info);
     discoveredApplicationNames.add(info.getApplicationName());
+    notScriptableApplicationList.remove(info.getApplicationName());
   }
 
   public Collection<DictionaryInfo> getDictionaryInfoList() {
     return dictionaryInfoMap.values();
+  }
+
+  public HashSet<String> getNotScriptableApplicationList() {
+    return notScriptableApplicationList;
   }
 
   public AppleScriptSystemDictionaryRegistryService(@NotNull AppleScriptSystemDictionaryRegistryComponent
@@ -93,6 +99,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   private void initDictionariesInfoFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent
                                                      systemDictionaryRegistry) {
+    notScriptableApplicationList.addAll(systemDictionaryRegistry.getNotScriptableApplications());
     for (DictionaryInfo.State dInfoState : systemDictionaryRegistry.getDictionariesPersistedInfo()) {
       String appName = dInfoState.applicationName;
       String dictionaryUrl = dInfoState.dictionaryUrl;
@@ -406,7 +413,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   @Nullable
   public synchronized DictionaryInfo createAndInitializeInfo(@NotNull VirtualFile applicationVFile,
                                                              @NotNull String applicationName) {
-    if (isNotScriptable(applicationName)) return null;
+//    if (isNotScriptable(applicationName)) return null;
     if (!ApplicationDictionaryImpl.extensionSupported(applicationVFile.getExtension())) return null;
     if (getDictionaryInfo(applicationName) != null) {
       LOG.warn("Dictionary for application " + applicationName + " was already initialized. Generating new " +
@@ -490,7 +497,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     } catch (NotScriptableApplicationException e) {
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
       notScriptableApplicationList.add(e.getApplicationName());
-      discoveredApplicationNames.remove(e.getApplicationName());
+//      discoveredApplicationNames.remove(e.getApplicationName());
     } finally {
       if (!fileGenerated) {
         LOG.warn("Error occurred while generating file.");
@@ -625,9 +632,9 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   private boolean parseDictionaryFile(@NotNull final File xmlFile, @NotNull final String applicationName) {
     SAXBuilder builder = new SAXBuilder();
+    builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
     Document document;
     try {
-      // TODO: 12/1/2015 handle <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd"> in Windows
       document = builder.build(xmlFile);
       Element rootNode = document.getRootElement();
       List<Element> suiteElements = rootNode.getChildren();
@@ -645,8 +652,9 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       return true;
     } catch (JDOMException e) {
       e.printStackTrace();
+      LOG.warn("Exception occurred while parsing dictionary file: " + e.getMessage());
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.warn("Exception occurred while parsing dictionary file: " + e.getMessage());
     }
     return false;
   }

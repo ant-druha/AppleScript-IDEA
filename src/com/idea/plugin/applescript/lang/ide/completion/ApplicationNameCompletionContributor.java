@@ -51,6 +51,7 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
                   Collection<String> appNameList;
                   if (SystemInfo.isMac) {
                     appNameList = systemDictionaryRegistry.getDiscoveredApplicationNames();
+                    appNameList.removeAll(systemDictionaryRegistry.getNotScriptableApplicationList());
                   } else {
                     appNameList = systemDictionaryRegistry.getCachedApplicationNames();
                   }

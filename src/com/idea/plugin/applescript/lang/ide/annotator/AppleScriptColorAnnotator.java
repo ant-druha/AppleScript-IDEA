@@ -3,7 +3,9 @@ package com.idea.plugin.applescript.lang.ide.annotator;
 import com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterColors;
 import com.idea.plugin.applescript.lang.ide.intentions.AddApplicationDictionaryQuickFix;
 import com.idea.plugin.applescript.lang.ide.intentions.RenameParameterLabelQuickFix;
+import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService;
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.*;
 import com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil;
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -72,19 +74,32 @@ public class AppleScriptColorAnnotator implements Annotator {
       AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService
               (AppleScriptSystemDictionaryRegistryService.class);
       if (dictionaryRegistryService != null) {
-        if (!StringUtil.isEmptyOrSpaces(appName) && !dictionaryRegistryService.isDictionaryInitialized(appName)) {
-          String warningReason = checkWarningReason(appName, dictionaryRegistryService);
-          if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
-            System.out.println("Re-checking warning reason for " + appName);
-            warningReason = checkWarningReason(appName, dictionaryRegistryService);
-          }
-          // TODO: 05/12/15 may it is better to create a dictionary for it in order to make sure PSI is created
-          // (needed for icons for example)
-          if (warningReason != null) {
-            AppleScriptApplicationReference appRef = PsiTreeUtil
-                    .findChildOfType(element, AppleScriptApplicationReference.class);
-            holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
-                    .registerFix(new AddApplicationDictionaryQuickFix(appName));
+        if (!StringUtil.isEmptyOrSpaces(appName)) {
+          if (!dictionaryRegistryService.isDictionaryInitialized(appName)) {
+//          if(dictionaryRegistryService.isDictionaryInitialized() && )
+            String warningReason = checkWarningReason(appName, dictionaryRegistryService);
+            if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
+              System.out.println("Re-checking warning reason for " + appName);
+              warningReason = checkWarningReason(appName, dictionaryRegistryService);
+            }
+            // TODO: 05/12/15 may it is better to create a dictionary for it in order to make sure PSI is created
+            // (needed for icons for example)
+            if (warningReason != null) {
+              AppleScriptApplicationReference appRef = PsiTreeUtil
+                      .findChildOfType(element, AppleScriptApplicationReference.class);
+              holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
+                      .registerFix(new AddApplicationDictionaryQuickFix(appName));
+            } else {
+              AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
+                      (element.getProject(), AppleScriptProjectDictionaryService.class);
+              ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
+              if (dictionary == null) dictionaryProjectService.createDictionary(appName);
+            }
+          } else {
+            AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
+                    (element.getProject(), AppleScriptProjectDictionaryService.class);
+            ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
+            if (dictionary == null) dictionaryProjectService.createDictionary(appName);
           }
         }
       }

@@ -103,7 +103,7 @@ public class AppleScriptProjectDictionaryService {
   @Nullable
   public synchronized ApplicationDictionary createDictionaryFromFile(@NotNull String applicationName,
                                                                      @NotNull VirtualFile applicationFile) {
-    if (isInIgnoreList(applicationName, applicationFile)) return null;
+//    if (isInIgnoreList(applicationName, applicationFile)) return null;
 
     final DictionaryInfo dictionaryInfo = dictionaryRegistryService.createAndInitializeInfo(applicationFile,
             applicationName);
@@ -120,8 +120,6 @@ public class AppleScriptProjectDictionaryService {
    * @return tue if application is either not scriptable or was not found in the system, false otherwise
    */
   private boolean isInIgnoreList(@NotNull String applicationName, @Nullable VirtualFile applicationFile) {
-    // TODO: 15/11/15 create exception for not scriptable application and throw it from
-    // AppleScriptSystemDictionaryRegistryService
     if (dictionaryRegistryService.isNotScriptable(applicationName)) {
       LOG.info("Application " + applicationName + " is not scriptable. Can not create dictionary for it.");
       return true;

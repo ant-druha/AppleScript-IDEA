@@ -5,7 +5,9 @@ import com.intellij.openapi.components.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
+import com.intellij.util.SmartList;
 import com.intellij.util.xmlb.annotations.AbstractCollection;
+import com.intellij.util.xmlb.annotations.CollectionBean;
 import com.intellij.util.xmlb.annotations.Tag;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,12 +25,15 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
           AppleScriptSystemDictionaryRegistryComponent.class.getName());
   public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistryComponent";
   private final List<DictionaryInfo.State> dictionariesPersistedInfo = new ArrayList<DictionaryInfo.State>();
+  private final SmartList<String> notScriptableApplications = new SmartList<String>();
 
 
   public static class State {
     @Tag("applicationsInfo")
     @AbstractCollection(surroundWithTag = false)
     public DictionaryInfo.State[] dictionariesInfo = new DictionaryInfo.State[0];
+    @CollectionBean
+    public final List<String> notScriptableApplications = new SmartList<String>();
   }
 
   @NotNull
@@ -43,12 +48,18 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     for (int i = 0; i < dictionaryInfos.size(); i++) {
       state.dictionariesInfo[i] = it.next().getState();
     }
+    state.notScriptableApplications.addAll(dictionaryRegistry.getNotScriptableApplicationList());
     return state;
   }
 
   @NotNull
   public List<DictionaryInfo.State> getDictionariesPersistedInfo() {
     return dictionariesPersistedInfo;
+  }
+
+  @NotNull
+  public List<String> getNotScriptableApplications() {
+    return notScriptableApplications;
   }
 
   @Override
@@ -58,6 +69,7 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     if (dictionaryInfos != null) {
       Collections.addAll(dictionariesPersistedInfo, dictionaryInfos);
     }
+    notScriptableApplications.addAll(state.notScriptableApplications);
   }
 
   @Override
