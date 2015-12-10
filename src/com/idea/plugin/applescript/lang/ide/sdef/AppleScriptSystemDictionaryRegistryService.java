@@ -25,9 +25,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.*;
 
 public class AppleScriptSystemDictionaryRegistryService implements ParsableScriptHelper {
@@ -436,8 +436,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     final File file = new File(dictionaryInfo.getDictionaryFile().getPath());
     final String applicationName = dictionaryInfo.getApplicationName();
     if (file.exists() && parseDictionaryFile(file, applicationName)) {
-      dictionaryInfo.setInitialized(true);
-      return true;
+      return dictionaryInfo.setInitialized(true);
     }
     //if parsing failed for some reason, remove that generated dictionary file from cached files
     LOG.warn("Initialization failed for application [" + applicationName + "].");
@@ -448,12 +447,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private void initStandardSuite() {
     try {
       for (String fName : ApplicationDictionary.STANDARD_DEFINITION_FILES) {
-        URL url = getClass().getClassLoader().getResource(fName);
-        if (url == null) continue;
-        File file = new File(url.toURI());
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+        InputStream is = getClass().getResourceAsStream("/" + fName);
+        final String applicationName = fName.contains(ApplicationDictionary.STANDARD_COCOA_LIBRARY) ?
+                ApplicationDictionary.STANDARD_COCOA_LIBRARY : ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
+        if (StringUtil.isEmpty(applicationName)) continue;
+        final File tmpFile = stream2file(is, applicationName, ".sdef");
+        final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(tmpFile);
         if (virtualFile != null) {
-          final String applicationName = virtualFile.getNameWithoutExtension();
           DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
           if (dInfo != null) {
             initializeDictionaryFromInfo(dInfo);
@@ -464,9 +464,22 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
           LOG.warn("Can not find standard suite dictionary in the classpath");
         }
       }
-    } catch (URISyntaxException e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private static File stream2file(InputStream in, String prefix, String suffix) throws IOException {
+    final File tempFile = File.createTempFile(prefix, suffix);
+    tempFile.deleteOnExit();
+    FileOutputStream out = new FileOutputStream(tempFile);
+    int c;
+    while ((c = in.read()) != -1) {
+      out.write(c);
+    }
+    in.close();
+    out.close();
+    return tempFile;
   }
 
   @Nullable

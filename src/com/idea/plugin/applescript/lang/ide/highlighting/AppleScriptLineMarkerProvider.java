@@ -25,7 +25,7 @@ public class AppleScriptLineMarkerProvider extends RelatedItemLineMarkerProvider
       String appName = appRef.getApplicationName();
       if (dictionaryService == null || StringUtil.isEmpty(appName)) return;
       ApplicationDictionary dictionary = dictionaryService.getDictionary(appName);
-      if (dictionary == null || dictionary.getApplicationBundle() == null) return;
+      if (dictionary == null /*|| dictionary.getApplicationBundle() == null*/) return;
 
       NavigationGutterIconBuilder<PsiElement> builder =
               NavigationGutterIconBuilder.create(dictionary.getIcon(0)).

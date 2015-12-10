@@ -1,6 +1,6 @@
 <idea-plugin version="2">
     <id>com.idea.plugin.applescript</id>
-    <name>AppleScript for IDEA</name>
+    <name>AppleScript Idea</name>
     <version>1.0</version>
     <vendor email="andrey.dernov@gmail.com" url="https://twitter.com/ant_druha">Andrey Dernov</vendor>
 
@@ -25,18 +25,6 @@
     -->
 
     <extensions defaultExtensionNs="com.intellij">
-        <!--key="Script Suite Registry"-->
-        <!--bundle="messages.LangBundle"-->
-        <!--<projectConfigurable groupId="language"-->
-        <!--id="Script Suite Registry"-->
-        <!--displayName="AppleScript Suite Registry mappings"-->
-        <!--instance="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptSuiteRegistryConfigurable"/>-->
-
-        <!--<projectService serviceInterface="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings"-->
-        <!--serviceImplementation="com.idea.plugin.applescript.lang.ide.libraries.ScriptSuiteRegistryMappings">-->
-        <!--</projectService>-->
-
-        <!-- Add your extensions here -->
 
         <!--<library.type implementation="com.idea.plugin.applescript.lang.ide.libraries.AppleScriptLibraryType"/>-->
         <applicationService

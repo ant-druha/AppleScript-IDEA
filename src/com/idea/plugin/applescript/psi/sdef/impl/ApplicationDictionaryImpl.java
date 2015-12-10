@@ -62,6 +62,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   private final Map<String, DictionaryEnumeration> dictionaryEnumerationMap = new HashMap<String,
           DictionaryEnumeration>();
   private final Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
+  private final Set<AppleScriptCommand> dictionaryCommands = new LinkedHashSet<AppleScriptCommand>();
   private final Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
   private final Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
   private final Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<String, AppleScriptClass>();
@@ -74,7 +75,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     this.applicationName = applicationName;
     if (applicationBundleFile != null) {
       this.applicationBundleFile = applicationBundleFile;
-      // TODO: 04/12/15 get icon from application bundle
       setIconFromBundle(applicationBundleFile);
     }
     if (StringUtil.isEmpty(dictionaryName))

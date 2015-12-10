@@ -65,10 +65,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static final Key<Boolean> IS_PARSING_USING_TERMS_FROM_STATEMENT =
           Key.create("applescript.parsing.is.use.statement.used");
 
-  public static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, @NotNull StringHolder parsedName,
-                                                        @NotNull String toldApplicationName,
-                                                        boolean areThereUseStatements,
-                                                        @Nullable Set<String> applicationsToImportFrom) {
+  private static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, @NotNull StringHolder parsedName,
+                                                         @NotNull String toldApplicationName,
+                                                         boolean areThereUseStatements,
+                                                         @Nullable Set<String> applicationsToImportFrom) {
     if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
     boolean r;
     parsedName.value = "";
@@ -107,9 +107,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean parseCommandHandlerCallExpression(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseCommandHandlerCallExpression")) return false;
     boolean r;
-    if (nextTokenIs(b, NLS)) {
-      return false;
-    }
+    if (nextTokenIs(b, NLS)) return false;
+
     StringHolder parsedCommandName = new StringHolder();
     String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
@@ -135,6 +134,35 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     boolean incompleteHandlerCall = !r && allCommandsWithName.size() > 0 && (b.getTokenType() == NLS || b.eof());
     return r || incompleteHandlerCall;
+  }
+
+  // commandName commandParameters?
+  public static boolean parseApplicationHandlerDefinitionSignature(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseApplicationHandlerDefinitionSignature")) return false;
+    boolean r;
+    if (b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) != Boolean.TRUE
+            || b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) return false;
+
+    StringHolder parsedCommandName = new StringHolder();
+    String toldApplicationName = getTargetApplicationName(b);
+    PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Application Handler Definition");
+    r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, true, null);
+    exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
+
+    if (!r) return false;
+    // TODO: 06/12/15 may be try to avoid creating PSI here!..
+    List<AppleScriptCommand> allCommandsWithName = getAllCommandsWithName(b, parsedCommandName.value,
+            toldApplicationName, false, null);
+
+    for (AppleScriptCommand command : allCommandsWithName) {
+      r = parseParametersForCommand(b, l + 1, command);//custom parsing here
+      if (r) {
+        break;
+      }
+    }
+    boolean incompleteHandlerCall = !r && allCommandsWithName.size() > 0 && (b.getTokenType() == NLS || b.eof());
+    return r || incompleteHandlerCall;
+
   }
 
   @NotNull
@@ -502,8 +530,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   // (given? commandParameterSelector parameterValue)
   // | ( (with|without) commandParameterSelector )
-  private static boolean parseParameterForCommand(PsiBuilder b, int l, AppleScriptCommand command, StringHolder
-          parsedParameterSelector) {
+  private static boolean parseParameterForCommand(PsiBuilder b, int l, AppleScriptCommand command,
+                                                  StringHolder parsedParameterSelector) {
     if (!recursion_guard_(b, l, "parseParameterForCommand")) return false;
     boolean r;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Parameter For Command>");//todo check here if it works
@@ -532,6 +560,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  // TODO: 08/12/15 the correct syntax is: (given paramSelector : paramValue) | (paramSelector paramValue)
   //given? commandParameterSelector parameterValue
   private static boolean parseGivenParameter(PsiBuilder b, int l, AppleScriptCommand command,
                                              StringHolder parsedParameterSelector) {

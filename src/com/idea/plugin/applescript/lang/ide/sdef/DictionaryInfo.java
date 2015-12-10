@@ -48,8 +48,9 @@ public class DictionaryInfo {
     return initialized;
   }
 
-  public void setInitialized(boolean initialized) {
+  public boolean setInitialized(boolean initialized) {
     this.initialized = initialized;
+    return initialized;
   }
 
   @Tag("dictionary-info")

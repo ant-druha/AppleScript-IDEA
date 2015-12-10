@@ -79,6 +79,11 @@ public class AppleScriptProjectDictionaryService {
 
   @Nullable
   private ApplicationDictionary createDictionaryFromInfo(final @NotNull DictionaryInfo dInfo) {
+    if (!dInfo.isInitialized()) {
+      LOG.error("Attempt to create dictionary for not initilized Dictionary Info for application" +
+              dInfo.getApplicationName());
+      return null;
+    }
     String applicationName = dInfo.getApplicationName();
     PsiFile psiFile = PsiManager.getInstance(project).findFile(dInfo.getDictionaryFile());
     XmlFile xmlFile = (XmlFile) psiFile;

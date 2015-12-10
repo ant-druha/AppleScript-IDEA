@@ -291,8 +291,8 @@ RAW_CODE=("<<"[^">>"]*">>")
   {CUBIC_VOL}                  { return CUBIC_VOL; }
   {SQUARE_AREA}                { return SQUARE_AREA; }
   {BUILT_IN_TYPE_S}            { return BUILT_IN_TYPE_S; }
-  {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
   {QUOTED_FORM}                { return QUOTED_FORM; }
+  {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
   {APART_FROM}                 { return APART_FROM; }
   {ASIDE_FROM}                 { return ASIDE_FROM; }
   {OUT_OF}                     { return OUT_OF; }

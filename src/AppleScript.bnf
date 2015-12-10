@@ -181,7 +181,8 @@ appleScriptFile ::= compilation_unit_
 
 private compilation_unit_ ::=
                       (
-                        statement
+                      topLevelStatement
+                      | statement
                       | expression
                       | RAW_CODE
                       | sep
@@ -198,22 +199,23 @@ referenceIdentifier ::= identifier
 {mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
  implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
 
+private topLevelStatement ::= userHandlerDefinition | <<parseUseStatement useStatement>>
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
-                      |handlerDefinition
+//                      |userHandlerDefinition
                       |scriptObjectDefinition
                       |scriptObjectUnnamedDefinition
                       |returnStatement|continue_statement
                       |parseAssignmentStatement
 
 
-private handlerDefinition ::= handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
+private userHandlerDefinition ::= handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
                       |handlerRunDefinition//|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
 private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseRepeatStatement repeatStatement>> | exitStatement
 |consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|
-<<parseUseStatement useStatement>> | <<parseUsingTermsFromStatement>>
+/*<<parseUseStatement useStatement>> |*/ <<parseUsingTermsFromStatement>>
 
 exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
@@ -224,6 +226,8 @@ blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
 //recoverWhile=bodyRecover
 }
 //private bodyRecover ::= !((end|(on error)|else))
+private topBlockBodyPart ::= (applicationHandlerDefinition|topLevelStatement|statement|expression|RAW_CODE)
+
 private blockBodyPart ::= statement|expression|RAW_CODE
 {recoverWhile=bodyPartRecover}
 private bodyPartRecover ::= !(sep)
@@ -359,7 +363,8 @@ private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
 
 //see <<parseUsingTermsFromStatement>>
 usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<pushStdLibrary>>) sep
-                               blockBody?
+//todo add definition of application handlers to the block body
+                            ((topBlockBodyPart sep) (topBlockBodyPart sep)*)?
                             end [using terms from] //{pin=3}
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName withImportingStdLibrary]}
@@ -663,9 +668,6 @@ private propertyInitializerExpression ::= expression
 // or derive values. The simplest kinds of expressions, called literal expressions, are representations of values
 // in scripts. More complex expressions typically combine literals, variables, operators, and object specifiers.
 expression ::= logicalOrExpressionWrapper
-//{recoverWhile=expressionRecover}
-private expressionRecover ::= !(sep|identifier|tell|try|repeat|with|local|global|get|set|end|copy|in|front
-|return|BAND|from|of|handlerParameterLabel|dictionaryCommandName)
 
 parenthesizedExpression ::= LPAREN expressionInParentheses RPAREN
 
@@ -736,6 +738,13 @@ handlerRunDefinition ::= on run sep
 //handlerQuitDefinition ::= on quit nls
 //                            blockBody? nls
 //                           end quit {pin=2}
+applicationHandlerDefinition ::= (on|to) applicationHandlerDefinitionSignature
+                                         [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
+                                         [varDeclarationList] sep
+                                           blockBody?
+                                        end [referenceIdentifier]
+private applicationHandlerDefinitionSignature ::= <<parseApplicationHandlerDefinitionSignature>>
+//private dictionaryCommandNameIdentifier ::= <<parseDictionaryCommandNameIdentifier>>
 
 handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
                                          [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
@@ -766,7 +775,7 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 //handlerLabeledParametersCall ::= handlerWithDirectLabeledParametersCall|handlerNoDirectLabeledParametersCall
 left handlerLabeledParametersCallExpression ::=
    (
-   (of|in)? directParameterVal
+   (of|in)? directParameterVal//todo on|of is mandatory if parsing user handler call
    (
      (    (handlerParameterLabel parameterVal)+
            ( (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
