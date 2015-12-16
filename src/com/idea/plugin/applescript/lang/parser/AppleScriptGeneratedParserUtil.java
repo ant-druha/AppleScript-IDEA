@@ -31,19 +31,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static final Key<Boolean> IS_PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER =
           Key.create("applescript.parsing.command.handler.boolean.parameter");
 
-  public static final Key<Stack<ApplicationDictionary>> SCRIPT_DICTIONARY_STACK =
-          Key.create("applescript.parsing.current.dictionary.stack");
   // for storing application names inside <tell...end tell> statements
   public static final Key<Stack<String>> TOLD_APPLICATION_NAME_STACK =
           Key.create("applescript.parsing.current.dictionary.name.stack");
   // for storing application id reference inside <tell...end tell> statements
   public static final Key<Stack<String>> TOLD_APPLICATION_ID_STACK =
           Key.create("applescript.parsing.current.dictionary.id.stack");
-
-  private static final Key<Boolean> IS_PARSING_POSSESSIVE_FORM =
-          Key.create("applescript.parsing.possessive.form");
-  private static final Key<Boolean> IS_TREE_PREV_CLASS_NAME =
-          Key.create("applescript.tree.prev.class.name");
+  //  private static final Key<Boolean> IS_PARSING_POSSESSIVE_FORM =
+//          Key.create("applescript.parsing.possessive.form");
   private static final Key<Boolean> IS_PARSING_TELL_SIMPLE_STATEMENT =
           Key.create("applescript.parsing.tell.simple.statement");
   private static final Key<Boolean> IS_PARSING_TELL_COMPOUND_STATEMENT =
@@ -296,14 +291,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, true);
     r = AppleScriptParser.tellSimpleStatement(b, l + 1);
     b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, false);
-    if (r) {
-      popApplicationNameIfNeeded(b);
-    }
+//    if (r || b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE) {
+    popApplicationNameIfWasPushed(b);
+//    }
     b.putUserData(APPLICATION_NAME_PUSHED, pushedBefore);
     return r;
   }
 
-  private static void popApplicationNameIfNeeded(PsiBuilder b) {
+  private static void popApplicationNameIfWasPushed(PsiBuilder b) {
     if (b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE) {
       Stack<String> dictionaryNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
       if (dictionaryNameStack != null && !dictionaryNameStack.isEmpty()) {//should always be true if r==true
@@ -382,13 +377,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean compoundBefore = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
     b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, true);//not used anywhere actually
 
-    ErrorState state = ErrorState.get(b);
-
     r = AppleScriptParser.tellCompoundStatement(b, l + 1);
     b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, compoundBefore);
-    if (r) {
-      popApplicationNameIfNeeded(b);
-    }
+//    if (r) {
+    popApplicationNameIfWasPushed(b);
+//    }
     b.putUserData(APPLICATION_NAME_PUSHED, pushedBefore);
     return r;
   }
@@ -403,9 +396,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
     r = AppleScriptParser.usingTermsFromStatement(b, l + 1);
 
-    if (r) {
-      popApplicationNameIfNeeded(b);
-    }
+//    if (r) {
+    popApplicationNameIfWasPushed(b);
+//    }
     b.putUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT, oldParseUsingTermsState);
     b.putUserData(APPLICATION_NAME_PUSHED, oldPushedState);
 
@@ -547,7 +540,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static boolean parseBooleanParameter(PsiBuilder b, int l, AppleScriptCommand command, StringHolder
           parsedParameterSelector) {
     if (!recursion_guard_(b, l, "parseBooleanParameter")) return false;
-    boolean r = false;
+    boolean r;
     //need to rollback with/without if there is no match
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Boolean Parameter>");
     b.putUserData(IS_PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER, true);
@@ -641,8 +634,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static boolean parseCommandDirectParameterValue(PsiBuilder b, int l,
                                                           @NotNull CommandDirectParameter parameter) {
     if (!recursion_guard_(b, l, "parseCommandDirectParameterValue")) return false;
-    boolean r = false;
-    String parameterTypeSpecifier = parameter.getTypeSpecifier();
+    boolean r;
+//    String parameterTypeSpecifier = parameter.getTypeSpecifier();
     // if we are inside tell compound statement=> direct parameter is optional
     // so it may be wrongly detected instead of parameter selector. So, checking if it is a parameter selector first
     boolean isTellCompound = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
@@ -656,7 +649,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    if ("type".equals(parameterTypeSpecifier)) {
 //      r = typeSpecifier(b, l + 1);
 //    }
-    if (!r) r = com.idea.plugin.applescript.lang.parcer.AppleScriptParser.expression(b, l + 1);
+//    if (!r)
+    r = com.idea.plugin.applescript.lang.parcer.AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, DIRECT_PARAMETER_VAL, r, false, null);
     // A tell statement specifies a default target for all commands contained
     // within it, so the direct parameter is optional.
@@ -725,7 +719,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     r1 = consumeToken(b, OF);
     if (!r1) r1 = consumeToken(b, IN);
     if (!r1) r2 = consumeToken(b, APS);
-    b.putUserData(IS_PARSING_POSSESSIVE_FORM, r2);
+//    b.putUserData(IS_PARSING_POSSESSIVE_FORM, r2);
     exit_section_(b, m, null, r1 || r2);
     return r1 || r2;
   }
@@ -733,8 +727,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean parseObjectReference(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseObjectReference")) return false;
     boolean r = AppleScriptParser.objectReference(b, l + 1);
-    b.putUserData(IS_PARSING_POSSESSIVE_FORM, false);
-    b.putUserData(IS_TREE_PREV_CLASS_NAME, false);
+//    b.putUserData(IS_PARSING_POSSESSIVE_FORM, false);
     return r;
   }
 

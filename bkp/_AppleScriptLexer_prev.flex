@@ -19,7 +19,7 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 %unicode
 
 ONE_NL=(\r|\n|\r\n)
-CC="¬"
+CC="Â¬"
 WHITE_SPACE_CHAR=[\ \t\f]
 WHITE_SPACE={WHITE_SPACE_CHAR}|{CC}({WHITE_SPACE_CHAR})*({ONE_NL})?//|{CC}
 NLS={ONE_NL}({ONE_NL}|{WHITE_SPACE})*

@@ -115,6 +115,9 @@
 
         <completion.contributor language="AppleScript"
                                 implementationClass="com.idea.plugin.applescript.lang.ide.completion.ApplicationNameCompletionContributor"/>
+
+        <completion.contributor language="AppleScript"
+                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.KeywordCompletionContributor"/>
         <defaultLiveTemplatesProvider
                 implementation="com.idea.plugin.applescript.lang.ide.AppleScriptLiveTemplatesProvider"/>
 

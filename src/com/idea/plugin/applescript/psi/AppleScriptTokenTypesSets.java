@@ -6,6 +6,16 @@ import com.intellij.psi.tree.TokenSet;
 import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
 
 public interface AppleScriptTokenTypesSets {
+  /**
+   * Table 1-1  AppleScript reserved words, listed alphabetically
+   * ABOUT,ABOVE,AFTER,AGAINST,AND,APART FROM,
+   * AROUND,AS,ASIDE FROM,AT,BACK,BEFORE,BEGINNING,BEHIND,BELOW,BENEATH,BESIDE,BETWEEN,BUT,BY
+   * CONSIDERING,CONTAIN,CONTAINS,CONTAINS,CONTINUE,COPY,DIV,DOES,EIGHTH,ELSE,END,EQUAL,EQUALS,ERROR,EVERY,EXIT,
+   * FALSE,FIFTH,FIRST,FOR,FOURTH,FROM,FRONT,GET,GIVEN,GLOBAL,IF,IGNORING,IN,INSTEAD OF,INTO,IS,IT,ITS,LAST,LOCAL,
+   * ME,MIDDLE,MOD,MY,NINTH,NOT,OF,ON,ONTO,OR,OUT OF,OVER,PROP,PROPERTY,PUT,REF,REFERENCE,REPEAT,RETURN,RETURNING,
+   * SCRIPT,SECOND,SET,SEVENTH,SINCE,SIXTH,SOME,TELL,TENTH,THAT,THE,THEN,THIRD,THROUGH,THRU,TIMEOUT,TIMES,TO,
+   * TRANSACTION,TRUE,TRY,UNTIL,WHERE,WHILE,WHOSE,WITH,WITHOUT
+   */
 
 
   TokenSet OPERATORS = TokenSet.create(PLUS, MINUS, MOD, POW, BAND, LNOT, DIV, INT_DIV, STAR, INT_DIV, EQ, NE, IS_IN,
@@ -14,18 +24,25 @@ public interface AppleScriptTokenTypesSets {
 
   TokenSet NUMBERS = TokenSet.create(DIGITS, DEC_EXPONENT);
 
-  TokenSet KEYWORDS = TokenSet.create(ABOUT, ABOVE, AFTER, AGAINST, LAND, APART_FROM, AROUND, AS, ASIDE_FROM, AT,
-          BACK, BEFORE, BEGINNING,
-          BEHIND, BELOW, BENEATH, BESIDE, BETWEEN, BUT, BY, CONSIDERING, CONTINUE, COPY, DIV, DOES, DOES_NOT_CONTAIN,
-          EIGHTH, ELSE, END,
-            /*EQUAL,EQUALS,*/
-          ERROR, EVERY, EXIT, FALSE, FIFTH, FIRST, FOR, FOURTH, FROM, FRONT, GET, GIVEN, GLOBAL, IF, IGNORING, IN,
-          INSTEAD_OF, INTO, IT,
-            /*ITS,*/ LAST, LOCAL, ME, MIDDLE, MOD, MY, NINTH, LNOT, OF, ON, ONTO, LOR, OUT_OF, OVER, PROP, PROPERTY,
-            /*PUT,*/ /*REF,*/ REFERENCE,
-          REPEAT, RETURN, RETURNING, SCRIPT, SECOND, SET, SEVENTH, SINCE, SIXTH, SOME, TELL, TENTH, THAT, THE_KW,
-          THEN, THIRD, THROUGH,
+  TokenSet KEYWORDS = TokenSet.create(AROUND, AS, ASIDE_FROM, AT, BACK, BEFORE, BEGINNING, BEHIND, BELOW, BENEATH,
+          BESIDE, BETWEEN, BUT, BY, CONSIDERING,/*CONTAIN,CONTAINS,CONTAINS,*/CONTINUE, COPY, DIV, DOES, EIGHTH, ELSE,
+          END, EQ,/*EQUAL,EQUALS,*/ ERROR, EVERY, EXIT, FALSE, FIFTH, FIRST, FOR, FOURTH, FROM, FRONT, GET, GIVEN,
+          GLOBAL, IF, IGNORING, IN, INSTEAD_OF, INTO,/*IS,*/IT,/*ITS,*/ LAST, LOCAL, ME, MIDDLE, MOD, MY, NINTH, LNOT
+          /*,NOT*/, OF, ON, ONTO, LOR, /*OR,*/OUT_OF, OVER, PROP, PROPERTY, PUT,/*REF,*/ REFERENCE, REPEAT, RETURN,
+          RETURNING, SCRIPT, SECOND, SET, SEVENTH, SINCE, SIXTH, SOME, TELL, TENTH, THAT, THE_KW, THEN, THIRD, THROUGH,
           THRU, TIMEOUT, TIMES, TO, TRANSACTION, TRUE, TRY, UNTIL, WHERE, WHILE, WHOSE, WITH, WITHOUT);
+//  TokenSet KEYWORDS = TokenSet.create(ABOUT, ABOVE, AFTER, AGAINST, LAND, APART_FROM, AROUND, AS, ASIDE_FROM, AT,
+//          BACK, BEFORE, BEGINNING,
+//          BEHIND, BELOW, BENEATH, BESIDE, BETWEEN, BUT, BY, CONSIDERING, CONTINUE, COPY, DIV, DOES, DOES_NOT_CONTAIN,
+//          EIGHTH, ELSE, END,
+//            /*EQUAL,EQUALS,*/
+//          ERROR, EVERY, EXIT, FALSE, FIFTH, FIRST, FOR, FOURTH, FROM, FRONT, GET, GIVEN, GLOBAL, IF, IGNORING, IN,
+//          INSTEAD_OF, INTO, IT,
+//            /*ITS,*/ LAST, LOCAL, ME, MIDDLE, MOD, MY, NINTH, LNOT, OF, ON, ONTO, LOR, OUT_OF, OVER, PROP, PROPERTY,
+//            /*PUT,*/ /*REF,*/ REFERENCE,
+//          REPEAT, RETURN, RETURNING, SCRIPT, SECOND, SET, SEVENTH, SINCE, SIXTH, SOME, TELL, TENTH, THAT, THE_KW,
+//          THEN, THIRD, THROUGH,
+//          THRU, TIMEOUT, TIMES, TO, TRANSACTION, TRUE, TRY, UNTIL, WHERE, WHILE, WHOSE, WITH, WITHOUT);
 
   TokenSet HANDLER_PARAMETER_LABELS = TokenSet.create(ABOUT, ABOVE, AGAINST, APART_FROM, AROUND, ASIDE_FROM, AT,
           BELOW, BENEATH, BESIDE,
@@ -40,7 +57,7 @@ public interface AppleScriptTokenTypesSets {
 //    |by|for|from|'instead of'|into|on|onto|'out of'|over|since|thru|through|under
 //    |to //no such label in documentation but it works!
 
-//    about,above,after,against,and,apart from,around,as,aside  from,at,back,before,beginning,behind,below,beneath,
+  //    about,above,after,against,and,apart from,around,as,aside  from,at,back,before,beginning,behind,below,beneath,
 // beside,between,but,by,
 // considering,contain,contains,
 //    contains,continue,copy,div,does,eighth,else,end,equal,equals,error,every,exit,false,fifth,first,for,

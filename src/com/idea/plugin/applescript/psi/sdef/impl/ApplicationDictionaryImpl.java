@@ -222,6 +222,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>(1);
     AppleScriptCommand command = dictionaryCommandMap.get(name);
     if (command != null) result.add(dictionaryCommandMap.get(name));
+//    dictionaryCommands
 //    for (AppleScriptCommand command : dictionaryCommandMap.values()) {
 //      if (command.getName().equals(name)) {
 //        result.add(command);

@@ -30,6 +30,10 @@ public class AppleScriptSyntaxHighlighterColors {
   public static final TextAttributes UNRESOLVED_REFERENCE_ATTRIBUTES = HighlighterColors.TEXT.getDefaultAttributes()
           .clone();
 
+  public AppleScriptSyntaxHighlighterColors() {
+    UNRESOLVED_REFERENCE.setFallbackAttributeKey(DefaultLanguageHighlighterColors.CLASS_REFERENCE);
+  }
+
   static {
     UNRESOLVED_REFERENCE_ATTRIBUTES.setForegroundColor(JBColor.BLACK);
     UNRESOLVED_REFERENCE_ATTRIBUTES.setEffectColor(JBColor.GRAY);
@@ -49,7 +53,7 @@ public class AppleScriptSyntaxHighlighterColors {
   public static final TextAttributesKey COMMENT =
           createTextAttributesKey(APPLE_SCRIPT_COMMENT, DefaultLanguageHighlighterColors.LINE_COMMENT);
   public static final TextAttributesKey UNRESOLVED_REFERENCE =
-          createTextAttributesKey(UNRESOLVED_ACCESS_ID, DefaultLanguageHighlighterColors.CLASS_REFERENCE);
+          createTextAttributesKey(UNRESOLVED_ACCESS_ID, UNRESOLVED_REFERENCE_ATTRIBUTES);
   public static final TextAttributesKey DICTIONARY_COMMAND_ATTR =
           createTextAttributesKey(DICTIONARY_COMMAND, DefaultLanguageHighlighterColors.MARKUP_ATTRIBUTE);
   public static final TextAttributesKey DICTIONARY_COMMAND_SELECTOR_ATTR =

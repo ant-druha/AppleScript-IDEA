@@ -253,6 +253,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "since"                      { return SINCE; }
   "under"                      { return UNDER; }
   "run"                        { return RUN; }
+  "open"                       { return OPEN; }
   "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
   "copy"                       { return COPY; }

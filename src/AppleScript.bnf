@@ -209,7 +209,7 @@ private statement ::= controlStatement|propertyDeclarationStatement|varDeclarati
 
 
 private userHandlerDefinition ::= handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
-                      |handlerRunDefinition//|handlerOpenDefinition|handlerIdleDefinition|handlerQuitDefinition
+                      |handlerRunDefinition|handlerOpenDefinition//|handlerIdleDefinition|handlerQuitDefinition
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
@@ -422,7 +422,7 @@ integerLiteralExpression ::= DIGITS
 // A value of class Class is a class identifier. A class identifier is a reserved word that specifies the class
 // to which an object or value belongs. The Class property of an object contains a class identifier value.
 // >>Class class<<
-builtInClassIdentifier ::= builtInClassIdCommon|builtInClassIdNative //|script
+builtInClassIdentifier ::= builtInClassIdCommon|builtInClassIdNative|script
 
 //there is no need to define in SDEF these classes:
 private builtInClassIdNative::= ANY|BOOLEAN|DATE|FILE|INTEGER|LOCATION_SPECIFIER|NUMBER|POINT|REAL|RECORD|RECTANGLE|
@@ -527,13 +527,8 @@ private machineName ::= STRING_LITERAL
 private appleTalkZoneName ::= STRING_LITERAL
 private tellStatementStartCondition ::= <<isTellStatementStart>>
 
-file_reference ::= THE_KW?(FILE|ALIAS) expression // example p.193
-
-//left applicationObjectReference ::= (of|in) THE_KW? applicationReference
-
 private handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier ::= handlerInterleavedParametersCall |
 propertyReference | (referenceIdentifier handlerPositionalParametersCallExpression?)
-//| handlerPositionalParametersCallExpression | referenceIdentifier //does not work in case when disk (expr) ->detected as handler call
 
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
@@ -727,9 +722,9 @@ handlerRunDefinition ::= on run sep
                             blockBody?
                           end run {pin=2}
 
-//handlerOpenDefinition ::= on open directParameterDeclaration? nls
-//                            blockBody? nls
-//                           end open {pin=2}
+handlerOpenDefinition ::= on open directParameterDeclaration? sep
+                            blockBody?
+                          end open {pin=2}
 
 //handlerIdleDefinition ::= on idle nls
 //                            blockBody? nls
@@ -757,7 +752,7 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"
 methods=[getParameterComponentList]}
 //private handledLabeledParametersName ::= identifier|run|open|idle|quit
 
-labeledParameterDeclarationList ::= (of|in)? directParameterDeclaration? labeledParameterDeclarationPart*
+labeledParameterDeclarationList ::= ((of|in) directParameterDeclaration)? labeledParameterDeclarationPart*
 {methods=[getComponentList]}
 //directParameterDeclaration ::= directParameterVar
 directParameterDeclaration ::= THE_KW? identifier
@@ -775,7 +770,7 @@ implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
 //handlerLabeledParametersCall ::= handlerWithDirectLabeledParametersCall|handlerNoDirectLabeledParametersCall
 left handlerLabeledParametersCallExpression ::=
    (
-   (of|in)? directParameterVal//todo on|of is mandatory if parsing user handler call
+   (of|in) directParameterVal// on|of is mandatory if parsing user handler call
    (
      (    (handlerParameterLabel parameterVal)+
            ( (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
@@ -816,20 +811,20 @@ private dictionaryCommandParameterSelectorTokens ::= identifier|builtInClassIden
 private labelForTrueParam ::= expression //referenceIdentifier
 private labelForFalseParam ::= expression //referenceIdentifier
 
-parameterVal ::= handlerCallDirectParameterWithGuardPredicate | expression
+parameterVal ::= referenceIdBeforeParamLabel | expression
 
 //sayHello to name -> only if referenceIdentifier followed by 'to'
-private handlerCallDirectParameterWithGuardPredicate ::= (&(referenceIdentifier handlerParameterLabel) referenceIdentifier)
+private referenceIdBeforeParamLabel ::= referenceIdentifier &handlerParameterLabel
 
 private userParameterVal ::= expression
 
 //todo replace to just expression, add custom parsing ?
-directParameterVal ::=  handlerCallDirectParameterWithGuardPredicate | expression
+directParameterVal ::=  referenceIdBeforeParamLabel | expression
   //{recoverWhile="setRecover"}
 //todo add custom parsing (user data holder not, so not to detect as followed expression as labeled handler call)
 private parseTellSimpleStatement ::= <<parseTellSimpleStatementInner>>
 //see <<parseTellSimpleStatementInner>>
-tellSimpleStatement ::= tell (handlerCallDirectParameterWithGuardPredicate | objectReferenceWrapper | currentApplicationConstant )
+tellSimpleStatement ::= tell (referenceIdBeforeParamLabel | objectReferenceWrapper | currentApplicationConstant )
 to (statement | handlerInterleavedParametersCall | expression )
 {implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator" //may be not needed?
  methods=[getApplicationName]}
@@ -997,17 +992,20 @@ private targetVariablePattern ::= targetVariable|targetListLiteral|targetRecordL
 
 
 // OPERATORS & EXPRESSIONS
-// AppleScript includes operators for performing arithmetic operations(numeric_ex), comparing values(testing_ex),
-// performing Boolean evaluations(logical ex), and coercing values.
-// todo operator precedence (coercion and not order amend) also & insert here
 private logicalOrExpressionWrapper ::= logicalAndExpressionWrapper logicalOrExpression*
 left logicalOrExpression ::= LOR NLS* logicalAndExpressionWrapper
 
-private logicalAndExpressionWrapper ::= compareExpressionWrapper logicalAndExpression*
-left logicalAndExpression ::= LAND NLS* compareExpressionWrapper
+private logicalAndExpressionWrapper ::= negationExpressionWrapper logicalAndExpression*
+left logicalAndExpression ::= LAND NLS* negationExpressionWrapper
 
-private compareExpressionWrapper ::= concatenationExpressionWrapper compareExpression*
-left compareExpression ::= (equalityOperator|relational_operator) NLS* concatenationExpressionWrapper
+private negationExpressionWrapper ::= negationExpression | compareExpressionWrapper
+negationExpression ::= (LNOT NLS* negationExpressionWrapper)
+
+private compareExpressionWrapper ::= coercionExpressionWrapper compareExpression*
+left compareExpression ::= (equalityOperator|relational_operator) NLS* coercionExpressionWrapper
+
+private coercionExpressionWrapper ::= concatenationExpressionWrapper coercionExpression*
+left coercionExpression ::= AS NLS* concatenationExpressionWrapper
 
 private concatenationExpressionWrapper ::= additiveExpressionWrapper concatenationExpression*
 left concatenationExpression ::= BAND additiveExpressionWrapper
@@ -1021,19 +1019,19 @@ left multiplicativeExpression ::= multiplicativeOperator NLS* powerExpressionWra
 private powerExpressionWrapper ::= objectReferenceWrapper powerExpression*
 left powerExpression ::= POW objectReferenceWrapper
 
-
 private prefixExpression ::= (prefixOperator NLS* prefixExpression) | valueExpression
-private prefixOperator ::= PLUS|MINUS|LNOT
+private prefixOperator ::= PLUS|MINUS
 
-private objectReferenceWrapper ::= THE_KW? prefixExpression filterReference? <<parseObjectReference>>* // objectReference*
+private objectReferenceWrapper ::= THE_KW? prefixExpression objectReference*//<<parseObjectReference>>*
 //move down to primary? and add a check for possessive form to keep it uniform
 private possessiveFormAndInterleavedCall ::= APS handlerInterleavedParametersCall
 
 // custom parsing is needed not to parse as a labeled handler call: TELL referenceIdentifier's referenceIdentifier TO expression
 // see <<parseObjectReference>>
-left objectReference ::=  ( possessiveFormAndInterleavedCall | <<parseObjectReferencePointer>> THE_KW? prefixExpression) filterReference?
-
-private valueExpression ::= primaryExpression coercionExpression*
+left objectReference ::=  ( possessiveFormAndInterleavedCall | objectPointer /*<<parseObjectReferencePointer>>*/
+THE_KW? prefixExpression)
+private objectPointer ::= of|in|APS
+private valueExpression ::= primaryExpression filterReference?//coercionExpression*
 
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
 {mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
@@ -1062,14 +1060,7 @@ incompleteCommandHandlerCall ::= <<parseIncompleteCommandCall>>
 implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 
 // todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
-private referenceExpression ::=
-//  parseAppRefWithNormalCondition
-  applicationReference
-//  <<parseApplicationReference>>
-  | referenceForm
-//  | applicationReference
-  | file_reference
-  | referenceIdentifier
+private referenceExpression ::= applicationReference | referenceForm | referenceIdentifier
 
 private referenceForm ::=
       (my handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier )
@@ -1104,7 +1095,3 @@ private containment_start_end_operator ::= STARTS_BEGINS_WITH|ENDS_WITH
 private containment_any_part_operator ::= IS_CONTAIN|DOES_NOT_CONTAIN|IS_IN|IS_NOT_IN
 
 private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
-
-left coercionExpression ::= coercionStrictExpression|coercionUserDefinedExpression
-private coercionStrictExpression ::= AS typeSpecifier {pin=3}
-private coercionUserDefinedExpression ::= AS referenceIdentifier {pin=3}
