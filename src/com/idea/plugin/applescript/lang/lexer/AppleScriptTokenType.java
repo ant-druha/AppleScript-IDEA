@@ -9,16 +9,16 @@ import org.jetbrains.annotations.NotNull;
  * Andrey.Dernov 2/5/2015
  */
 public class AppleScriptTokenType extends IElementType {
-    public AppleScriptTokenType(@NotNull @NonNls String debugName) {
-        super(debugName, AppleScriptLanguage.INSTANCE);
-    }
+  public AppleScriptTokenType(@NotNull @NonNls String debugName) {
+    super(debugName, AppleScriptLanguage.INSTANCE);
+  }
 
-    @Override
-    public String toString() {
-      return super.toString().toLowerCase().replaceAll("_", " ");
-    }
+  @Override
+  public String toString() {
+    return super.toString().toLowerCase().replaceAll("_", " ");
+  }
 
-    public String getMyDebugName(){
-      return "AppleScriptTokenType." + super.toString();
-    }
+  public String getMyDebugName() {
+    return "AppleScriptTokenType." + super.toString();
+  }
 }
