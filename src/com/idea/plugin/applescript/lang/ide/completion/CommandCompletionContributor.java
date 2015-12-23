@@ -12,7 +12,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.impl.source.tree.ElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
@@ -125,7 +124,8 @@ public class CommandCompletionContributor extends CompletionContributor {
                         AppleScriptCommandHandlerCall.class);
                 PsiElement elemAtCaret = parameters.getOriginalFile().findElementAt(parameters.getOffset());
                 PsiElement prevSibling = elemAtCaret != null ? elemAtCaret.getPrevSibling() : null;
-                while (prevSibling != null && prevSibling.getNode().getElementType() == ElementType.WHITE_SPACE) {
+                while (prevSibling != null
+                        && prevSibling.getNode().getElementType() == com.intellij.psi.TokenType.WHITE_SPACE) {
                   prevSibling = prevSibling.getPrevSibling();
                 }
 //                PsiElement mayBeHandler = prevSibling;

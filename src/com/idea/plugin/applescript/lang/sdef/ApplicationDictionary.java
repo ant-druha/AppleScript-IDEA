@@ -7,6 +7,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -41,7 +42,7 @@ public interface ApplicationDictionary extends DictionarySuite {
   VirtualFile getDictionaryFile();
 
   @Nullable
-  VirtualFile getApplicationBundle();
+  File getApplicationBundle();
 
   @NotNull
   Map<String, DictionaryEnumeration> getDictionaryEnumerationMap();

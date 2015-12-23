@@ -28,7 +28,7 @@ public class LoadDictionaryAction extends AnAction {
     final PsiDirectory[] directories = view.getDirectories();
 
     PsiDirectory currentDirectory = directories.length > 0 ? directories[0] : null;
-    final Project project = e.getData(DataKeys.PROJECT);
+    final Project project = e.getData(CommonDataKeys.PROJECT);
     if (project == null) return;
 
     VirtualFile directoryFile = currentDirectory != null ? currentDirectory.getVirtualFile() : project.getBaseDir();

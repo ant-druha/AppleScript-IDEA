@@ -47,7 +47,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull private final Project project;
   @NotNull private final VirtualFile dictionaryFile;
   //cachedLibraryXmlFile is needed for navigation from PSI (getParent()) if dictionary was created from .app bundle
-  @Nullable private VirtualFile applicationBundleFile;
+  @Nullable private File applicationBundleFile;
   @Nullable private Icon applicationIcon;
   @NotNull private final List<PsiFile> includedFiles = new ArrayList<PsiFile>();
   @NotNull private String applicationName;
@@ -68,7 +68,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   private final Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<String, AppleScriptClass>();
 
   public ApplicationDictionaryImpl(@NotNull Project project, @NotNull XmlFile dictionaryXmlFile,
-                                   @NotNull String applicationName, @Nullable VirtualFile applicationBundleFile) {
+                                   @NotNull String applicationName, @Nullable File applicationBundleFile) {
     this.project = project;
     this.dictionaryFile = dictionaryXmlFile.getVirtualFile();
     readDictionaryFromXmlFile(dictionaryXmlFile);
@@ -84,7 +84,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
             ". " + "Classes: " + dictionaryClassMap.size() + "\n");
   }
 
-  private void setIconFromBundle(@NotNull VirtualFile applicationBundleFile) {
+  private void setIconFromBundle(@NotNull File applicationBundleFile) {
     try {
       final String appUrl = applicationBundleFile.getPath();
       File file = new File(appUrl + "/Contents/Info.plist");
@@ -534,7 +534,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   }
 
   @Nullable
-  public VirtualFile getApplicationBundle() {
+  public File getApplicationBundle() {
     return applicationBundleFile;
   }
 }

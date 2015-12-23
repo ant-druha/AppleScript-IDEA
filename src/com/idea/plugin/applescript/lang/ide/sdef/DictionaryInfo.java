@@ -8,18 +8,20 @@ import com.intellij.util.xmlb.annotations.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 public class DictionaryInfo {
   @NotNull private final String applicationName;
   @NotNull private VirtualFile dictionaryFile;
-  @Nullable private VirtualFile applicationFile;
+  @Nullable private File applicationFile;
   @NotNull private State state;
   private boolean initialized;
 
   public DictionaryInfo(@NotNull String applicationName, @NotNull VirtualFile dictionaryFile,
-                        @Nullable VirtualFile applicationFile) {
+                        @Nullable File applicationIoFile) {
     this.applicationName = applicationName;
     this.dictionaryFile = dictionaryFile;
-    this.applicationFile = applicationFile;
+    this.applicationFile = applicationIoFile;
     state = new State(applicationName, dictionaryFile.getPath(),
             applicationFile != null ? applicationFile.getPath() : null);
   }
@@ -35,7 +37,7 @@ public class DictionaryInfo {
   }
 
   @Nullable
-  public VirtualFile getApplicationFile() {
+  public File getApplicationFile() {
     return applicationFile;
   }
 

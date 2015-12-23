@@ -85,16 +85,19 @@ public class AppleScriptColorAnnotator implements Annotator {
             }
             // TODO: 05/12/15 may it is better to create a dictionary for it in order to make sure PSI is created
             // (needed for icons for example)
+            AppleScriptApplicationReference appRef = PsiTreeUtil
+                    .findChildOfType(element, AppleScriptApplicationReference.class);
             if (warningReason != null) {
-              AppleScriptApplicationReference appRef = PsiTreeUtil
-                      .findChildOfType(element, AppleScriptApplicationReference.class);
               holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
                       .registerFix(new AddApplicationDictionaryQuickFix(appName));
             } else {
               AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
                       (element.getProject(), AppleScriptProjectDictionaryService.class);
               ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
-              if (dictionary == null) dictionaryProjectService.createDictionary(appName);
+              if (dictionary == null) dictionary = dictionaryProjectService.createDictionary(appName);
+              if (dictionary == null) {
+                holder.createWarningAnnotation(appRef != null ? appRef : element, "Unknown app \"" + appName + "\"?");
+              }
             }
           } else {
             AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService

@@ -17,7 +17,7 @@ public class MyStopVisitingException extends RuntimeException {
   }
 
   @NotNull
-  public VirtualFile geResult() {
+  public VirtualFile getResult() {
     return myResult;
   }
 }

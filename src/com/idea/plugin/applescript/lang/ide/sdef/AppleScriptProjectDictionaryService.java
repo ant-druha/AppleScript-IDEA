@@ -11,6 +11,7 @@ import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -109,8 +110,8 @@ public class AppleScriptProjectDictionaryService {
   public synchronized ApplicationDictionary createDictionaryFromFile(@NotNull String applicationName,
                                                                      @NotNull VirtualFile applicationFile) {
 //    if (isInIgnoreList(applicationName, applicationFile)) return null;
-
-    final DictionaryInfo dictionaryInfo = dictionaryRegistryService.createAndInitializeInfo(applicationFile,
+    final File appIoFile = new File(applicationFile.getPath());
+    final DictionaryInfo dictionaryInfo = dictionaryRegistryService.createAndInitializeInfo(appIoFile,
             applicationName);
     if (dictionaryInfo != null) {
       return createDictionaryFromInfo(dictionaryInfo);

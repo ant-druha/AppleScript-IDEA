@@ -1,5 +1,6 @@
 package com.idea.plugin.applescript.lang.ide.sdef;
 
+import com.google.common.io.Files;
 import com.idea.plugin.applescript.lang.parser.ParsableScriptHelper;
 import com.idea.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
@@ -107,8 +108,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       if (!StringUtil.isEmptyOrSpaces(appName) && !StringUtil.isEmptyOrSpaces(dictionaryUrl)) {
         VirtualFile dictionaryFile = !StringUtil.isEmpty(dictionaryUrl) ?
                 LocalFileSystem.getInstance().findFileByPath(dictionaryUrl) : null;
-        VirtualFile applicationFile = !StringUtil.isEmpty(applicationUrl) ?
-                LocalFileSystem.getInstance().findFileByPath(applicationUrl) : null;
+        File applicationFile = !StringUtil.isEmpty(applicationUrl) ?
+                new File(applicationUrl) : null;
         if (dictionaryFile != null) {
           DictionaryInfo dInfo = new DictionaryInfo(appName, dictionaryFile, applicationFile);
           addDictionaryInfo(dInfo);
@@ -342,28 +343,33 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         return savedDictionaryInfo;
       }
     }
-    final VirtualFile vAppFile = findApplicationBundleFile(applicationName);
-    if (vAppFile != null) {
-      return createAndInitializeInfo(vAppFile, applicationName);
+    final File appFile = findApplicationBundleFile(applicationName);
+    if (appFile != null) {
+      return createAndInitializeInfo(appFile, applicationName);
     }
     return null;
   }
 
   @Nullable
-  private VirtualFile findApplicationBundleFile(@NotNull final String applicationName) {
-    if (!SystemInfo.isMac) return null;
+  private File findApplicationBundleFile(@NotNull final String applicationName) {
+    if (!SystemInfo.isMac) {
+      notFoundApplicationList.add(applicationName);
+      return null;
+    }
     //speed search first
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
       for (String ext : ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS) {
         final String appBundleFilePath = applicationsDirectory + "/" + applicationName + "." + ext;
-        final VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(appBundleFilePath);
-        if (appsDirVFile != null && appsDirVFile.exists()) return appsDirVFile;
+        final File appFile = new File(appBundleFilePath);
+        if (appFile.exists() && appFile.isFile()) return appFile;
       }
     }
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
-      final VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
-      if (appsDirVFile != null && appsDirVFile.exists()) {
-        VirtualFile appBundleFile = findApplicationFileRecursively(appsDirVFile, applicationName);
+      final File appDirectory = new File(applicationsDirectory);
+      if (appDirectory.exists() && appDirectory.isDirectory()) {
+        VirtualFile appVDirectory = LocalFileSystem.getInstance().findFileByIoFile(appDirectory);
+        if (appVDirectory == null) continue;
+        File appBundleFile = findApplicationFileRecursively(appVDirectory, applicationName);
         if (appBundleFile != null && appBundleFile.exists()) return appBundleFile;
       }
     }
@@ -375,8 +381,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   @Nullable
-  private VirtualFile findApplicationFileRecursively(@NotNull final VirtualFile appsDirVFile,
-                                                     @NotNull final String applicationName) {
+  private File findApplicationFileRecursively(@NotNull final VirtualFile appDirectory,
+                                              @NotNull final String applicationName) {
     final VirtualFileVisitor<VirtualFile> fileVisitor = new VirtualFileVisitor<VirtualFile>(VirtualFileVisitor
             .limit(APP_DEPTH_SEARCH), VirtualFileVisitor.SKIP_ROOT, VirtualFileVisitor.NO_FOLLOW_SYMLINKS) {
       @Override
@@ -391,10 +397,10 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       }
     };
     try {
-      VfsUtilCore.visitChildrenRecursively(appsDirVFile, fileVisitor, MyStopVisitingException.class);
+      VfsUtilCore.visitChildrenRecursively(appDirectory, fileVisitor, MyStopVisitingException.class);
     } catch (MyStopVisitingException e) {
-      LOG.info("Application file found for application " + applicationName + " : " + e.geResult());
-      return e.geResult();
+      LOG.info("Application file found for application " + applicationName + " : " + e.getResult());
+      return new File(e.getResult().getPath());
     }
     return null;
   }
@@ -405,22 +411,23 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
    * Initializes dictionary information for given application from application bundle file (or xml/sdef dictionary file)
    * and saves generated dictionary file for later use by {@link ApplicationDictionary} PSI class
    *
-   * @param applicationVFile File of the application bundle or dictionary file (.app, .osax, .xml, .sdef extensions
-   *                         are supported)
-   * @param applicationName  Name of the Mac OS X application
+   * @param applicationIoFile File of the application bundle or dictionary file (.app, .osax, .xml, .sdef extensions
+   *                          are supported)
+   * @param applicationName   Name of the Mac OS X application
    * @return {@link DictionaryInfo} of the generated, saved and initialized dictionary for the application
    */
   @Nullable
-  public synchronized DictionaryInfo createAndInitializeInfo(@NotNull VirtualFile applicationVFile,
+  public synchronized DictionaryInfo createAndInitializeInfo(@NotNull File applicationIoFile,
                                                              @NotNull String applicationName) {
 //    if (isNotScriptable(applicationName)) return null;
-    if (!ApplicationDictionaryImpl.extensionSupported(applicationVFile.getExtension())) return null;
+    String appExtension = Files.getFileExtension(applicationIoFile.getPath());
+    if (!ApplicationDictionaryImpl.extensionSupported(appExtension)) return null;
+    if (!applicationIoFile.exists()) return null;
     if (getDictionaryInfo(applicationName) != null) {
       LOG.warn("Dictionary for application " + applicationName + " was already initialized. Generating new " +
               "dictionary file any way.");
     }
-    final DictionaryInfo createdDictionaryInfo = createDictionaryInfoForApplication(applicationName,
-            applicationVFile);
+    final DictionaryInfo createdDictionaryInfo = createDictionaryInfoForApplication(applicationName, applicationIoFile);
     if (createdDictionaryInfo != null) {
       if (initializeDictionaryFromInfo(createdDictionaryInfo))
         return createdDictionaryInfo;
@@ -467,7 +474,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
             } else {
               final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(stdLib);
               if (virtualFile != null)
-                createAndInitializeInfo(virtualFile, libraryName);
+                createAndInitializeInfo(stdLib, libraryName);
               else
                 LOG.warn("Can not find standard suite dictionary in the classpath");
             }
@@ -480,17 +487,15 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
           initializeDictionaryFromInfo(dInfo);
         } else {
           //search in standard OS X location
-          VirtualFile virtualFile = LocalFileSystem.getInstance()
-                  .findFileByPath(ApplicationDictionary.COCOA_STANDARD_LIBRARY_PATH);
+          File stdLibFile = new File(ApplicationDictionary.COCOA_STANDARD_LIBRARY_PATH);
           //if not found, get from jar
-          if (virtualFile == null) {
+          if (!stdLibFile.exists() || !stdLibFile.isFile()) {
             InputStream is = getClass().getResourceAsStream(ApplicationDictionary.SDEF_FOLDER + "/" +
                     ApplicationDictionary.COCOA_STANDARD_FILE);
-            final File tmpFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
-            virtualFile = LocalFileSystem.getInstance().findFileByIoFile(tmpFile);
+            stdLibFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
           }
-          if (virtualFile != null)
-            createAndInitializeInfo(virtualFile, applicationName);
+          if (stdLibFile.exists() && stdLibFile.isFile())
+            createAndInitializeInfo(stdLibFile, applicationName);
           else
             LOG.warn("Can not find standard suite dictionary in the classpath");
         }
@@ -506,9 +511,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
             initializeDictionaryFromInfo(dInfo);
           } else {
             final File tmpFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
-            final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(tmpFile);
-            if (virtualFile != null)
-              createAndInitializeInfo(virtualFile, applicationName);
+            if (tmpFile.exists() && tmpFile.isFile())
+              createAndInitializeInfo(tmpFile, applicationName);
             else
               LOG.warn("Can not find standard suite dictionary in the classpath");
           }
@@ -535,9 +539,9 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   @Nullable
   private DictionaryInfo createDictionaryInfoForApplication(@NotNull final String applicationName,
-                                                            @NotNull final VirtualFile applicationVFile) {
-    if (!SystemInfo.isMac && !"xml".equals(applicationVFile.getExtension())) return null;
-
+                                                            @NotNull final File applicationIoFile) {
+    String appExtension = Files.getFileExtension(applicationIoFile.getPath());
+    if (!SystemInfo.isMac && !("xml".equals(appExtension) || "sdef".equals(appExtension))) return null;
     DictionaryInfo dInfo;
     LOG.info("=== Caching Dictionary for application [" + applicationName + "] ===");
     final String serializePath = serializeDictionaryPathForApplication(applicationName);
@@ -545,23 +549,21 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     final File targetFile = new File(serializePath);
     if (!targetFile.getParentFile().exists() && !targetFile.getParentFile().mkdirs()) return null;
     try {
-      if (!SystemInfo.isMac && ("xml".equals(applicationVFile.getExtension())
-              || "sdef".equals(applicationVFile.getExtension()))) {
-        fileGenerated = copyDictionaryFileToCacheDir(applicationName, applicationVFile, targetFile, true);
+      if (!SystemInfo.isMac && ("xml".equals(appExtension)
+              || "sdef".equals(appExtension))) {
+        fileGenerated = copyDictionaryFileToCacheDir(applicationName, applicationIoFile, targetFile, true);
       } else if (SystemInfo.isMac) {
         String cmdName;
-        if ("xml".equals(applicationVFile.getExtension()) || "sdef".equals(applicationVFile.getExtension())) {
+        if ("xml".equals(appExtension) || "sdef".equals(appExtension)) {
           cmdName = "cat";
         } else {
           cmdName = "sdef";
         }
-        fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName,
-                applicationVFile.getPath());
+        fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName, applicationIoFile.getPath());
       }
     } catch (NotScriptableApplicationException e) {
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
       notScriptableApplicationList.add(e.getApplicationName());
-//      discoveredApplicationNames.remove(e.getApplicationName());
     } finally {
       if (!fileGenerated) {
         LOG.warn("Error occurred while generating file.");
@@ -573,8 +575,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     if (fileGenerated && targetFile.exists()) {
       final VirtualFile generatedFile = LocalFileSystem.getInstance().findFileByIoFile(targetFile);
       if (generatedFile != null) {
-        VirtualFile applicationBundle = ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS
-                .contains(applicationVFile.getExtension()) ? applicationVFile : null;
+        File applicationBundle = ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS
+                .contains(appExtension) ? applicationIoFile : null;
         dInfo = new DictionaryInfo(applicationName, generatedFile, applicationBundle);
         addDictionaryInfo(dInfo);
         LOG.info("Dictionary file generated for application [" + applicationName + "]" + generatedFile);
@@ -611,37 +613,30 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   private boolean copyDictionaryFileToCacheDir(@NotNull final String applicationName,
-                                               @NotNull final VirtualFile applicationVFile,
+                                               @NotNull final File applicationVFile,
                                                @NotNull final File targetFile,
                                                final boolean rewrite) {
-    final String targetFileName = targetFile.getName();
-    final VirtualFile targetDir = LocalFileSystem.getInstance().findFileByIoFile(targetFile.getParentFile());
-    if (targetDir == null) return false;
-    final VirtualFile targetVFile = targetDir.findChild(targetFileName);
-
-    final VirtualFile[] movedFile = new VirtualFile[1];
-    if (targetVFile == null || rewrite) {
+    if (!targetFile.getParentFile().exists()) return false;
+    if (!targetFile.exists() || rewrite) {
       ApplicationManager.getApplication().runWriteAction(new Runnable() {
         @Override
         public void run() {
           try {
-            if (targetVFile != null && targetVFile.exists()) {
-              targetVFile.delete(this);
+            if (targetFile.exists() && targetFile.delete()) {
+              LOG.debug("Existing target file deleted: " + targetFile);
             }
-            movedFile[0] = applicationVFile.copy(this, targetDir, targetFileName);
+            Files.copy(applicationVFile, targetFile);
           } catch (IOException e) {
             e.printStackTrace();
-            LOG.error("Failed to move file " + applicationVFile + " to cache directory: "
-                    + targetFile);
+            LOG.error("Failed to move file " + applicationVFile + " to cache directory: " + targetFile);
           }
         }
       });
-    } else if (targetDir.findChild(targetFile.getName()) != null) {
-      movedFile[0] = targetDir.findChild(targetFile.getName());
+    } else {
       LOG.info("Generated file already exists for application " + applicationName);
     }
-    if (movedFile[0] != null && movedFile[0].exists()) {
-      LOG.info("Dictionary file moved to " + targetDir + " directory");
+    if (targetFile.exists()) {
+      LOG.info("Dictionary file moved to " + targetFile.getParent() + " directory");
       return true;
     }
     return false;
@@ -682,7 +677,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   @Nullable
   public DictionaryInfo getDictionaryInfoByApplicationPath(@NotNull String applicationPath) {
     for (DictionaryInfo dInfo : dictionaryInfoMap.values()) {
-      VirtualFile appFile = dInfo.getApplicationFile();
+      File appFile = dInfo.getApplicationFile();
       if (appFile != null && appFile.getPath().equals(applicationPath))
         return dInfo;
     }
