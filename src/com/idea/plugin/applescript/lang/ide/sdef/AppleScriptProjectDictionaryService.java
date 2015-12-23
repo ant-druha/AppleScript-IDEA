@@ -45,11 +45,11 @@ public class AppleScriptProjectDictionaryService {
   }
 
   /**
-   * @return returns terminology available by default in the scripting application (Cocoa Standard)
+   * @return returns terminology available by default in the Cocoa scripting application (Cocoa Standard)
    */
   @Nullable
-  public ApplicationDictionary getDefaultCocoaTerminology() {
-    String stdDictionaryName = ApplicationDictionary.STANDARD_COCOA_LIBRARY;
+  public ApplicationDictionary getCocoaStandardTerminology() {
+    String stdDictionaryName = ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
     ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
     if (stdDic == null) {
       stdDic = createDictionary(stdDictionaryName);

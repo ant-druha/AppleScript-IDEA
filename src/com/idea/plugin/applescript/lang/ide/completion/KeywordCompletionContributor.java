@@ -2,8 +2,10 @@ package com.idea.plugin.applescript.lang.ide.completion;
 
 import com.idea.plugin.applescript.AppleScriptFile;
 import com.idea.plugin.applescript.psi.AppleScriptTokenTypesSets;
+import com.idea.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.lang.ASTNode;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
@@ -32,8 +34,12 @@ public class KeywordCompletionContributor extends CompletionContributor {
                 PsiElement position = completionParameters.getPosition();
                 if (position instanceof PsiComment) return;
 
+                ASTNode node = position.getNode();
+                if (node.getElementType() == AppleScriptTypes.STRING_LITERAL) return;
+
                 for (IElementType kwElem : AppleScriptTokenTypesSets.KEYWORDS.getTypes()) {
-                  completionResultSet.addElement(LookupElementBuilder.create(kwElem.toString())
+                  completionResultSet.addElement(LookupElementBuilder
+                          .create(kwElem.toString().toLowerCase().replaceAll("_", " "))
                           .withTypeText("keyword", true));
                 }
               }

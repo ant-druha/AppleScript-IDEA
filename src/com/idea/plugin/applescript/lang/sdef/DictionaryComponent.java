@@ -22,8 +22,7 @@ public interface DictionaryComponent extends AppleScriptComponent {
 
   @Override
   @NotNull
-  String getName(); //in terms of psi in xml file - this is com.intellij.psi.impl.source.xml.XmlTokenImpl class (
-  // for navigation..) is it better to use Dom then?
+  String getName();
 
   /**
    * @return list of psi elements which are identifiers for components names consisted of several words

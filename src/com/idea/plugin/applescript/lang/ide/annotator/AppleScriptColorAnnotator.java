@@ -117,7 +117,7 @@ public class AppleScriptColorAnnotator implements Annotator {
             String newLabelName = null;
             for (IElementType type : HANDLER_PARAMETER_LABELS.getTypes()) {
               if (!labelNames.contains(type.toString().toLowerCase())) {
-                newLabelName = type.toString().toLowerCase();
+                newLabelName = type.toString().toLowerCase().replaceAll("_", " ");
               }
             }
             holder.createErrorAnnotation(childElement, "Duplicated parameter label '" + labelName + "'")

@@ -208,7 +208,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       return dInfo != null && (dInfo.isInitialized() || initializeDictionaryFromInfo(dInfo))
               || getInitializedInfo(knownApplicationName) != null;
     }
-    LOG.warn("Unknown application: " + knownApplicationName + ". Not trying to initialize dictionary");
+//    LOG.warn("Unknown application: " + knownApplicationName + ". Not trying to initialize dictionary");
     return false;
   }
 
@@ -446,22 +446,72 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   private void initStandardSuite() {
     try {
-      for (String fName : ApplicationDictionary.STANDARD_DEFINITION_FILES) {
-        InputStream is = getClass().getResourceAsStream("/" + fName);
-        final String applicationName = fName.contains(ApplicationDictionary.STANDARD_COCOA_LIBRARY) ?
-                ApplicationDictionary.STANDARD_COCOA_LIBRARY : ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
-        if (StringUtil.isEmpty(applicationName)) continue;
-        final File tmpFile = stream2file(is, applicationName, ".sdef");
-        final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(tmpFile);
-        if (virtualFile != null) {
+      if (SystemInfo.isMac) {
+        //init standard additions
+        for (String stdLibFolder : ApplicationDictionary.SCRIPTING_ADDITIONS_FOLDERS) {
+          final File dir = new File(stdLibFolder);
+          if (!dir.isDirectory()) continue;
+          final File[] stdLibs = dir.listFiles();
+          if (stdLibs == null || stdLibs.length == 0) continue;
+          for (File stdLib : stdLibs) {
+            String libraryName = stdLib.getName();
+            libraryName = libraryName.substring(0, libraryName.lastIndexOf("."));
+            if (StringUtil.isEmpty(libraryName)) continue;
+
+            // TODO: 23/12/15 implement multiply standard addition libraries usage
+            if (!libraryName.equals(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY)) continue;
+
+            final DictionaryInfo dInfo = dictionaryInfoMap.get(libraryName);
+            if (dInfo != null) {
+              initializeDictionaryFromInfo(dInfo);
+            } else {
+              final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(stdLib);
+              if (virtualFile != null)
+                createAndInitializeInfo(virtualFile, libraryName);
+              else
+                LOG.warn("Can not find standard suite dictionary in the classpath");
+            }
+          }
+        }
+        //init Standard Cocoa terminology
+        final String applicationName = ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
+        DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
+        if (dInfo != null) {
+          initializeDictionaryFromInfo(dInfo);
+        } else {
+          //search in standard OS X location
+          VirtualFile virtualFile = LocalFileSystem.getInstance()
+                  .findFileByPath(ApplicationDictionary.COCOA_STANDARD_LIBRARY_PATH);
+          //if not found, get from jar
+          if (virtualFile == null) {
+            InputStream is = getClass().getResourceAsStream(ApplicationDictionary.SDEF_FOLDER + "/" +
+                    ApplicationDictionary.COCOA_STANDARD_FILE);
+            final File tmpFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
+            virtualFile = LocalFileSystem.getInstance().findFileByIoFile(tmpFile);
+          }
+          if (virtualFile != null)
+            createAndInitializeInfo(virtualFile, applicationName);
+          else
+            LOG.warn("Can not find standard suite dictionary in the classpath");
+        }
+      } else {
+        for (String fName : ApplicationDictionary.STANDARD_DEFINITION_FILES) {
+          InputStream is = getClass().getResourceAsStream(ApplicationDictionary.SDEF_FOLDER + "/" + fName);
+          final String applicationName = fName.contains(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY) ?
+                  ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY :
+                  ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
+          if (StringUtil.isEmpty(applicationName)) continue;
           DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
           if (dInfo != null) {
             initializeDictionaryFromInfo(dInfo);
           } else {
-            createAndInitializeInfo(virtualFile, applicationName);
+            final File tmpFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
+            final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(tmpFile);
+            if (virtualFile != null)
+              createAndInitializeInfo(virtualFile, applicationName);
+            else
+              LOG.warn("Can not find standard suite dictionary in the classpath");
           }
-        } else {
-          LOG.warn("Can not find standard suite dictionary in the classpath");
         }
       }
     } catch (IOException e) {
@@ -479,6 +529,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     }
     in.close();
     out.close();
+    tempFile.deleteOnExit();
     return tempFile;
   }
 
@@ -626,6 +677,23 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   public VirtualFile getDictionaryFile(@Nullable String applicationName) {
     DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
     return dInfo != null ? dInfo.getDictionaryFile() : null;
+  }
+
+  @Nullable
+  public DictionaryInfo getDictionaryInfoByApplicationPath(@NotNull String applicationPath) {
+    for (DictionaryInfo dInfo : dictionaryInfoMap.values()) {
+      VirtualFile appFile = dInfo.getApplicationFile();
+      if (appFile != null && appFile.getPath().equals(applicationPath))
+        return dInfo;
+    }
+    // standard libraries do not have application path
+    if (applicationPath.endsWith("CocoaStandard.sdef")) {
+      return dictionaryInfoMap.get(ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
+    }
+    if (applicationPath.endsWith("StandardAdditions.sdef")) {
+      return dictionaryInfoMap.get(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+    }
+    return null;
   }
 
   @NotNull

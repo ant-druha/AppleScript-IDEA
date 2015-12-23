@@ -23,6 +23,7 @@ public class DictionaryIdentifierImpl extends DictionaryComponentBase<Dictionary
 
   @NotNull private final String varIdentifierText;
   @NotNull private final List<String> varIdentifierTextList;
+  @NotNull private final DictionaryIdentifier myVarIdentifier;
 
   public DictionaryIdentifierImpl(@NotNull DictionaryComponent myParent, @NotNull String varIdentifierText,
                                   @NotNull XmlElement myXmlAttributeValue) {
@@ -31,12 +32,13 @@ public class DictionaryIdentifierImpl extends DictionaryComponentBase<Dictionary
 // matter??)
     this.varIdentifierText = varIdentifierText;
     varIdentifierTextList = new ArrayList<String>(Arrays.asList(varIdentifierText.split(" ")));
+    myVarIdentifier = new DictionaryIdentifierImpl(myParent, varIdentifierTextList.get(0), myXmlElement);
   }
 
   @NotNull
   @Override
   public PsiElement getVarIdentifier() {
-    return new DictionaryIdentifierImpl(myParent, varIdentifierTextList.get(0), myXmlElement);
+    return myVarIdentifier;
   }
 
   @Override

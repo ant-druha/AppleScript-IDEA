@@ -8,6 +8,7 @@ import com.idea.plugin.applescript.lang.resolve.AppleScriptResolver;
 import com.idea.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.idea.plugin.applescript.lang.util.ScopeUtil;
 import com.idea.plugin.applescript.psi.*;
+import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
@@ -162,11 +163,15 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
     if (el instanceof DictionaryComponent) {
       DictionaryComponent dc = (DictionaryComponent) el;
       String dName = dc.getDictionary().getName();
-//      builder = LookupElementBuilder.createWithIcon(dc);
       builder = LookupElementBuilder.createWithIcon(dc).appendTailText("   " + dName, true);
-//      builder = LookupElementBuilder.createWithIcon(dc).withTypeText(": " + dName, dc.getIcon(0), false);
     } else if (el instanceof AppleScriptComponent) {
       builder = LookupElementBuilder.createWithIcon((AppleScriptComponent) el);
+      if (el instanceof AppleScriptHandlerPositionalParametersDefinition) {
+        AppleScriptHandlerPositionalParametersDefinition handlerCall =
+                (AppleScriptHandlerPositionalParametersDefinition) el;
+        builder = builder.withInsertHandler(handlerCall.getFormalParameterList() != null ?
+                ParenthesesInsertHandler.WITH_PARAMETERS : ParenthesesInsertHandler.NO_PARAMETERS);
+      }
     } else {
       builder = LookupElementBuilder.create(el);
     }

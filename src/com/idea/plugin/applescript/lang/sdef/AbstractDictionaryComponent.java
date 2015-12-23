@@ -46,11 +46,6 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   }
 
   @Override
-  public boolean isGlobal() {
-    return true;
-  }
-
-  @Override
   public boolean isScriptProperty() {
     return false;
   }
@@ -69,16 +64,6 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @Override
   public boolean isObjectProperty() {
     return false;
-  }
-
-  @Override
-  public boolean isComposite() {
-    return false;
-  }
-
-  @Override
-  public boolean isResolveTarget() {
-    return true;
   }
 
   @Override

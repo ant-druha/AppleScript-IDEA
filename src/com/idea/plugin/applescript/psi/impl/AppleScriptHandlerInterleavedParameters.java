@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Andrey 16.05.2015
  */
-public class AppleScriptHandlerInterleavedParameters extends BaseAppleScriptComponent implements
+public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScriptComponent implements
         AppleScriptHandler, NavigatablePsiElement, PsiNameIdentifierOwner, PomNamedTarget {
   public AppleScriptHandlerInterleavedParameters(@NotNull ASTNode node) {
     super(node);

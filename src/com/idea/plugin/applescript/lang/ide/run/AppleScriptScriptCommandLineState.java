@@ -29,7 +29,6 @@ public class AppleScriptScriptCommandLineState extends CommandLineState implemen
 //    commandLine.withEnvironment(EnvironmentUtil.getEnvironmentMap());
 //    commandLine.withPassParentEnvironment(true);
 //    commandLine.pare
-    AppleScriptProcessHandler processHandler = new AppleScriptProcessHandler(commandLine);
-    return processHandler;
+    return new AppleScriptProcessHandler(commandLine);
   }
 }

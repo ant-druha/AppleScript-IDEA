@@ -91,7 +91,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // Could be command from Cocoa Standard library which was not yet checked, because
     // applicationName == ScriptingAdditions.
     // The could happen when parsing <using terms from scripting additions> stms
-    r = parseCommandNameForApplication(b, l + 1, parsedName, ApplicationDictionary.STANDARD_COCOA_LIBRARY, checkStdLib);
+    r = parseCommandNameForApplication(b, l + 1, parsedName, ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME,
+            checkStdLib);
     return r;
   }
 
@@ -112,6 +113,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
     }
     PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Command Handler Call Expression>");
+    // TODO: 19/12/15 need to parse command name together with parameters for each possible application in order to be
+    // able to parse the longest possible application name ('open for access' std lib vs 'open' from application dict)
     r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, areThereUseStatements,
             applicationsToImport);
     exit_section_(b, l, m2, DICTIONARY_COMMAND_NAME, r, false, null);
@@ -171,7 +174,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // StandardAdditions fake application does not contain CocoaStandard terms. Adding them here
     if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
       allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findApplicationCommands(b.getProject(),
-              ApplicationDictionary.STANDARD_COCOA_LIBRARY, parsedCommandName));
+              ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME, parsedCommandName));
     }
     if (areThereUseStatements) {
       if (applicationsToImport != null) {
@@ -187,7 +190,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // todo remove this workaround when implement include in dictionaries
     if (allCommandsWithName.isEmpty()) {
       allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findApplicationCommands(b.getProject(),
-              ApplicationDictionary.STANDARD_COCOA_LIBRARY, parsedCommandName));
+              ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME, parsedCommandName));
     }
     return allCommandsWithName;
   }
@@ -202,7 +205,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static String getTargetApplicationName(PsiBuilder b) {
     String toldApplicationName = peekTargetApplicationName(b);
     // CocoaStandard library is always available for the scriptable application
-    return toldApplicationName != null ? toldApplicationName : ApplicationDictionary.STANDARD_COCOA_LIBRARY;
+    return toldApplicationName != null ? toldApplicationName : ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
   }
 
   @Nullable
@@ -286,15 +289,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "tellSimpleStatement")) return false;
     if (!nextTokenIs(b, TELL)) return false;
     boolean r;
-    boolean pushedBefore = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
+    boolean pushStateBefore = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
     b.putUserData(APPLICATION_NAME_PUSHED, false);
     b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, true);
     r = AppleScriptParser.tellSimpleStatement(b, l + 1);
     b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, false);
-//    if (r || b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE) {
     popApplicationNameIfWasPushed(b);
-//    }
-    b.putUserData(APPLICATION_NAME_PUSHED, pushedBefore);
+    b.putUserData(APPLICATION_NAME_PUSHED, pushStateBefore);
     return r;
   }
 
@@ -302,7 +303,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE) {
       Stack<String> dictionaryNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
       if (dictionaryNameStack != null && !dictionaryNameStack.isEmpty()) {//should always be true if r==true
-        dictionaryNameStack.pop(); //not always need to pop 'cause could be: tell 'front window' ... to...
+        dictionaryNameStack.pop();
       }
     }
   }
@@ -372,17 +373,16 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "parseTellCompoundStatementInner")) return false;
     if (!nextTokenIs(b, TELL)) return false;
     boolean r;
-    boolean pushedBefore = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
+    boolean pushStateBefore = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
+    boolean compoundStateBefore = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
     b.putUserData(APPLICATION_NAME_PUSHED, false);
-    boolean compoundBefore = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
-    b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, true);//not used anywhere actually
+    b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, true);
 
     r = AppleScriptParser.tellCompoundStatement(b, l + 1);
-    b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, compoundBefore);
-//    if (r) {
+
+    b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, compoundStateBefore);
     popApplicationNameIfWasPushed(b);
-//    }
-    b.putUserData(APPLICATION_NAME_PUSHED, pushedBefore);
+    b.putUserData(APPLICATION_NAME_PUSHED, pushStateBefore);
     return r;
   }
 
@@ -415,30 +415,39 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  /**
+   * @param b                           {@link PsiBuilder}
+   * @param l                           Level deep
+   * @param tellStatementStartCondition If this is the application reference of a &lt;tell&gt; or &lt;using terms
+   *                                    from&gt; statements
+   * @return true if parsed
+   */
   public static boolean parseApplicationName(PsiBuilder b, int l, Parser tellStatementStartCondition) {
     if (!recursion_guard_(b, l, "parseApplicationName")) return false;
     boolean r;
     consumeToken(b, THE_KW);
     if (!nextTokenIs(b, "", APPLICATION, APP)) return false;
 
-    PsiBuilder.Marker mCls = enter_section_(b, l, _NONE_, "<dictionary class name>");
+    PsiBuilder.Marker mCls = enter_section_(b, l, _NONE_, "<parse application name>");
     r = consumeToken(b, APPLICATION);
     if (!r) r = consumeToken(b, APP);
     exit_section_(b, l, mCls, DICTIONARY_CLASS_NAME, r, false, null);
 
-    if (!nextTokenIs(b, "parseApplicationName", STRING_LITERAL, ID)) return false;
+    if (!nextTokenIs(b, "", STRING_LITERAL, ID)) return false;
+    PsiBuilder.Marker mProp = enter_section_(b, l, _NONE_, "<parse application name>");
     boolean idReference = consumeToken(b, ID);
-
+    exit_section_(b, l, mProp, DICTIONARY_PROPERTY_NAME, idReference, false, null);
     PsiBuilder.Marker m = enter_section_(b);
     String applicationNameString = b.getTokenText();
-    if (applicationNameString != null)
-      applicationNameString = applicationNameString.replace("\"", "");
     r = consumeToken(b, STRING_LITERAL);
 
-    // may be do not check it here but move appRef rule to a tell and using terms statement explicitly (like for use)
-    //check if this is start of tell compound or tell simple or using terms of statements
-    if (r && tellStatementStartCondition.parse(b, l + 1) && !StringUtil.isEmptyOrSpaces(applicationNameString)) {
-      pushTargetApplicationName(b, applicationNameString);
+    // if this is start of <tell compound> or <tell simple> or <using terms from> statements, push the application name
+    // which dictionary will be consulted for terms parsing (only the last pushed application is queried)
+    if (r && applicationNameString != null) {
+      applicationNameString = applicationNameString.replace("\"", "");
+      if (!StringUtil.isEmptyOrSpaces(applicationNameString) && tellStatementStartCondition.parse(b, l + 1)) {
+        pushTargetApplicationName(b, applicationNameString);
+      }
     }
     exit_section_(b, m, null, r);
     return r;
@@ -754,10 +763,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       r = tryToParseStdProperty(b, l + 1);
       if (r) return true;
       // if told app name == standard additions, Cocoa Standard terms were not checked
-//      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
-      r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+      r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
       if (r) return true;
-//      }
     }
     return false;
   }
@@ -776,7 +783,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     final StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = s;
-    r = findClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, toldApplicationName, areThereUseStatements,
+    r = parseDictionaryClassName(b, l + 1, currentTokenText, isPluralForm, toldApplicationName, areThereUseStatements,
             applicationsToImportFrom);
     return r;
   }
@@ -836,15 +843,30 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
-  private static boolean findClassNameExactMatch(PsiBuilder b, int l, StringHolder currentTokenText,
-                                                 final boolean isPluralForm,
-                                                 @NotNull String toldApplicationName,
-                                                 final boolean areThereUseStatements,
-                                                 final @Nullable Set<String> applicationsToImportFrom) {
+  /**
+   * @param b                        {@link PsiBuilder}
+   * @param l                        Level deep
+   * @param currentTokenText         Text string of the token being parsed
+   * @param isPluralForm             Whether we are parsing class name in plural form
+   * @param toldApplicationName      The name of the application (which is the target of all messages in current block)
+   *                                 dictionary of which will be queried first of all when searching for class names
+   * @param areThereUseStatements    Whether there are use statements used in the script, in which case standard library
+   *                                 Should be specified explicitly
+   * @param applicationsToImportFrom Set list of the applications (if specified) attached to script from use statements
+   * @return true if class name parsed
+   */
+  private static boolean parseDictionaryClassName(PsiBuilder b, int l, StringHolder currentTokenText,
+                                                  final boolean isPluralForm,
+                                                  @NotNull String toldApplicationName,
+                                                  final boolean areThereUseStatements,
+                                                  final @Nullable Set<String> applicationsToImportFrom) {
     boolean r, propertyExists = false;
     PsiBuilder.Marker m = enter_section_(b);
-    r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, toldApplicationName);
+    r = parseApplicationClassName(b, l + 1, currentTokenText, isPluralForm, toldApplicationName);
     if (r) {
+      // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
+      // className or propertyName tokens. Here we check and return false if the property with the longer name exists,
+      // as it will be parsed later
       currentTokenText.value += " " + b.getTokenText();
       propertyExists = ParsableScriptSuiteRegistryHelper
               .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.value);
@@ -853,36 +875,47 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (propertyExists) return false;
     if (r) return true;
     if (areThereUseStatements) {
+      // if there are <use> statements in script (with importing dictionary terms condition), checking dictionary for
+      // each application
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
         for (String appName : applicationsToImportFrom) {
           m = enter_section_(b);
-          r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm, appName);
-          exit_section_(b, m, null, r);
+          r = parseApplicationClassName(b, l + 1, currentTokenText, isPluralForm, appName);
+          if (r) {
+            // check here as well for the property with longer name
+            currentTokenText.value += " " + b.getTokenText();
+            propertyExists = ParsableScriptSuiteRegistryHelper
+                    .isPropertyWithPrefixExist(appName, currentTokenText.value);
+          }
+          exit_section_(b, m, null, r && !propertyExists);
+          if (propertyExists) return false;
           if (r) return true;
         }
       }
     } else {
       m = enter_section_(b);
-      r = findStdClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm);
+      r = parseStdClassName(b, l + 1, currentTokenText, isPluralForm);
       exit_section_(b, m, null, r);
       if (r) return true;
     }
-    // ...it looks like not all CocoaStandard classes(and other terms) could be presented in applications
-    // terminology. So need to check CocoaStandard any way...
-    // If told application name == standard additions, terms from Cocoa Standard library were not checked
-    // Checking them here
-//    if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+    // It looks like not always CocoaStandard classes(and other terms) could be presented in applications terminology,
+    // so in this case we check CocoaStandard here
     m = enter_section_(b);
-    r = findApplicationClassNameExactMatch(b, l + 1, currentTokenText, isPluralForm,
-            ApplicationDictionary.STANDARD_COCOA_LIBRARY);
-    exit_section_(b, m, null, r);
-    if (r) return true;
-//    }
-    return false;
+    r = parseApplicationClassName(b, l + 1, currentTokenText, isPluralForm,
+            ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
+    if (r) {
+      // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
+      // className or propertyName tokens. Here we check and return false if the property with the longer name exists,
+      // as it will be parsed later
+      currentTokenText.value += " " + b.getTokenText();
+      propertyExists = ParsableScriptSuiteRegistryHelper
+              .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.value);
+    }
+    exit_section_(b, m, null, r && !propertyExists);
+    return !propertyExists && r;
   }
 
-  private static boolean findStdClassNameExactMatch(PsiBuilder b, int l, StringHolder currentTokenText,
-                                                    boolean isPluralForm) {
+  private static boolean parseStdClassName(PsiBuilder b, int l, StringHolder currentTokenText, boolean isPluralForm) {
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
     if (isPluralForm) {
       boolean classWithPrefixExists = ParsableScriptSuiteRegistryHelper
@@ -913,9 +946,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
   }
 
-  private static boolean findApplicationClassNameExactMatch(PsiBuilder b, int l, StringHolder currentTokenText,
-                                                            final boolean isPluralForm,
-                                                            @NotNull String applicationName) {
+  private static boolean parseApplicationClassName(PsiBuilder b, int l, StringHolder currentTokenText,
+                                                   final boolean isPluralForm,
+                                                   @NotNull String applicationName) {
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
     if (isPluralForm) {
       boolean classWithPrefixExists = ParsableScriptSuiteRegistryHelper
@@ -964,7 +997,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // (if there are too many constants defined -> lead to many incorrect parsing errors like
     // 'end' tell/repeat etc is not detected
     // dictionary constant could appear only if we are inside dictionary command call
-    if (!ApplicationDictionary.STANDARD_COCOA_LIBRARY.equals(toldApplicationName)
+    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME.equals(toldApplicationName)
             && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE)
       return false;
 
@@ -986,7 +1019,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       r = tryToParseStdConstant(b, l + 1);
       if (r) return true;
       if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
-        r = tryToParseApplicationConstant(b, l + 1, ApplicationDictionary.STANDARD_COCOA_LIBRARY);
+        r = tryToParseApplicationConstant(b, l + 1, ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
         if (r) return true;
       }
     }

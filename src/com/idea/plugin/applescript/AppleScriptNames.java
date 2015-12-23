@@ -9,13 +9,7 @@ public class AppleScriptNames {
 
   //For just for debugging purposes for now will declare names here
   //todo parsing dictionary for names
-  public static final String[] SCRIPTING_ADDITION_COMMAND_NAMES = {"moving folder window for", "round"
-//          ,"get", "error", "run",
-//          "count", "round", "mount " +
-//          "volume", "do shell script"/*!"script"!*/, "display dialog", "make new", "exists", "system attribute",
-//          "system info",
-//          "localized string", "open location", "ein zwei polizei", "path to"
-  };
+  public static final String[] SCRIPTING_ADDITION_COMMAND_NAMES = {"moving folder window for", "round"};
 
   //taken from scripting additions
   public static final String[] SCRIPTING_ADDITION_CLASSES_PROPERTY_NAMES = {};

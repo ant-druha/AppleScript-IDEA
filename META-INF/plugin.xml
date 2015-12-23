@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.idea.plugin.applescript</id>
     <name>AppleScript Idea</name>
-    <version>1.0</version>
+    <version>0.1</version>
     <vendor email="andrey.dernov@gmail.com" url="https://twitter.com/ant_druha">Andrey Dernov</vendor>
 
     <description><![CDATA[

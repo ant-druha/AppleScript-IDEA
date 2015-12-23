@@ -226,9 +226,9 @@ RAW_CODE=("<<"[^">>"]*">>")
   "prop"                       { return PROP; }
   "global"                     { return GLOBAL; }
   "local"                      { return LOCAL; }
-  "yes"                        { return YES; }
-  "no"                         { return NO; }
-  "ask"                        { return ASK; }
+//  "yes"                        { return YES; }
+//  "no"                         { return NO; }
+//  "ask"                        { return ASK; }
   "space"                      { return SPACE; }
   "tab"                        { return TAB; }
   "linefeed"                   { return LINEFEED; }

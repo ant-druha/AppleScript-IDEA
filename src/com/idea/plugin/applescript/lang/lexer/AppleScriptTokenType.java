@@ -15,7 +15,8 @@ public class AppleScriptTokenType extends IElementType {
 
   @Override
   public String toString() {
-    return super.toString().toLowerCase().replaceAll("_", " ");
+    return super.toString();
+//    return super.toString().toLowerCase().replaceAll("_", " ");
   }
 
   public String getMyDebugName() {

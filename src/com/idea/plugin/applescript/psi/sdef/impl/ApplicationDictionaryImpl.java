@@ -127,10 +127,8 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     }
   }
 
-  public PsiFile processInclude(@NotNull VirtualFile fileInclude) {
-    PsiFile psiFile = PsiManager.getInstance(project).findFile(fileInclude);
-    XmlFile xmlFile = (XmlFile) psiFile;
-    if (xmlFile != null && xmlFile.isValid()) {
+  public PsiFile processInclude(@NotNull XmlFile xmlFile) {
+    if (xmlFile.isValid()) {
       final XmlDocument document = xmlFile.getDocument();
       if (document != null) {
         final XmlTag rootTag = document.getRootTag();
@@ -139,10 +137,10 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
         }
       }
       includedFiles.add(xmlFile);
-      System.out.println("Processed included file: " + psiFile);
-      LOG.info("Processed included file:: " + psiFile);
+      System.out.println("Processed included file: " + xmlFile);
+      LOG.info("Processed included file:: " + xmlFile);
     }
-    return psiFile;
+    return xmlFile;
   }
 
   @NotNull
@@ -328,11 +326,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   }
 
   @Override
-  public boolean isGlobal() {
-    return false;
-  }
-
-  @Override
   public boolean isScriptProperty() {
     return false;
   }
@@ -350,16 +343,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @Override
   public boolean isObjectProperty() {
-    return false;
-  }
-
-  @Override
-  public boolean isComposite() {
-    return false;
-  }
-
-  @Override
-  public boolean isResolveTarget() {
     return false;
   }
 

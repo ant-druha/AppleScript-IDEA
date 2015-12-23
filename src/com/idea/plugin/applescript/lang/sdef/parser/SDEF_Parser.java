@@ -1,17 +1,20 @@
 package com.idea.plugin.applescript.lang.sdef.parser;
 
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
+import com.idea.plugin.applescript.lang.ide.sdef.DictionaryInfo;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.xml.XmlAttribute;
-import com.intellij.psi.xml.XmlDocument;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.xml.*;
+import com.intellij.xml.util.IncludedXmlTag;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,7 +44,6 @@ public class SDEF_Parser {
           }
         }
         parseRootTag(parsedDictionary, rootTag);
-
       }
     }
     System.out.println("parsing completed for file.");
@@ -49,39 +51,23 @@ public class SDEF_Parser {
   }
 
   public static void parseRootTag(@NotNull ApplicationDictionary parsedDictionary, @NotNull XmlTag rootTag) {
-    XmlTag[] suiteTags = rootTag.getSubTags();
-    String xInclNs = "http://www.w3.org/2003/XInclude";
-    for (XmlTag suiteTag : suiteTags) {
-      XmlTag[] includes = suiteTag.findSubTags("include", xInclNs);
-
-      for (XmlTag include : includes) {
-        String hrefIncl = include.getAttributeValue("href");
-        if (!StringUtil.isEmpty(hrefIncl)) {
-          hrefIncl = hrefIncl.replace("file://localhost", "");
-          File includedFile = new File(hrefIncl);
-          //as there is assertion error (java.lang.AssertionError: File accessed outside allowed roots),
-          // we are trying to find if the dictionary file for this included dictionary was already generated
-          String fName = null;
-          if (includedFile.isFile()) {
-            fName = includedFile.getName();
-            int index = fName.lastIndexOf('.');
-            fName = index < 0 ? fName : fName.substring(0, index);
-          }
-          AppleScriptSystemDictionaryRegistryService dictionarySystemRegistry = ServiceManager
-                  .getService(AppleScriptSystemDictionaryRegistryService.class);
-          VirtualFile vFile = dictionarySystemRegistry.getDictionaryFile(fName);
-          if (vFile==null || !vFile.isValid()) vFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
-//          VirtualFile includedVFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
-          if (vFile != null && vFile.isValid()) {
-            parsedDictionary.processInclude(vFile);
-          }
-//          if (includedVFile != null && includedVFile.isValid()) {
-//            parsedDictionary.processInclude(includedVFile);
-//          }
-        }
-      }
+    String xInclNs = rootTag.getAttributeValue("xmlns:xi");
+    XmlTag[] includes = getIncludes(rootTag, xInclNs);
+    processIncludes(parsedDictionary, includes);
+    XmlTag[] rootSubTags = rootTag.getSubTags();
+    for (XmlTag suiteTag : rootSubTags) {
+      includes = getIncludes(suiteTag, xInclNs);
+      processIncludes(parsedDictionary, includes);
     }
-    for (XmlTag suiteTag : suiteTags) {
+    for (XmlTag suiteTag : rootSubTags) {
+      if ("dictionary".equals(suiteTag.getName()) && suiteTag instanceof IncludedXmlTag) {
+        XmlFile xmlFile = getDictionaryFileFromInclude(parsedDictionary.getProject(), (IncludedXmlTag) suiteTag);
+        if (xmlFile != null) {
+          parsedDictionary.processInclude(xmlFile);
+        }
+      } else if (!"suite".equals(suiteTag.getName())) continue;
+
+      rootTag.getSubTags()[0].getName();
       Suite suite = parseSuiteTag(suiteTag, parsedDictionary);
 
       XmlTag[] suiteCommands = suiteTag.findSubTags("command");
@@ -127,6 +113,65 @@ public class SDEF_Parser {
         suite.addEnumeration(enumeration);
       }
       parsedDictionary.addSuite(suite);//todo remove adding the components directly to dictionary (see above)
+    }
+  }
+
+  @Nullable
+  private static XmlFile getDictionaryFileFromInclude(@NotNull Project project, IncludedXmlTag xmlIncludeTag) {
+    XmlFile xmlFile = null;
+    XmlElement origXmlElement = xmlIncludeTag.getOriginal();
+    PsiFile origPsiFile = origXmlElement != null ? origXmlElement.getContainingFile() : null;
+    if (origPsiFile instanceof XmlFile) {
+      xmlFile = (XmlFile) origPsiFile;
+      AppleScriptSystemDictionaryRegistryService dictionaryService = ServiceManager
+              .getService(AppleScriptSystemDictionaryRegistryService.class);
+      VirtualFile vFile = origPsiFile.getVirtualFile();
+      DictionaryInfo dInfo = dictionaryService.getDictionaryInfoByApplicationPath(vFile.getPath());
+      if (dInfo != null) {
+        vFile = dInfo.getDictionaryFile();
+        PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
+        xmlFile = (XmlFile) psiFile;
+      }
+    }
+    return xmlFile;
+  }
+
+  private static XmlTag[] getIncludes(@NotNull XmlTag rootTag, String xInclNs) {
+    if (xInclNs == null) return null;
+    return rootTag.findSubTags("include", xInclNs);
+  }
+
+  private static void processIncludes(@NotNull ApplicationDictionary parsedDictionary, @Nullable XmlTag[] includes) {
+    if (includes == null) return;
+    for (XmlTag include : includes) {
+      String hrefIncl = include.getAttributeValue("href");
+      if (!StringUtil.isEmpty(hrefIncl)) {
+        hrefIncl = hrefIncl.replace("file://localhost", "");
+        File includedFile = new File(hrefIncl);
+//        ((IncludedXmlTag) suiteTag).getOriginal().getContainingFile();
+        //as there is assertion error (java.lang.AssertionError: File accessed outside allowed roots),
+        // we are trying to find if the dictionary file for this included dictionary was already generated
+        AppleScriptSystemDictionaryRegistryService dictionarySystemRegistry = ServiceManager
+                .getService(AppleScriptSystemDictionaryRegistryService.class);
+        VirtualFile vFile = null;
+        DictionaryInfo dInfo = dictionarySystemRegistry.getDictionaryInfoByApplicationPath(includedFile.getPath());
+        if (dInfo != null) {
+          vFile = dInfo.getDictionaryFile();
+        } else if (includedFile.isFile()) {
+          String fName = includedFile.getName();
+          int index = fName.lastIndexOf('.');
+          fName = index < 0 ? fName : fName.substring(0, index);
+          vFile = dictionarySystemRegistry.getDictionaryFile(fName);
+        }
+        if (vFile == null || !vFile.isValid()) vFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
+        if (vFile != null && vFile.isValid()) {
+          PsiFile psiFile = PsiManager.getInstance(parsedDictionary.getProject()).findFile(vFile);
+          XmlFile xmlFile = (XmlFile) psiFile;
+          if (xmlFile != null) {
+            parsedDictionary.processInclude(xmlFile);
+          }
+        }
+      }
     }
   }
 

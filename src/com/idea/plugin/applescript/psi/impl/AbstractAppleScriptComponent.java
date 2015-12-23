@@ -8,7 +8,6 @@ import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.editor.colors.CodeInsightColors;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -20,9 +19,13 @@ import java.util.List;
 /**
  * Andrey 21.04.2015
  */
-public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl implements AppleScriptComponent {
 
-  public BaseAppleScriptComponent(@NotNull ASTNode node) {
+/**
+ * Subclasses should implement {@link AppleScriptNamedElement#getIdentifier()} method
+ */
+public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElementImpl implements AppleScriptComponent {
+
+  public AbstractAppleScriptComponent(@NotNull ASTNode node) {
     super(node);
   }
 
@@ -30,32 +33,16 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
     return getNode().getElementType().toString();
   }
 
-  @Override
-  public boolean isGlobal() {
-    return isScriptProperty() || findChildByType(AppleScriptTypes.GLOBAL) != null;
-  }
-
-
-  @Override
-  public boolean isResolveTarget() {
-    return !isObjectProperty(); //!!! should be enough !!!
-  }
-
-  @Override
-  public boolean isComposite() {
-    return PsiTreeUtil.getChildOfType(this, AppleScriptComponent.class) != null;
-  }
 
   @Override
   public boolean isObjectProperty() {
-    return getContext() instanceof AppleScriptRecordLiteralExpression || getContext() instanceof
-            AppleScriptTargetRecordLiteral;
+    return getContext() instanceof AppleScriptRecordLiteralExpression
+            || getContext() instanceof AppleScriptTargetRecordLiteral;
   }
 
   @Nullable
   @Override
   public PsiElement getOriginalDeclaration() {
-    //todo (re)move this to targetReference
     //todo (re)move this to targetReference
     PsiReference myReference = getReference();
     if (myReference != null) {
@@ -162,7 +149,7 @@ public abstract class BaseAppleScriptComponent extends AppleScriptPsiElementImpl
   @Override
   public ItemPresentation getPresentation() {
 
-    return new AppleScriptElementPresentation(BaseAppleScriptComponent.this) {
+    return new AppleScriptElementPresentation(AbstractAppleScriptComponent.this) {
       @Nullable
       @Override
       public String getPresentableText() {

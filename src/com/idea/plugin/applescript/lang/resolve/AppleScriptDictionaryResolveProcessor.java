@@ -8,6 +8,7 @@ import com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator;
 import com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement;
 import com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.KeyWithDefaultValue;
@@ -34,6 +35,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
               return false;
             }
           };
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptDictionaryResolveProcessor.class.getName());
 
   private final @NotNull Project myProject;
   private final @Nullable DictionaryCompositeElement myElement;
@@ -125,14 +127,16 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
           importedDictionary = dictionaryRegistry.createDictionary(appName);
         }
       }
-      if (element instanceof AppleScriptUseStatement) {
-        AppleScriptUseStatement useStatement = (AppleScriptUseStatement) element;
-        mySortedUseStatements.add(useStatement);
-        if (useStatement.withImporting() && importedDictionary != null) {
+      if (importedDictionary != null) {
+        if (element instanceof AppleScriptUseStatement) {
+          AppleScriptUseStatement useStatement = (AppleScriptUseStatement) element;
+          mySortedUseStatements.add(useStatement);
+          if (useStatement.withImporting()) {
+            collectedDictionaries.add(importedDictionary);
+          }
+        } else {
           collectedDictionaries.add(importedDictionary);
         }
-      } else if (importedDictionary != null) {
-        collectedDictionaries.add(importedDictionary);
       }
     }
     return true;
@@ -142,7 +146,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
             .getService(element.getProject(), AppleScriptProjectDictionaryService.class);
     if (dictionaryRegistry == null) return false;
-    ApplicationDictionary cocoaStandard = dictionaryRegistry.getDefaultCocoaTerminology();
+    ApplicationDictionary cocoaStandard = dictionaryRegistry.getCocoaStandardTerminology();
     return cocoaStandard != null && setResult(cocoaStandard, element);
   }
 
@@ -168,7 +172,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     } else if (element instanceof AppleScriptDictionaryClassIdentifierPlural) {
       res = importedDictionary.findClassByPluralName(myElementName);
     } else {
-      System.out.println("WARNING: unknown dictionary reference element: " + element.getClass().getName());
+      LOG.warn("WARNING: unknown dictionary reference element: " + element.getClass().getName());
     }
     if (res != null) {
       myResult = res;
@@ -203,35 +207,18 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
   @NotNull
   public List<DictionaryComponent> getFilteredResult() {
     List<DictionaryComponent> result = new ArrayList<DictionaryComponent>();
-    boolean filterFromStdCocoaDictionaryFlag = false; //if there are at least one dictionary from a real app imported
-    List<ApplicationDictionary> fromUseStatements = new ArrayList<ApplicationDictionary>();
+    boolean filterStdCocoaTerminologyFlag = false; //if there was at least one dictionary from a real app imported
     AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
             .getService(myProject, AppleScriptProjectDictionaryService.class);
-    for (AppleScriptUseStatement useStmt : mySortedUseStatements) {
-      if (!useStmt.withImporting()) continue;
-
-      String appName = useStmt.getApplicationName();
-      if (dictionaryRegistry != null && appName != null) {
-        ApplicationDictionary importedDict = dictionaryRegistry.getDictionary(appName);
-        if (importedDict != null) {
-          collectAllComponentsFromDictionary(importedDict, result, filterFromStdCocoaDictionaryFlag);
-          filterFromStdCocoaDictionaryFlag = filterFromStdCocoaDictionaryFlag
-                  || !importedDict.getName().equals(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
-          fromUseStatements.add(importedDict);
-        }
-      }
-    }
     for (ApplicationDictionary collectedDictionary : collectedDictionaries) {
-      if (!fromUseStatements.contains(collectedDictionary)) {
-        collectAllComponentsFromDictionary(collectedDictionary, result, filterFromStdCocoaDictionaryFlag);//was false??
-      }
-      filterFromStdCocoaDictionaryFlag = filterFromStdCocoaDictionaryFlag
+      collectAllComponentsFromDictionary(collectedDictionary, result, filterStdCocoaTerminologyFlag);//was false??
+      filterStdCocoaTerminologyFlag = filterStdCocoaTerminologyFlag
               || !collectedDictionary.getName().equals(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
     }
     if (dictionaryRegistry != null) {
       appendResultsIfNeeded(result, myProject, mySortedUseStatements.size() > 0,
               collectedDictionaries.contains(dictionaryRegistry.getStandardAdditionsTerminology()),
-              filterFromStdCocoaDictionaryFlag);
+              filterStdCocoaTerminologyFlag);
     }
     return result;
   }
@@ -248,7 +235,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
       collectAllComponentsFromDictionary(stdAdditions, result, false);
     }
     if (!filterCocoaStandard) {
-      ApplicationDictionary cocoaStandardTerminology = dictionaryRegistry.getDefaultCocoaTerminology();
+      ApplicationDictionary cocoaStandardTerminology = dictionaryRegistry.getCocoaStandardTerminology();
       collectAllComponentsFromDictionary(cocoaStandardTerminology, result, false);
     }
   }
@@ -262,7 +249,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
               .getService(importedDict.getProject(), AppleScriptProjectDictionaryService.class);
       ApplicationDictionary cocoaStandard = null;
       if (dictionaryRegistry != null) {
-        cocoaStandard = dictionaryRegistry.getDefaultCocoaTerminology();
+        cocoaStandard = dictionaryRegistry.getCocoaStandardTerminology();
       }
       if (cocoaStandard != null) {
         for (DictionaryEnumerator dicConst : importedDict.getDictionaryEnumeratorMap().values()) {

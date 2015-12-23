@@ -15,16 +15,11 @@ import java.util.List;
 /**
  * Andrey 16.05.2015
  */
-public abstract class AbstractAppleScriptScriptObject extends BaseAppleScriptComponent implements
+public abstract class AbstractAppleScriptScriptObject extends AbstractAppleScriptComponent implements
         AppleScriptScriptObject {
 
   public AbstractAppleScriptScriptObject(@NotNull ASTNode node) {
     super(node);
-  }
-
-  @Override
-  public boolean isGlobal() {
-    return true;
   }
 
   @Override
