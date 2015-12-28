@@ -91,7 +91,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // Could be command from Cocoa Standard library which was not yet checked, because
     // applicationName == ScriptingAdditions.
     // The could happen when parsing <using terms from scripting additions> stms
-    r = parseCommandNameForApplication(b, l + 1, parsedName, ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME,
+    r = parseCommandNameForApplication(b, l + 1, parsedName, ApplicationDictionary.COCOA_STANDARD_LIBRARY,
             checkStdLib);
     return r;
   }
@@ -171,10 +171,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     List<AppleScriptCommand> allCommandsWithName = new ArrayList<AppleScriptCommand>();
     allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
             .findApplicationCommands(b.getProject(), toldApplicationName, parsedCommandName));
-    // StandardAdditions fake application does not contain CocoaStandard terms. Adding them here
-    if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
+    // Scripting Additions StandardAdditions fake application does not contain CocoaStandard terms. Adding them here
+    if (ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
       allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findApplicationCommands(b.getProject(),
-              ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME, parsedCommandName));
+              ApplicationDictionary.COCOA_STANDARD_LIBRARY, parsedCommandName));
     }
     if (areThereUseStatements) {
       if (applicationsToImport != null) {
@@ -190,7 +190,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // todo remove this workaround when implement include in dictionaries
     if (allCommandsWithName.isEmpty()) {
       allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper.findApplicationCommands(b.getProject(),
-              ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME, parsedCommandName));
+              ApplicationDictionary.COCOA_STANDARD_LIBRARY, parsedCommandName));
     }
     return allCommandsWithName;
   }
@@ -202,14 +202,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    * application CocoaStandard library name
    */
   @NotNull
-  public static String getTargetApplicationName(PsiBuilder b) {
+  private static String getTargetApplicationName(PsiBuilder b) {
     String toldApplicationName = peekTargetApplicationName(b);
     // CocoaStandard library is always available for the scriptable application
-    return toldApplicationName != null ? toldApplicationName : ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
+    return toldApplicationName != null ? toldApplicationName : ApplicationDictionary.COCOA_STANDARD_LIBRARY;
   }
 
   @Nullable
-  public static String peekTargetApplicationName(PsiBuilder b) {
+  private static String peekTargetApplicationName(PsiBuilder b) {
     Stack<String> applicationNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
     String toldApplicationName = null;
     if (applicationNameStack != null && !applicationNameStack.isEmpty()) {
@@ -315,7 +315,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     String appName = null;
     r = consumeToken(b, SCRIPTING_ADDITIONS);
     if (r) {
-      appName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
+      appName = ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY;
     } else {
       PsiBuilder.Marker mAppRef = enter_section_(b, l, _NONE_, "<application reference>");
       PsiBuilder.Marker mCls = enter_section_(b, l, _NONE_, "<dictionary class name>");
@@ -410,7 +410,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r;
     r = consumeToken(b, SCRIPTING_ADDITIONS);
     if (r) {
-      pushTargetApplicationName(b, ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+      pushTargetApplicationName(b, ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
     }
     return r;
   }
@@ -763,7 +763,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       r = tryToParseStdProperty(b, l + 1);
       if (r) return true;
       // if told app name == standard additions, Cocoa Standard terms were not checked
-      r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
+      r = tryToParseApplicationProperty(b, l + 1, ApplicationDictionary.COCOA_STANDARD_LIBRARY);
       if (r) return true;
     }
     return false;
@@ -902,7 +902,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // so in this case we check CocoaStandard here
     m = enter_section_(b);
     r = parseApplicationClassName(b, l + 1, currentTokenText, isPluralForm,
-            ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
+            ApplicationDictionary.COCOA_STANDARD_LIBRARY);
     if (r) {
       // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
       // className or propertyName tokens. Here we check and return false if the property with the longer name exists,
@@ -997,7 +997,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // (if there are too many constants defined -> lead to many incorrect parsing errors like
     // 'end' tell/repeat etc is not detected
     // dictionary constant could appear only if we are inside dictionary command call
-    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME.equals(toldApplicationName)
+    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)
             && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE)
       return false;
 
@@ -1018,10 +1018,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     } else {
       r = tryToParseStdConstant(b, l + 1);
       if (r) return true;
-      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(toldApplicationName)) {
-        r = tryToParseApplicationConstant(b, l + 1, ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
-        if (r) return true;
-      }
+      r = tryToParseApplicationConstant(b, l + 1, ApplicationDictionary.COCOA_STANDARD_LIBRARY);
+      if (r) return true;
     }
     return false;
   }

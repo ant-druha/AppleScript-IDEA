@@ -22,6 +22,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.XMLOutputter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +40,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   //persisted data
   private final Map<String, DictionaryInfo> dictionaryInfoMap = new HashMap<String, DictionaryInfo>();
 
+  private final HashSet<String> scriptingAdditions = new HashSet<String>();
   private final HashSet<String> notScriptableApplicationList = new HashSet<String>();
   private final HashSet<String> notFoundApplicationList = new HashSet<String>();
   private final HashSet<String> discoveredApplicationNames = new HashSet<String>();
@@ -90,17 +92,27 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return notScriptableApplicationList;
   }
 
+  @NotNull
+  public HashSet<String> getScriptingAdditions() {
+    return scriptingAdditions;
+  }
+
   public AppleScriptSystemDictionaryRegistryService(@NotNull AppleScriptSystemDictionaryRegistryComponent
                                                             systemDictionaryRegistry) {
-    initDictionariesInfoFromCache(systemDictionaryRegistry);
-    initStandardSuite();
+    try {
+      initDictionariesInfoFromCache(systemDictionaryRegistry);
+      initStandardSuite();
 //    initDictionariesFromCachedFiles();
-    discoverInstalledApplicationNames();
+      discoverInstalledApplicationNames();
+    } catch (Exception e) {
+      LOG.error("Error while initializing service: " + e.getCause());
+    }
   }
 
   private void initDictionariesInfoFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent
                                                      systemDictionaryRegistry) {
     notScriptableApplicationList.addAll(systemDictionaryRegistry.getNotScriptableApplications());
+    LocalFileSystem.getInstance().refresh(false);
     for (DictionaryInfo.State dInfoState : systemDictionaryRegistry.getDictionariesPersistedInfo()) {
       String appName = dInfoState.applicationName;
       String dictionaryUrl = dInfoState.dictionaryUrl;
@@ -111,6 +123,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         File applicationFile = !StringUtil.isEmpty(applicationUrl) ?
                 new File(applicationUrl) : null;
         if (dictionaryFile != null) {
+          dictionaryFile.refresh(false, false);
+          if (!dictionaryFile.exists()) continue;
           DictionaryInfo dInfo = new DictionaryInfo(appName, dictionaryFile, applicationFile);
           addDictionaryInfo(dInfo);
         }
@@ -122,13 +136,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     for (String applicationsDirectory : ApplicationDictionary.APP_BUNDLE_DIRECTORIES) {
       VirtualFile appsDirVFile = LocalFileSystem.getInstance().findFileByPath(applicationsDirectory);
       if (appsDirVFile != null && appsDirVFile.exists()) {
-        processApplicationsDirectory(appsDirVFile);
+        discoverApplicationsInDirectory(appsDirVFile);
       }
     }
     LOG.info("List of installed applications initialized. Count: " + discoveredApplicationNames.size());
   }
 
-  private void processApplicationsDirectory(@NotNull VirtualFile appsDirVFile) {
+  private void discoverApplicationsInDirectory(@NotNull VirtualFile appsDirVFile) {
     VfsUtilCore.visitChildrenRecursively(appsDirVFile, new VirtualFileVisitor(VirtualFileVisitor.limit
             (APP_DEPTH_SEARCH)) {
       @Override
@@ -454,35 +468,17 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private void initStandardSuite() {
     try {
       if (SystemInfo.isMac) {
-        //init standard additions
-        for (String stdLibFolder : ApplicationDictionary.SCRIPTING_ADDITIONS_FOLDERS) {
-          final File dir = new File(stdLibFolder);
-          if (!dir.isDirectory()) continue;
-          final File[] stdLibs = dir.listFiles();
-          if (stdLibs == null || stdLibs.length == 0) continue;
-          for (File stdLib : stdLibs) {
-            String libraryName = stdLib.getName();
-            libraryName = libraryName.substring(0, libraryName.lastIndexOf("."));
-            if (StringUtil.isEmpty(libraryName)) continue;
-
-            // TODO: 23/12/15 implement multiply standard addition libraries usage
-            if (!libraryName.equals(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY)) continue;
-
-            final DictionaryInfo dInfo = dictionaryInfoMap.get(libraryName);
-            if (dInfo != null) {
-              initializeDictionaryFromInfo(dInfo);
-            } else {
-              final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByIoFile(stdLib);
-              if (virtualFile != null)
-                createAndInitializeInfo(stdLib, libraryName);
-              else
-                LOG.warn("Can not find standard suite dictionary in the classpath");
-            }
-          }
+        //init scripting additions
+        DictionaryInfo di = getDictionaryInfo(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
+        if (di == null) {
+          initializeScriptingAdditions();
+          mergeScriptingAdditions();
+        } else {
+          initializeDictionaryFromInfo(di);
         }
         //init Standard Cocoa terminology
-        final String applicationName = ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
-        DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
+        final String applicationName = ApplicationDictionary.COCOA_STANDARD_LIBRARY;
+        DictionaryInfo dInfo = getInitializedInfo(applicationName);
         if (dInfo != null) {
           initializeDictionaryFromInfo(dInfo);
         } else {
@@ -490,8 +486,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
           File stdLibFile = new File(ApplicationDictionary.COCOA_STANDARD_LIBRARY_PATH);
           //if not found, get from jar
           if (!stdLibFile.exists() || !stdLibFile.isFile()) {
-            InputStream is = getClass().getResourceAsStream(ApplicationDictionary.SDEF_FOLDER + "/" +
-                    ApplicationDictionary.COCOA_STANDARD_FILE);
+            InputStream is = getClass().getResourceAsStream(ApplicationDictionary.COCOA_STANDARD_FILE);
             stdLibFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
           }
           if (stdLibFile.exists() && stdLibFile.isFile())
@@ -500,27 +495,109 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
             LOG.warn("Can not find standard suite dictionary in the classpath");
         }
       } else {
-        for (String fName : ApplicationDictionary.STANDARD_DEFINITION_FILES) {
-          InputStream is = getClass().getResourceAsStream(ApplicationDictionary.SDEF_FOLDER + "/" + fName);
-          final String applicationName = fName.contains(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY) ?
-                  ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY :
-                  ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
-          if (StringUtil.isEmpty(applicationName)) continue;
-          DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
-          if (dInfo != null) {
-            initializeDictionaryFromInfo(dInfo);
-          } else {
-            final File tmpFile = stream2file(is, applicationName.replaceAll(" ", "_"), ".sdef");
-            if (tmpFile.exists() && tmpFile.isFile())
-              createAndInitializeInfo(tmpFile, applicationName);
-            else
-              LOG.warn("Can not find standard suite dictionary in the classpath");
-          }
-        }
+        //init scripting additions
+        initStdTerms(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
+        // init cocoa standard
+        initStdTerms(ApplicationDictionary.COCOA_STANDARD_LIBRARY);
       }
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private void initializeScriptingAdditions() {
+    for (String stdLibFolder : ApplicationDictionary.SCRIPTING_ADDITIONS_FOLDERS) {
+      final File dir = new File(stdLibFolder);
+      if (!dir.isDirectory()) continue;
+      final File[] stdLibs = dir.listFiles();
+      if (stdLibs == null || stdLibs.length == 0) continue;
+      for (File stdLib : stdLibs) {
+        String libraryName = stdLib.getName();
+        int last = libraryName.lastIndexOf(".");
+        libraryName = libraryName.substring(0, last > 0 ? last : libraryName.length() - 1);
+        if (StringUtil.isEmpty(libraryName)) continue;
+        DictionaryInfo dInfo = getDictionaryInfo(libraryName);
+        if (dInfo != null) {
+          initializeDictionaryFromInfo(dInfo);
+        } else {
+          if (stdLib.exists())
+            dInfo = createAndInitializeInfo(stdLib, libraryName);
+        }
+        if (dInfo != null)
+          scriptingAdditions.add(dInfo.getApplicationName());
+        else
+          LOG.warn("Can not initialize scripting addition library from file: " + stdLib);
+      }
+    }
+  }
+
+  private void initStdTerms(@NotNull String stdLibName) throws IOException {
+    DictionaryInfo stdDInfo = dictionaryInfoMap.get(stdLibName);
+    if (stdDInfo != null) {
+      initializeDictionaryFromInfo(stdDInfo);
+    } else {
+      String libPathResource = stdLibName.equals(ApplicationDictionary.COCOA_STANDARD_LIBRARY) ?
+              ApplicationDictionary.COCOA_STANDARD_FILE :
+              stdLibName.equals(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY) ?
+                      ApplicationDictionary.STANDARD_ADDITIONS_FILE : null;
+      if (libPathResource == null) return;
+
+      InputStream isStd = getClass().getResourceAsStream(libPathResource);
+      final File tmpFile = stream2file(isStd, stdLibName.replaceAll(" ", "_"), ".sdef");
+      if (tmpFile.exists() && tmpFile.isFile())
+        createAndInitializeInfo(tmpFile, stdLibName);
+      else
+        LOG.warn("Can not find standard suite dictionary in the classpath");
+    }
+  }
+
+  /**
+   * Create single Dictionary from all scripting additions installed in OS X
+   */
+  @Nullable
+  private DictionaryInfo mergeScriptingAdditions() {
+    try {
+      List<File> dictionaryFiles = new ArrayList<File>();
+      final String libName = ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY;
+      final File mergedFile = File.createTempFile(libName, ".sdef");
+      for (String scriptingAddition : scriptingAdditions) {
+        DictionaryInfo di = getDictionaryInfo(scriptingAddition);
+        if (di == null) continue;
+        dictionaryFiles.add(new File(di.getDictionaryFile().getPath()));
+      }
+      Iterator<File> iterator = dictionaryFiles.iterator();
+      if (!iterator.hasNext()) return null;
+      final File first = iterator.next();
+      SAXBuilder builder = new SAXBuilder();
+      final Document firstDocument = builder.build(first);
+      final Element firstRoot = firstDocument.getRootElement();
+      while (iterator.hasNext()) {
+        File second = iterator.next();
+        if (second != null) {
+          Document secondDocument = builder.build(second);
+          Element secondRoot = secondDocument.getRootElement();
+          List<Element> suiteElements = secondRoot.getChildren("suite");
+          for (Element suite : suiteElements) {
+            suite = suite.clone();
+            suite.detach();
+            firstRoot.addContent(suite);
+          }
+        }
+      }
+      XMLOutputter outputter = new XMLOutputter();
+      FileOutputStream out = new FileOutputStream(mergedFile);
+      outputter.output(firstDocument, out);
+      out.flush();
+      out.close();
+      return createAndInitializeInfo(mergedFile, libName);
+    } catch (JDOMException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   private static File stream2file(InputStream in, String prefix, String suffix) throws IOException {
@@ -559,7 +636,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         } else {
           cmdName = "sdef";
         }
-        fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName, applicationIoFile.getPath());
+        fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName, applicationIoFile.getPath(),
+                false);
       }
     } catch (NotScriptableApplicationException e) {
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
@@ -589,10 +667,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private boolean doGenerateDictionaryFile(@NotNull final String applicationName,
                                            @NotNull final String serializePath,
                                            @NotNull final String cmdName,
-                                           @NotNull final String appFilePath) throws NotScriptableApplicationException {
+                                           @NotNull final String appFilePath,
+                                           boolean appendFile) throws NotScriptableApplicationException {
     try {
+      final String redirectSign = appendFile ? ">> " : "> ";
       final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
-              "> " + serializePath};
+              redirectSign + serializePath};
       LOG.info("executing command: " + Arrays.toString(shellCommand));
       Integer exitCode;
       long execStart = System.currentTimeMillis();
@@ -683,10 +763,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     }
     // standard libraries do not have application path
     if (applicationPath.endsWith("CocoaStandard.sdef")) {
-      return dictionaryInfoMap.get(ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME);
-    }
-    if (applicationPath.endsWith("StandardAdditions.sdef")) {
-      return dictionaryInfoMap.get(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+      return dictionaryInfoMap.get(ApplicationDictionary.COCOA_STANDARD_LIBRARY);
     }
     return null;
   }
@@ -715,10 +792,10 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       Element rootNode = document.getRootElement();
       List<Element> suiteElements = rootNode.getChildren();
 
-      if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
+      if (ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY.equals(applicationName)) {
         for (Element suiteElem : suiteElements) {
-          parseSuiteElementForApplication(suiteElem, applicationName);
-          parseSuiteElementForStandardAdditions(suiteElem);
+          parseSuiteElementForApplication(suiteElem, applicationName);// TODO: 26/12/15 remove?
+          parseSuiteElementForScriptingAdditions(suiteElem, applicationName);
         }
       } else {
         for (Element suiteElem : suiteElements) {
@@ -735,8 +812,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return false;
   }
 
-  private void parseSuiteElementForStandardAdditions(@NotNull Element suiteElem) {
-    String applicationName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
+  private void parseSuiteElementForScriptingAdditions(@NotNull Element suiteElem, @NotNull String applicationName) {
     List<Element> suiteClasses = suiteElem.getChildren("class");
     List<Element> suiteValueTypes = suiteElem.getChildren("value-type");
     List<Element> suiteClassExtensions = suiteElem.getChildren("class-extension");
@@ -873,7 +949,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
     updateObjectNameSetForApplication(className, applicationName, applicationNameToClassNameSetMap);
     updateObjectNameSetForApplication(pluralClassName, applicationName, applicationNameToClassNamePluralSetMap);
-    if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(applicationName)) {
+    if (ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY.equals(applicationName)) {
       updateApplicationNameSetFor(className, applicationName, stdClassNameToApplicationNameSetMap);
       updateApplicationNameSetFor(pluralClassName, applicationName, stdClassNamePluralToApplicationNameSetMap);
     }

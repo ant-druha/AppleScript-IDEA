@@ -275,7 +275,7 @@ public class AppleScriptPsiImplUtil {
       ASTNode appNameNode = appRef.getNode().findChildByType(AppleScriptTypes.STRING_LITERAL);
       return appNameNode != null ? appNameNode.getText().replace("\"", "") : null;
     } else if (useStatement.getNode().findChildByType(AppleScriptTypes.SCRIPTING_ADDITIONS) != null) {
-      return ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
+      return ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY;
     }
     return null;
   }
@@ -296,7 +296,7 @@ public class AppleScriptPsiImplUtil {
   public static String getApplicationName(AppleScriptUsingTermsFromStatement usingTermsStatement) {
     AppleScriptApplicationReference appRef = usingTermsStatement.getApplicationReference();
     return appRef != null ? appRef.getApplicationName() : usingTermsStatement.withImportingStdLibrary() ?
-            ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY : null;
+            ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY : null;
   }
 
   public static boolean withImportingStdLibrary(AppleScriptUsingTermsFromStatement usingTermsStatement) {

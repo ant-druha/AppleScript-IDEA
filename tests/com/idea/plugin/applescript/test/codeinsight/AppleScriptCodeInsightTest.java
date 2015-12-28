@@ -30,28 +30,29 @@ public class AppleScriptCodeInsightTest extends LightCodeInsightFixtureTestCase 
     myFixture.complete(CompletionType.BASIC, 1);
     List<String> strings = myFixture.getLookupElementStrings();
     LookupElement[] arElements = myFixture.getLookupElements();
+    assert strings != null;
+    assert arElements != null;
+    assertTrue(strings.size() == arElements.length);
     int stdAdditionsElementCount = 0;
     int cocoaStandardElementCount = 0;
-    if (arElements != null) {
-      for (LookupElement le : arElements) {
-        PsiElement el = le.getPsiElement();
-        if (el != null) {
-          if (el instanceof DictionaryComponent) {
-            DictionaryComponent dc = (DictionaryComponent) el;
-            String dictionaryName = dc.getDictionary().getName();
-            if (ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY.equals(dictionaryName))
-              stdAdditionsElementCount++;
-            else if (ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME.equals(dictionaryName))
-              cocoaStandardElementCount++;
-          }
+    for (LookupElement le : arElements) {
+      PsiElement el = le.getPsiElement();
+      if (el != null) {
+        if (el instanceof DictionaryComponent) {
+          DictionaryComponent dc = (DictionaryComponent) el;
+          String dictionaryName = dc.getDictionary().getName();
+          if (ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY.equals(dictionaryName))
+            stdAdditionsElementCount++;
+          else if (ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(dictionaryName))
+            cocoaStandardElementCount++;
         }
       }
-      System.out.println("Std lib count=" + stdAdditionsElementCount);
-      System.out.println("Cocoa lib count=" + cocoaStandardElementCount);
     }
-    assertTrue(strings != null);
-    assertEquals(387, strings.size());
-    assertEquals(252, stdAdditionsElementCount);
+    System.out.println("All elements=" + arElements.length);
+    System.out.println("Std lib count=" + stdAdditionsElementCount);
+    System.out.println("Cocoa lib count=" + cocoaStandardElementCount);
+    assertEquals(392, strings.size());
+    assertEquals(257, stdAdditionsElementCount);
     assertEquals(45, cocoaStandardElementCount);
   }
 

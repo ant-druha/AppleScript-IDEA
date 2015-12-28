@@ -154,8 +154,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
             .getService(element.getProject(), AppleScriptProjectDictionaryService.class);
     if (dictionaryRegistry == null) return false;
-    ApplicationDictionary standardAdditions = dictionaryRegistry.getStandardAdditionsTerminology();
-    return standardAdditions != null && setResult(standardAdditions, element);
+    ApplicationDictionary scriptingAdditions = dictionaryRegistry.getScriptingAdditionsTerminology();
+    return scriptingAdditions != null && setResult(scriptingAdditions, element);
   }
 
   private boolean setResult(@NotNull ApplicationDictionary importedDictionary,
@@ -213,11 +213,11 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     for (ApplicationDictionary collectedDictionary : collectedDictionaries) {
       collectAllComponentsFromDictionary(collectedDictionary, result, filterStdCocoaTerminologyFlag);//was false??
       filterStdCocoaTerminologyFlag = filterStdCocoaTerminologyFlag
-              || !collectedDictionary.getName().equals(ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY);
+              || !collectedDictionary.getName().equals(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
     }
     if (dictionaryRegistry != null) {
       appendResultsIfNeeded(result, myProject, mySortedUseStatements.size() > 0,
-              collectedDictionaries.contains(dictionaryRegistry.getStandardAdditionsTerminology()),
+              collectedDictionaries.contains(dictionaryRegistry.getScriptingAdditionsTerminology()),
               filterStdCocoaTerminologyFlag);
     }
     return result;
@@ -231,8 +231,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
             .getService(project, AppleScriptProjectDictionaryService.class);
     if (dictionaryRegistry == null) return;
     if (!filterStandardAdditions && !areThereUseStatements) {
-      ApplicationDictionary stdAdditions = dictionaryRegistry.getStandardAdditionsTerminology();
-      collectAllComponentsFromDictionary(stdAdditions, result, false);
+      ApplicationDictionary scriptAdditions = dictionaryRegistry.getScriptingAdditionsTerminology();
+      collectAllComponentsFromDictionary(scriptAdditions, result, false);
     }
     if (!filterCocoaStandard) {
       ApplicationDictionary cocoaStandardTerminology = dictionaryRegistry.getCocoaStandardTerminology();

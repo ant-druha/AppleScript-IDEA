@@ -83,11 +83,9 @@ public class AppleScriptColorAnnotator implements Annotator {
               System.out.println("Re-checking warning reason for " + appName);
               warningReason = checkWarningReason(appName, dictionaryRegistryService);
             }
-            // TODO: 05/12/15 may it is better to create a dictionary for it in order to make sure PSI is created
-            // (needed for icons for example)
             AppleScriptApplicationReference appRef = PsiTreeUtil
                     .findChildOfType(element, AppleScriptApplicationReference.class);
-            if (warningReason != null) {
+            if (!StringUtil.isEmpty(warningReason)) {
               holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
                       .registerFix(new AddApplicationDictionaryQuickFix(appName));
             } else {

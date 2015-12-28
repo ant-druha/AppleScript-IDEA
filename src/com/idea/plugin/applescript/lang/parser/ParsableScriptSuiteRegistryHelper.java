@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -119,5 +120,9 @@ public class ParsableScriptSuiteRegistryHelper {
   public static boolean isConstantWithPrefixExist(@NotNull String applicationName,
                                                   @NotNull String constantNamePrefix) {
     return getParsableScriptHelper().isConstantWithPrefixExist(applicationName, constantNamePrefix);
+  }
+
+  public static HashSet<String> getScriptingAdditions() {
+    return getParsableScriptHelper().getScriptingAdditions();
   }
 }

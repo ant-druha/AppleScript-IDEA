@@ -1,6 +1,7 @@
 package com.idea.plugin.applescript.lang.ide.completion;
 
 import com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService;
+import com.idea.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.idea.plugin.applescript.psi.AppleScriptApplicationReference;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -11,7 +12,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
@@ -48,12 +50,15 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
                 AppleScriptSystemDictionaryRegistryService systemDictionaryRegistry = ServiceManager.getService
                         (AppleScriptSystemDictionaryRegistryService.class);
                 if (systemDictionaryRegistry != null) {
-                  Collection<String> appNameList;
+                  List<String> appNameList = new ArrayList<String>();
                   if (SystemInfo.isMac) {
-                    appNameList = systemDictionaryRegistry.getDiscoveredApplicationNames();
+                    appNameList.addAll(systemDictionaryRegistry.getDiscoveredApplicationNames());
                     appNameList.removeAll(systemDictionaryRegistry.getNotScriptableApplicationList());
+                    appNameList.removeAll(systemDictionaryRegistry.getScriptingAdditions());
+                    appNameList.remove(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
+                    appNameList.remove(ApplicationDictionary.COCOA_STANDARD_LIBRARY);
                   } else {
-                    appNameList = systemDictionaryRegistry.getCachedApplicationNames();
+                    appNameList.addAll(systemDictionaryRegistry.getCachedApplicationNames());
                   }
                   for (String appName : appNameList) {
                     result.addElement(LookupElementBuilder.create(appName));

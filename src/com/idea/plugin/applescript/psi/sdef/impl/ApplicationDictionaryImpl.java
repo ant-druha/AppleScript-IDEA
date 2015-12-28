@@ -23,6 +23,8 @@ import com.intellij.psi.impl.FakePsiElement;
 import com.intellij.psi.xml.*;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.ui.JBImageIcon;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.formats.icns.IcnsImageParser;
 import org.jetbrains.annotations.NonNls;
@@ -113,13 +115,17 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
       IcnsImageParser parser = new IcnsImageParser();
 
+      // TODO: 25/12/15 check for proper memory usage management
       @SuppressWarnings("unchecked")
       List<BufferedImage> list = parser.getAllBufferedImages(icnsFile);
       if (list == null || list.size() == 0) return;
+      boolean isHiDpi = JBUI.isHiDPI();
+      boolean retina = UIUtil.isRetina();
+//      UIUtil.drawImage();
       int index = list.size() > 1 ? 1 : 0;
-      Image img = list.get(index).getScaledInstance(13, 13, Image.SCALE_SMOOTH);
+      int scale = JBUI.scale(13);
+      Image img = list.get(index).getScaledInstance(scale, scale, Image.SCALE_SMOOTH);
       applicationIcon = new JBImageIcon(img);
-
     } catch (ImageReadException e) {
       e.printStackTrace();
     } catch (IOException e) {

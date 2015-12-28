@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 public interface ParsableScriptHelper {
@@ -72,4 +73,6 @@ public interface ParsableScriptHelper {
 
   boolean isConstantWithPrefixExist(@NotNull String applicationName, @NotNull String namePrefix);
 
+  @NotNull
+  HashSet<String> getScriptingAdditions();
 }

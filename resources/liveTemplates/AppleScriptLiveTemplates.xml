@@ -7,6 +7,15 @@
             <option name="AppleScript" value="true"/>
         </context>
     </template>
+    <template name="iterin" value="repeat with $LOOP_VAR$ in $LIST$&#10;    &#10;end repeat"
+              description="iterate over a list: repeat with $LOOP_VAR$ in $LIST$" toReformat="true"
+              toShortenFQNames="true">
+        <variable name="LOOP_VAR" expression="" defaultValue="i" alwaysStopAt="true"/>
+        <variable name="LIST" expression="complete()" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="AppleScript" value="true"/>
+        </context>
+    </template>
     <template name="tellapp" value="tell application &quot;$APP_NAME$&quot;&#10;$SELECTION$&#10;end tell"
               description="surround with tell statement" toReformat="true" toShortenFQNames="true">
         <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>

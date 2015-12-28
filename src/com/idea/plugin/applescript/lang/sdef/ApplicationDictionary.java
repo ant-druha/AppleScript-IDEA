@@ -21,14 +21,14 @@ public interface ApplicationDictionary extends DictionarySuite {
   List<String> SUPPORTED_DICTIONARY_EXTENSIONS = Arrays.asList("xml", "app", "osax", "sdef");
   List<String> SUPPORTED_APPLICATION_EXTENSIONS = Arrays.asList("app", "osax");
   // supported by default in a scriptable application
-  String COCOA_STANDARD_LIBRARY_NAME = "Standard Terminology";
-  // standard suite, provided by Mac OS X
-  String STANDARD_ADDITIONS_LIBRARY = "StandardAdditions";
+  String COCOA_STANDARD_LIBRARY = "Standard Terminology";
+  // name for imitated dictionary which includes all installed in Osx ScriptingAdditions suites
+  String SCRIPTING_ADDITIONS_LIBRARY = "Scripting Additions";
   String COCOA_STANDARD_LIBRARY_PATH = "/System/Library/ScriptingDefinitions/CocoaStandard.sdef";
   String[] SCRIPTING_ADDITIONS_FOLDERS = {"/System/Library/ScriptingAdditions/", "/Library/ScriptingAdditions/"};
   String SDEF_FOLDER = "/sdef";
-  String COCOA_STANDARD_FILE = "CocoaStandard.sdef";
-  String STANDARD_ADDITIONS_FILE = "StandardAdditions.sdef";
+  String COCOA_STANDARD_FILE = SDEF_FOLDER + "/CocoaStandard.sdef";
+  String STANDARD_ADDITIONS_FILE = SDEF_FOLDER + "/StandardAdditions.sdef";
   String[] STANDARD_DEFINITION_FILES = {COCOA_STANDARD_FILE, STANDARD_ADDITIONS_FILE};
   String[] APP_BUNDLE_DIRECTORIES = new String[]{"/Applications", "/System/Library/CoreServices",
           "/Library/ScriptingAdditions"};

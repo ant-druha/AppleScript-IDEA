@@ -141,6 +141,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "that"                       { return THAT; }
   "current"                    { return CURRENT; }
   "application"                { return APPLICATION; }
+  "app"                        { return APP; }
   "pi"                         { return PI_CONSTANT; }
   "minutes"                    { return MINUTES_CONSTANT; }
   "hours"                      { return HOURS_CONSTANT; }
@@ -225,9 +226,9 @@ RAW_CODE=("<<"[^">>"]*">>")
   "prop"                       { return PROP; }
   "global"                     { return GLOBAL; }
   "local"                      { return LOCAL; }
-  "yes"                        { return YES; }
-  "no"                         { return NO; }
-  "ask"                        { return ASK; }
+//  "yes"                        { return YES; }
+//  "no"                         { return NO; }
+//  "ask"                        { return ASK; }
   "space"                      { return SPACE; }
   "tab"                        { return TAB; }
   "linefeed"                   { return LINEFEED; }
@@ -251,6 +252,8 @@ RAW_CODE=("<<"[^">>"]*">>")
   "over"                       { return OVER; }
   "since"                      { return SINCE; }
   "under"                      { return UNDER; }
+  "run"                        { return RUN; }
+  "open"                       { return OPEN; }
   "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
   "copy"                       { return COPY; }
@@ -258,7 +261,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "count"                      { return COUNT; }
   "each"                       { return EACH; }
   "get"                        { return GET; }
-  "run"                        { return RUN; }
   "set"                        { return SET; }
   "returning"                  { return RETURNING; }
   "my"                         { return MY; }
@@ -290,8 +292,8 @@ RAW_CODE=("<<"[^">>"]*">>")
   {CUBIC_VOL}                  { return CUBIC_VOL; }
   {SQUARE_AREA}                { return SQUARE_AREA; }
   {BUILT_IN_TYPE_S}            { return BUILT_IN_TYPE_S; }
-  {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
   {QUOTED_FORM}                { return QUOTED_FORM; }
+  {BUILT_IN_PROPERTY}          { return BUILT_IN_PROPERTY; }
   {APART_FROM}                 { return APART_FROM; }
   {ASIDE_FROM}                 { return ASIDE_FROM; }
   {OUT_OF}                     { return OUT_OF; }

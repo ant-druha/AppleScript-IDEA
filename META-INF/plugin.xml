@@ -7,8 +7,7 @@
     </vendor>
 
     <description><![CDATA[
-      Provides support for writing scripts with AppleScript 2.0
-      </br>
+      Provides support for writing scripts with AppleScript 2.0<br>
       <b>Requires Xcode application installed</b>
     ]]></description>
 

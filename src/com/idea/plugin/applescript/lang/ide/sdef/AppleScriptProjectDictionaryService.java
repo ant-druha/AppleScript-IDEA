@@ -33,14 +33,14 @@ public class AppleScriptProjectDictionaryService {
   }
 
   /**
-   * @return returns available by default terminology (Standard Additions)
+   * @return returns by default available in all scripts terminology (Scripting Additions)
    */
   @Nullable
-  public ApplicationDictionary getStandardAdditionsTerminology() {
-    String stdDictionaryName = ApplicationDictionary.STANDARD_ADDITIONS_LIBRARY;
-    ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
+  public ApplicationDictionary getScriptingAdditionsTerminology() {
+    String additionsDictionaryName = ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY;
+    ApplicationDictionary stdDic = getDictionary(additionsDictionaryName);
     if (stdDic == null) {
-      stdDic = createDictionary(stdDictionaryName);
+      stdDic = createDictionary(additionsDictionaryName);
     }
     return stdDic;
   }
@@ -50,7 +50,7 @@ public class AppleScriptProjectDictionaryService {
    */
   @Nullable
   public ApplicationDictionary getCocoaStandardTerminology() {
-    String stdDictionaryName = ApplicationDictionary.COCOA_STANDARD_LIBRARY_NAME;
+    String stdDictionaryName = ApplicationDictionary.COCOA_STANDARD_LIBRARY;
     ApplicationDictionary stdDic = getDictionary(stdDictionaryName);
     if (stdDic == null) {
       stdDic = createDictionary(stdDictionaryName);

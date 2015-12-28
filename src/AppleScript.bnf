@@ -897,7 +897,8 @@ continue_statement ::= continue expression
 
 
 //===COMMANDS===
-private appleScriptCommandExpression ::= getCommandExpression|runCommandExpression|countCommandExpression|errorCommandExpression
+private appleScriptCommandExpression ::= getCommandExpression|runCommandExpression|countCommandExpression|
+errorCommandExpression|logCommandExpression
 //|runCommandExpression|errorCommandExpression//|setCommandSyntaxReturning
 
 // standard built-in AppleScript commands
@@ -923,14 +924,14 @@ getCommandExpression ::= get expression
 runCommandExpression ::= (run [script] [script_object_variable])|(run [referenceToApplicationVar]) // application command syntax
 private referenceToApplicationVar ::= applicationReference
 private script_object_variable ::= referenceIdentifier
+// log - is a built into Script Editor command http://stackoverflow.com/a/21341372/2000323
+logCommandExpression ::= log expression
 //scriptObjectVariable A variable identifier whose value is a script object. This parameter is optional if the
 // Run command is used within an appropriate Tell statement. Class: Script
 
 //>>Set<<
 //The AppleScript command assigns one or more values to one or more variables. It can also be used to share
 // data among lists, records, or script objects—see the Notes section below and “Data Sharing” (page 206).
-//private cmd_set_statement ::= setCommandSyntaxSet|setCommandSyntaxReturning
-
 //todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
 //to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
 //see com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
