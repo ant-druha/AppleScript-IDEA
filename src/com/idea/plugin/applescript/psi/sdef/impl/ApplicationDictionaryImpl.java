@@ -1,8 +1,8 @@
 package com.idea.plugin.applescript.psi.sdef.impl;
 
 import com.btr.proxy.util.PListParser;
+import com.idea.plugin.applescript.AppleScriptIcons;
 import com.idea.plugin.applescript.AppleScriptLanguage;
-import com.idea.plugin.applescript.lang.AppleScriptComponentType;
 import com.idea.plugin.applescript.lang.ide.AppleScriptDocHelper;
 import com.idea.plugin.applescript.lang.sdef.*;
 import com.idea.plugin.applescript.lang.sdef.parser.SDEF_Parser;
@@ -47,7 +47,6 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 
   @NotNull private final Project project;
   @NotNull private final VirtualFile dictionaryFile;
-  //cachedLibraryXmlFile is needed for navigation from PSI (getParent()) if dictionary was created from .app bundle
   @Nullable private File applicationBundleFile;
   @Nullable private Icon applicationIcon;
   @NotNull private final List<PsiFile> includedFiles = new ArrayList<PsiFile>();
@@ -85,6 +84,11 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
             ". " + "Classes: " + dictionaryClassMap.size() + "\n");
   }
 
+  /**
+   * Set icon for dictionary as application icon
+   *
+   * @param applicationBundleFile {@link File} of the application bundle
+   */
   private void setIconFromBundle(@NotNull File applicationBundleFile) {
     try {
       final String appUrl = applicationBundleFile.getPath();
@@ -121,7 +125,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
 //      boolean isHiDpi = JBUI.isHiDPI();
 //      boolean retina = UIUtil.isRetina();
 //      UIUtil.drawImage();
-      int index = list.size() > 1 ? 1 : 0;
+      int index = list.size() > 1 ? list.size() - 1 : 0;
       int size = JBUI.scale(13);
       Image img = list.get(index).getScaledInstance(size, size, Image.SCALE_SMOOTH);
       applicationIcon = new JBImageIcon(img);
@@ -273,9 +277,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Nullable
   @Override
   public Icon getIcon(boolean open) {
-    if (applicationIcon != null) return applicationIcon;
-    AppleScriptComponentType componentType = AppleScriptComponentType.typeOf(this);
-    return componentType != null ? componentType.getIcon() : null;
+    return applicationIcon != null ? applicationIcon : AppleScriptIcons.OPEN_DICTIONARY;
   }
 
   @Override

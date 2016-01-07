@@ -24,11 +24,11 @@ import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
  */
 public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
-  private static final Key<Boolean> IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS =
+  private static final Key<Boolean> PARSING_COMMAND_HANDLER_CALL_PARAMETERS =
           Key.create("applescript.parsing.command.handler.parameters");
-  private static final Key<Boolean> IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT =
+  private static final Key<Boolean> PARSING_COMMAND_ASSIGNMENT_STATEMENT =
           Key.create("applescript.parsing.assignment.statement");
-  private static final Key<Boolean> IS_PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER =
+  private static final Key<Boolean> PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER =
           Key.create("applescript.parsing.command.handler.boolean.parameter");
 
   // for storing application names inside <tell...end tell> statements
@@ -37,11 +37,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   // for storing application id reference inside <tell...end tell> statements
   public static final Key<Stack<String>> TOLD_APPLICATION_ID_STACK =
           Key.create("applescript.parsing.current.dictionary.id.stack");
-  //  private static final Key<Boolean> IS_PARSING_POSSESSIVE_FORM =
-//          Key.create("applescript.parsing.possessive.form");
-  private static final Key<Boolean> IS_PARSING_TELL_SIMPLE_STATEMENT =
+  private static final Key<Boolean> PARSING_TELL_SIMPLE_STATEMENT =
           Key.create("applescript.parsing.tell.simple.statement");
-  private static final Key<Boolean> IS_PARSING_TELL_COMPOUND_STATEMENT =
+  private static final Key<Boolean> PARSING_TELL_COMPOUND_STATEMENT =
           Key.create("applescript.parsing.tell.simple.statement");
   private static final Key<Boolean> APPLICATION_NAME_PUSHED =
           Key.create("applescript.parsing.tell.statement.application.name.pushed");
@@ -60,7 +58,18 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static final Key<Boolean> IS_PARSING_USING_TERMS_FROM_STATEMENT =
           Key.create("applescript.parsing.is.use.statement.used");
 
-  private static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l, @NotNull StringHolder parsedName,
+  /**
+   * @param b                        {@link PsiBuilder}
+   * @param l                        level deep
+   * @param parsedName               holder for parsed command name string
+   * @param toldApplicationName      name of the application to which all messages are sent by default (it's
+   *                                 terminology is queried first)
+   * @param areThereUseStatements    if there are use statements in script
+   * @param applicationsToImportFrom list of application names to use for dictionary terms lookup
+   * @return true if rule matches, false otherwise
+   */
+  private static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l,
+                                                         @NotNull StringHolder parsedName,
                                                          @NotNull String toldApplicationName,
                                                          boolean areThereUseStatements,
                                                          @Nullable Set<String> applicationsToImportFrom) {
@@ -70,6 +79,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // TODO: 12/1/2015 could be command with name which does not exist in this target app but in stanradr additions or
     // CocoaStandard dictionary or in use application dictionary. write all code here?? to find the longest
     // dictionary term
+    //if there are use statements, do not check terms from scripting additions library (they should be explicitly
+    // imported in this case)
     boolean checkStdLib = !areThereUseStatements;
     ParsableScriptSuiteRegistryHelper.ensureKnownApplicationInitialized(toldApplicationName);
     r = parseCommandNameForApplication(b, l + 1, parsedName, toldApplicationName, checkStdLib);
@@ -103,13 +114,19 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean parseCommandHandlerCallExpression(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseCommandHandlerCallExpression")) return false;
     boolean r;
+    //return false if next is a new line
     if (nextTokenIs(b, NLS)) return false;
-
+    final String s = b.getTokenText();
+    //return false if next token is null or not allowed to use in AppleScript identifiers
+    if (s == null || s.length() == 0 || !AppleScriptNames.isIdentifierStart(s.charAt(0))) return false;
     StringHolder parsedCommandName = new StringHolder();
+    //get current application name to which messages will be sent in the current block
     String toldApplicationName = getTargetApplicationName(b);
+    //if there are <use statements> present in the script
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImport = null;
     if (areThereUseStatements) {
+      //adding list of application names from use statements
       applicationsToImport = b.getUserData(USED_APPLICATION_NAMES);
     }
     PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Command Handler Call Expression>");
@@ -139,7 +156,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "parseApplicationHandlerDefinitionSignature")) return false;
     boolean r;
     if (b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) != Boolean.TRUE
-            || b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) return false;
+            || b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) return false;
 
     StringHolder parsedCommandName = new StringHolder();
     String toldApplicationName = getTargetApplicationName(b);
@@ -218,8 +235,18 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return toldApplicationName;
   }
 
-  private static boolean parseCommandNameForApplication(PsiBuilder b, int l, StringHolder parsedName,
-                                                        @NotNull String applicationName, boolean checkStdLib) {
+  /**
+   * @param b               {@link PsiBuilder}
+   * @param l               level deep
+   * @param parsedName      holder for parsed term string
+   * @param applicationName name of the application, which dictionary terms will be queried
+   * @param checkStdLib     whether to check in scripting additions library if no terms were found in this application
+   * @return true if command name was parsed
+   */
+  private static boolean parseCommandNameForApplication(PsiBuilder b, int l,
+                                                        StringHolder parsedName,
+                                                        @NotNull String applicationName,
+                                                        boolean checkStdLib) {
     if (!recursion_guard_(b, l, "parseCommandNameForApplication")) return false;
     boolean r = false;
     parsedName.value = "";
@@ -230,11 +257,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
             parsedName.value);
     String nextTokenText = parsedName.value;
     while (b.getTokenText() != null && commandWithPrefixExists) {
-      b.advanceLexer(); //advance lexer in any case
+      b.advanceLexer(); //advance lexer to the next token
       nextTokenText += " " + b.getTokenText();
       commandWithPrefixExists = ParsableScriptSuiteRegistryHelper
               .isCommandWithPrefixExist(applicationName, nextTokenText);
       if (commandWithPrefixExists) {
+        //if command with prefix exists, append token text
         parsedName.value = nextTokenText;
       } else if (ParsableScriptSuiteRegistryHelper.isApplicationCommand(applicationName, parsedName.value)) {
         //if there is std command with longer prefix exists do not parse it here
@@ -247,12 +275,19 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   // of? directParameterValue? commandParameters?
-  public static boolean parseParametersForCommand(PsiBuilder b, int l,
-                                                  @NotNull final AppleScriptCommand parsedCommandDefinition) {
+
+  /**
+   * @param b                       {@link PsiBuilder}
+   * @param l                       level deep
+   * @param parsedCommandDefinition command for which pars the parameters
+   * @return true if rule matches, false otherwise
+   */
+  private static boolean parseParametersForCommand(PsiBuilder b, int l,
+                                                   @NotNull final AppleScriptCommand parsedCommandDefinition) {
     if (!recursion_guard_(b, l, "parseParametersForCommand")) return false;
     boolean r = true;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse command handler call parameters>");
-    b.putUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS, true);
+    b.putUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS, true);
     if (parsedCommandDefinition.getDirectParameter() != null) {
       consumeToken(b, OF); //not mandatory
       r = parseCommandDirectParameterValue(b, l + 1, parsedCommandDefinition.getDirectParameter());
@@ -261,14 +296,22 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       r = r && parseCommandParameters(b, l + 1, parsedCommandDefinition);
     }
     exit_section_(b, l, m, null, r, false, null);
-    b.putUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS, false);
+    b.putUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS, false);
     return r;
   }
 
+  /**
+   * Call handler with labeled parameters in grammar not allowed in assignment, tell statements or when parsing
+   * application command parameters
+   *
+   * @param b {@link PsiBuilder}
+   * @param l level deep
+   * @return true if handlerLabeledParametersCall is currently allowed
+   */
   public static boolean isHandlerLabeledParametersCallAllowed(PsiBuilder b, int l) {
-    return b.getUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE
-            && b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) != Boolean.TRUE
-            && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
+    return b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE
+            && b.getUserData(PARSING_TELL_SIMPLE_STATEMENT) != Boolean.TRUE
+            && b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
   }
 
   public static boolean isTreePrevSimpleReference(PsiBuilder b, int l) {
@@ -279,9 +322,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean parseAssignmentStatementInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseAssignmentStatementInner")) return false;
     boolean r;
-    b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, true);
+    b.putUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT, true);
     r = AppleScriptParser.assignmentStatement(b, l + 1);
-    b.putUserData(IS_PARSING_COMMAND_ASSIGNMENT_STATEMENT, false);
+    b.putUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT, false);
     return r;
   }
 
@@ -291,9 +334,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r;
     boolean pushStateBefore = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
     b.putUserData(APPLICATION_NAME_PUSHED, false);
-    b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, true);
+    b.putUserData(PARSING_TELL_SIMPLE_STATEMENT, true);
     r = AppleScriptParser.tellSimpleStatement(b, l + 1);
-    b.putUserData(IS_PARSING_TELL_SIMPLE_STATEMENT, false);
+    b.putUserData(PARSING_TELL_SIMPLE_STATEMENT, false);
     popApplicationNameIfWasPushed(b);
     b.putUserData(APPLICATION_NAME_PUSHED, pushStateBefore);
     return r;
@@ -308,6 +351,15 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
   }
 
+  /**
+   * Add application name from this &lt;use statement&gt; to the set of application names from dictionary of which to
+   * import terms if importing condition is not explicitly prohibited by syntax
+   *
+   * @param b           {@link PsiBuilder}
+   * @param l           level deep
+   * @param isImporting whether to make terms from this application's dictionary available in the script
+   * @return true if this is application reference
+   */
   public static boolean parseUsedApplicationNameExternal(PsiBuilder b, int l, Parser isImporting) {
     if (!recursion_guard_(b, l, "parseUsedApplicationNameExternal")) return false;
     boolean r;
@@ -343,6 +395,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  /**
+   * If there is at least one &lt;use statement&gt; in script, set WAS_USE_STATEMENT_USED flag to true
+   */
   public static boolean parseUseStatement(PsiBuilder b, int l, Parser useStatement) {
     if (!recursion_guard_(b, l, "parseUseStatement")) return false;
     boolean r = useStatement.parse(b, l + 1);
@@ -351,6 +406,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  /**
+   * Checks if inside &lt;tell statement&gt; - first check it's terms
+   */
   public static boolean parseRepeatStatement(PsiBuilder b, int l, Parser repeatStatement) {
     if (!recursion_guard_(b, l, "parseRepeatStatement")) return false;
     boolean r;
@@ -368,24 +426,37 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
-
-  public static boolean parseTellCompoundStatementInner(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "parseTellCompoundStatementInner")) return false;
+  /**
+   * If rule matches, removes added application name from the name stack which was used for parsing application terms
+   *
+   * @param b {@link PsiBuilder}
+   * @param l level deep
+   * @return true if rule matches
+   */
+  public static boolean parseTellCompoundStatement(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseTellCompoundStatement")) return false;
     if (!nextTokenIs(b, TELL)) return false;
     boolean r;
     boolean pushStateBefore = b.getUserData(APPLICATION_NAME_PUSHED) == Boolean.TRUE;
-    boolean compoundStateBefore = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
+    boolean compoundStateBefore = b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
     b.putUserData(APPLICATION_NAME_PUSHED, false);
-    b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, true);
+    b.putUserData(PARSING_TELL_COMPOUND_STATEMENT, true);
 
     r = AppleScriptParser.tellCompoundStatement(b, l + 1);
 
-    b.putUserData(IS_PARSING_TELL_COMPOUND_STATEMENT, compoundStateBefore);
+    b.putUserData(PARSING_TELL_COMPOUND_STATEMENT, compoundStateBefore);
     popApplicationNameIfWasPushed(b);
     b.putUserData(APPLICATION_NAME_PUSHED, pushStateBefore);
     return r;
   }
 
+  /**
+   * If rule matches, removes added application name from the name stack which was used for parsing application terms
+   *
+   * @param b {@link PsiBuilder}
+   * @param l level deep
+   * @return true if rule matches
+   */
   public static boolean parseUsingTermsFromStatement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseUsingTermsFromStatement")) return false;
     boolean r;
@@ -396,15 +467,16 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
     r = AppleScriptParser.usingTermsFromStatement(b, l + 1);
 
-//    if (r) {
     popApplicationNameIfWasPushed(b);
-//    }
     b.putUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT, oldParseUsingTermsState);
     b.putUserData(APPLICATION_NAME_PUSHED, oldPushedState);
 
     return r;
   }
 
+  /**
+   * Adds scripting additions library to the application name stack which is used for parsing application terms
+   */
   public static boolean pushStdLibrary(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "pushStdLibrary")) return false;
     boolean r;
@@ -453,6 +525,10 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  /**
+   * @return true if this is the application reference of a &lt;tell&gt; or &lt;using terms
+   * from&gt; statements
+   */
   public static boolean isTellStatementStart(PsiBuilder b, int l) {
     if (!isInTellStatement(b, l + 1)) return false;
     int i = -1;
@@ -467,14 +543,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
             && prevElem == FROM;
   }
 
-  public static boolean isInTellStatement(PsiBuilder b, int l) {
-    return (b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) == Boolean.TRUE && nextTokenIs(b, TO))
-            || (b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE
-            && b.getUserData(IS_PARSING_TELL_SIMPLE_STATEMENT) == Boolean.FALSE)
+  private static boolean isInTellStatement(PsiBuilder b, int l) {
+    return (b.getUserData(PARSING_TELL_SIMPLE_STATEMENT) == Boolean.TRUE && nextTokenIs(b, TO))
+            || (b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE
+            && b.getUserData(PARSING_TELL_SIMPLE_STATEMENT) == Boolean.FALSE)
             || b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) == Boolean.TRUE;
   }
 
-  public static Stack<String> pushTargetApplicationName(PsiBuilder b, @NotNull String applicationNameString) {
+  private static Stack<String> pushTargetApplicationName(PsiBuilder b, @NotNull String applicationNameString) {
     Stack<String> dictionaryNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
     if (dictionaryNameStack == null) {
       dictionaryNameStack = new Stack<String>();
@@ -552,13 +628,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     boolean r;
     //need to rollback with/without if there is no match
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Boolean Parameter>");
-    b.putUserData(IS_PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER, true);
+    b.putUserData(PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER, true);
     r = consumeToken(b, WITH);
     if (!r) r = consumeToken(b, WITHOUT);
     if (!r) r = consumeToken(b, LAND); //for cases like: '...with regexp and all occurrences without case sensitive'
     r = r && parseCommandParameterSelector(b, l + 1, command, parsedParameterSelector);
     exit_section_(b, l, m, null, r, false, null);
-    b.putUserData(IS_PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER, false);
+    b.putUserData(PARSING_COMMAND_HANDLER_BOOLEAN_PARAMETER, false);
     return r;
   }
 
@@ -613,7 +689,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     exit_section_(b, l, m, COMMAND_PARAMETER_SELECTOR, r, false, null);
     return r;
-
   }
 
   private static boolean parseStdLibCommandName(PsiBuilder b, int l, StringHolder parsedName) {
@@ -637,7 +712,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     exit_section_(b, m, null, r);
     return r;
-
   }
 
   private static boolean parseCommandDirectParameterValue(PsiBuilder b, int l,
@@ -647,7 +721,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    String parameterTypeSpecifier = parameter.getTypeSpecifier();
     // if we are inside tell compound statement=> direct parameter is optional
     // so it may be wrongly detected instead of parameter selector. So, checking if it is a parameter selector first
-    boolean isTellCompound = b.getUserData(IS_PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
+    boolean isTellCompound = b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE;
     if (isTellCompound || parameter.isOptional()) {
       AppleScriptCommand myCmd = parameter.getCommand();
       for (String paramName : myCmd.getParameterNames()) {
@@ -694,7 +768,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean parseCommandParameterSelector(PsiBuilder b, int l) {
     return false;
-//    return parseDeclaredNameInner(b, l, DeclaredType.SDEF_COMMAND_PARAMETER_SELECTOR);
   }
 
   public static boolean parseDictionaryCommandName(PsiBuilder b, int l) {
@@ -720,25 +793,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return parseDictionaryCommandName(b, l + 1);
   }
 
-
-  public static boolean parseObjectReferencePointer(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "objectReferencePointer_0_0")) return false;
-    boolean r1, r2 = false;
-    PsiBuilder.Marker m = enter_section_(b);
-    r1 = consumeToken(b, OF);
-    if (!r1) r1 = consumeToken(b, IN);
-    if (!r1) r2 = consumeToken(b, APS);
-//    b.putUserData(IS_PARSING_POSSESSIVE_FORM, r2);
-    exit_section_(b, m, null, r1 || r2);
-    return r1 || r2;
-  }
-
-  public static boolean parseObjectReference(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "parseObjectReference")) return false;
-    boolean r = AppleScriptParser.objectReference(b, l + 1);
-//    b.putUserData(IS_PARSING_POSSESSIVE_FORM, false);
-    return r;
-  }
 
   public static boolean parseDictionaryPropertyName(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseDictionaryPropertyInner")) return false;
@@ -769,6 +823,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return false;
   }
 
+  /**
+   * @param b                     {@link PsiBuilder}
+   * @param l                     level deep
+   * @param isPluralForm          if parsing plural form of a class name
+   * @param checkForUseStatements parser rule for the check if there are use statements in the script
+   * @return true in case rule matches, false otherwise
+   */
   public static boolean parseDictionaryClassName(PsiBuilder b, int l, final boolean isPluralForm,
                                                  @NotNull Parser checkForUseStatements) {
     if (!recursion_guard_(b, l, "parseDictionaryClassName")) return false;
@@ -793,14 +854,19 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
             && b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
   }
 
+  /**
+   * @param b {@link PsiBuilder}
+   * @param l level deep
+   * @return true if parsed token(s) is the property of the scripting additions library
+   */
   private static boolean tryToParseStdProperty(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "tryToParseStdProperty")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b);
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
-    boolean propertyWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdPropertyWithPrefixExist
-            (currentTokenText.value);
+    boolean propertyWithPrefixExists = ParsableScriptSuiteRegistryHelper
+            .isStdPropertyWithPrefixExist(currentTokenText.value);
     String nextTokenText = currentTokenText.value;
     while (b.getTokenText() != null && propertyWithPrefixExists) {
       b.advanceLexer(); //advance lexer in any case
@@ -817,6 +883,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  /**
+   * @param b               {@link PsiBuilder}
+   * @param l               level deep
+   * @param applicationName name of the application
+   * @return true if parsed token(s) is the property of the specified application
+   */
   private static boolean tryToParseApplicationProperty(PsiBuilder b, int l, @NotNull String applicationName) {
     if (!recursion_guard_(b, l, "tryToParseApplicationProperty")) return false;
     boolean r = false;
@@ -915,6 +987,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return !propertyExists && r;
   }
 
+  /**
+   * @param b                {@link PsiBuilder}
+   * @param l                Level deep
+   * @param currentTokenText Text string of the token being parsed
+   * @param isPluralForm     Whether we are parsing class name in plural form
+   * @return true if class name parsed
+   */
   private static boolean parseStdClassName(PsiBuilder b, int l, StringHolder currentTokenText, boolean isPluralForm) {
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
     if (isPluralForm) {
@@ -986,10 +1065,6 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   public static boolean parseDictionaryConstant(PsiBuilder b, int l) {
-    return parseDictionaryConstantInner(b, l);
-  }
-
-  private static boolean parseDictionaryConstantInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
     boolean r;
     String toldApplicationName = getTargetApplicationName(b);
@@ -998,7 +1073,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // 'end' tell/repeat etc is not detected
     // dictionary constant could appear only if we are inside dictionary command call
     if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)
-            && b.getUserData(IS_PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE)
+            && b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE)
       return false;
 
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;

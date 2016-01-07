@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
- * Stores information about generated dictionary files for applications
+ * This {@link ApplicationComponent} stores information about generated dictionary files for applications
  */
 @State(name = AppleScriptSystemDictionaryRegistryComponent.COMPONENT_NAME,
         storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml")})
@@ -24,7 +24,9 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
   private static final Logger LOG = Logger.getInstance("#" +
           AppleScriptSystemDictionaryRegistryComponent.class.getName());
   public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistryComponent";
+  // information about dictioaries for the application which is saved in settings
   private final List<DictionaryInfo.State> dictionariesPersistedInfo = new ArrayList<DictionaryInfo.State>();
+  // application names which do not support AppleScript commands
   private final SmartList<String> notScriptableApplications = new SmartList<String>();
 
 
@@ -36,6 +38,9 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     public final List<String> notScriptableApplications = new SmartList<String>();
   }
 
+  /**
+   * @return {@State} class, which stores current information about all {@link DictionaryInfo}
+   */
   @NotNull
   @Override
   public State getState() {
@@ -74,7 +79,7 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
 
   @Override
   public void initComponent() {
-    registerSdefExtension();
+    registerSdefExtension();//registering "sdef" dictionary file extension for xml file type
   }
 
   private void registerSdefExtension() {

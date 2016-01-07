@@ -10,6 +10,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
+/**
+ * Information about the application and it's generated dictionary file
+ */
 public class DictionaryInfo {
   @NotNull private final String applicationName;
   @NotNull private VirtualFile dictionaryFile;

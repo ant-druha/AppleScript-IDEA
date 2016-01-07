@@ -240,9 +240,16 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
     }
   }
 
-  public static void collectAllComponentsFromDictionary(@Nullable ApplicationDictionary importedDict,
-                                                        @NotNull Collection<DictionaryComponent> dictionaryComponents,
-                                                        boolean withCocoaStdLibFiltering) {
+  /**
+   * Gathers all term declaratiopns from the dictionary
+   *
+   * @param importedDict             dictionary to collect declarations from
+   * @param dictionaryComponents     resulted list
+   * @param withCocoaStdLibFiltering if true - do not add the terms which are present in Standard Terminology dictionary
+   */
+  private static void collectAllComponentsFromDictionary(@Nullable ApplicationDictionary importedDict,
+                                                         @NotNull Collection<DictionaryComponent> dictionaryComponents,
+                                                         boolean withCocoaStdLibFiltering) {
     if (importedDict == null) return;
     if (withCocoaStdLibFiltering) {
       AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager

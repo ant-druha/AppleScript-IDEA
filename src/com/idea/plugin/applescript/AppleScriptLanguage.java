@@ -12,7 +12,6 @@ public class AppleScriptLanguage extends Language {
 
     private AppleScriptLanguage() {
         super("AppleScript");
-
     }
 
     @Nullable

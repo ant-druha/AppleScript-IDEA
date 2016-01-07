@@ -465,6 +465,9 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return false;
   }
 
+  /**
+   * initialization of Standard Terminology and installed Scripting Addition libraries
+   */
   private void initStandardSuite() {
     try {
       if (SystemInfo.isMac) {
@@ -591,10 +594,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       out.close();
       return createAndInitializeInfo(mergedFile, libName);
     } catch (JDOMException e) {
+      LOG.warn("Can not parse scripting additions file: " + e.getMessage());
       e.printStackTrace();
     } catch (IOException e) {
+      LOG.warn("Can not merge scripting additions: " + e.getMessage());
       e.printStackTrace();
     } catch (Exception e) {
+      LOG.warn("Can not merge scripting additions: " + e.getMessage());
       e.printStackTrace();
     }
     return null;
@@ -636,8 +642,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         } else {
           cmdName = "sdef";
         }
-        fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName, applicationIoFile.getPath(),
-                false);
+        fileGenerated = doGenerateDictionaryFile(applicationName, serializePath, cmdName, applicationIoFile.getPath());
       }
     } catch (NotScriptableApplicationException e) {
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
@@ -664,15 +669,22 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return null;
   }
 
+  /**
+   * @param applicationName name of the application for which dictionary will be generated
+   * @param serializePath   file path of the generated dictionary
+   * @param cmdName         command name to use for dictionary file generation
+   * @param appFilePath     path of the application bundle (or dictionary file if generating from already existing
+   *                        dictionary file)
+   * @return true if file was generated successfully
+   * @throws NotScriptableApplicationException if application does not support AppleScript scripting
+   */
   private boolean doGenerateDictionaryFile(@NotNull final String applicationName,
                                            @NotNull final String serializePath,
                                            @NotNull final String cmdName,
-                                           @NotNull final String appFilePath,
-                                           boolean appendFile) throws NotScriptableApplicationException {
+                                           @NotNull final String appFilePath) throws NotScriptableApplicationException {
     try {
-      final String redirectSign = appendFile ? ">> " : "> ";
       final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
-              redirectSign + serializePath};
+              "> " + serializePath};
       LOG.info("executing command: " + Arrays.toString(shellCommand));
       Integer exitCode;
       long execStart = System.currentTimeMillis();
@@ -693,7 +705,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   private boolean copyDictionaryFileToCacheDir(@NotNull final String applicationName,
-                                               @NotNull final File applicationVFile,
+                                               @NotNull final File applicationIoFile,
                                                @NotNull final File targetFile,
                                                final boolean rewrite) {
     if (!targetFile.getParentFile().exists()) return false;
@@ -705,10 +717,10 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
             if (targetFile.exists() && targetFile.delete()) {
               LOG.debug("Existing target file deleted: " + targetFile);
             }
-            Files.copy(applicationVFile, targetFile);
+            Files.copy(applicationIoFile, targetFile);
           } catch (IOException e) {
+            LOG.error("Failed to move file " + applicationIoFile + " to cache directory: " + targetFile);
             e.printStackTrace();
-            LOG.error("Failed to move file " + applicationVFile + " to cache directory: " + targetFile);
           }
         }
       });

@@ -15,14 +15,17 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * class for managing and quereing dictionaries for the project
+ */
 public class AppleScriptProjectDictionaryService {
 
   private static final Logger LOG = Logger.getInstance("#" +
           AppleScriptProjectDictionaryService.class.getName());
 
-
   @NotNull private final Project project;
   @NotNull private final AppleScriptSystemDictionaryRegistryService dictionaryRegistryService;
+  // Dictionaries, which were created for this project in current session
   private final Map<String, ApplicationDictionary> dictionaryMap = new HashMap<String, ApplicationDictionary>();
 
   public AppleScriptProjectDictionaryService(@NotNull Project project,

@@ -255,15 +255,15 @@ repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopVal
                              end [repeat] {pin=4}
 
 //todo expression does not always work.. (because of 'to' )
-private stepValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
-private stopValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
-private startValue ::= integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
+private stepValue ::= expression
+private stopValue ::= (referenceIdentifier &by) | expression //integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
+private startValue ::= (referenceIdentifier &to) | expression
 private loopVariable ::= directParameterDeclaration
 
 repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression sep
                          blockBody?
                          end [repeat] {pin=4}
-private listOrReferenceExpression ::= expression//listLiteralExpression|objectReferenceWrapper
+private listOrReferenceExpression ::= expression
 
 errorCommandExpression ::= error [errorMessage] [number errorNumber]
                                  [from offendingObject]
@@ -296,10 +296,9 @@ private offendingObjectVar ::= directParameterDeclaration
 private resultListVar ::= directParameterDeclaration
 private expectedTypeVar ::= directParameterDeclaration
 
-private tellStatement ::= parseTellSimpleStatement|parseTellCompoundStatement
+private tellStatement ::= parseTellSimpleStatement|<<parseTellCompoundStatement>>
 
-private parseTellCompoundStatement ::= <<parseTellCompoundStatementInner>>
-//see <<parseTellCompoundStatementInner>>
+//see <<parseTellCompoundStatement>>
 tellCompoundStatement ::= tell objectReferenceWrapper sep
                                         blockBody?
                           end [tell] //{pin=6}
@@ -971,7 +970,7 @@ private concatenationExpressionWrapper ::= additiveExpressionWrapper concatenati
 left concatenationExpression ::= BAND additiveExpressionWrapper
 
 private additiveExpressionWrapper ::= multiplicativeExpressionWrapper additiveExpression*
-left additiveExpression ::= (PLUS|MINUS) NLS* multiplicativeExpressionWrapper
+left additiveExpression ::= (PLUS|MINUS) multiplicativeExpressionWrapper
 
 private multiplicativeExpressionWrapper ::= powerExpressionWrapper multiplicativeExpression*
 left multiplicativeExpression ::= multiplicativeOperator NLS* powerExpressionWrapper
@@ -979,7 +978,7 @@ left multiplicativeExpression ::= multiplicativeOperator NLS* powerExpressionWra
 private powerExpressionWrapper ::= objectReferenceWrapper powerExpression*
 left powerExpression ::= POW objectReferenceWrapper
 
-private prefixExpression ::= (prefixOperator NLS* prefixExpression) | valueExpression
+private prefixExpression ::= (prefixOperator prefixExpression) | valueExpression
 private prefixOperator ::= PLUS|MINUS
 
 private objectReferenceWrapper ::= THE_KW? prefixExpression objectReference*//<<parseObjectReference>>*
