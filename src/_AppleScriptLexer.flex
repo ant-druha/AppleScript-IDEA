@@ -1,7 +1,7 @@
-package com.idea.plugin.applescript.lang.lexer;
+package com.intellij.plugin.applescript.lang.lexer;
 import com.intellij.lexer.*;
 import com.intellij.psi.tree.IElementType;
-import static com.idea.plugin.applescript.psi.AppleScriptTypes.*;
+import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
 
 %%
 

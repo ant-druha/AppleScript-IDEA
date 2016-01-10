@@ -1,21 +1,21 @@
 {
 
-  parserClass="com.idea.plugin.applescript.lang.parcer.AppleScriptParser"
-  psiImplUtilClass="com.idea.plugin.applescript.psi.impl.AppleScriptPsiImplUtil"
+  parserClass="com.intellij.plugin.applescript.lang.parcer.AppleScriptParser"
+  psiImplUtilClass="com.intellij.plugin.applescript.psi.impl.AppleScriptPsiImplUtil"
 
-  parserUtilClass="com.idea.plugin.applescript.lang.parser.AppleScriptGeneratedParserUtil" //for external grammar
+  parserUtilClass="com.intellij.plugin.applescript.lang.parser.AppleScriptGeneratedParserUtil" //for external grammar
 
-    extends="com.idea.plugin.applescript.psi.impl.AppleScriptPsiElementImpl"
-    implements="com.idea.plugin.applescript.psi.AppleScriptPsiElement"
+    extends="com.intellij.plugin.applescript.psi.impl.AppleScriptPsiElementImpl"
+    implements="com.intellij.plugin.applescript.psi.AppleScriptPsiElement"
 
     psiClassPrefix="AppleScript"
     psiImplClassSuffix="Impl"
-    psiPackage="com.idea.plugin.applescript.psi"
-    psiImplPackage="com.idea.plugin.applescript.psi.impl"
+    psiPackage="com.intellij.plugin.applescript.psi"
+    psiImplPackage="com.intellij.plugin.applescript.psi.impl"
 
-    elementTypeHolderClass="com.idea.plugin.applescript.psi.AppleScriptTypes"
-    elementTypeClass="com.idea.plugin.applescript.lang.parser.AppleScriptElementType"
-    tokenTypeClass="com.idea.plugin.applescript.lang.lexer.AppleScriptTokenType"
+    elementTypeHolderClass="com.intellij.plugin.applescript.psi.AppleScriptTypes"
+    elementTypeClass="com.intellij.plugin.applescript.lang.parser.AppleScriptElementType"
+    tokenTypeClass="com.intellij.plugin.applescript.lang.lexer.AppleScriptTokenType"
     tokens = [
 
   // NewLines and spaces //
@@ -196,8 +196,8 @@ identifier ::= var_identifier//|appleScriptProperty
 //dictionaryIdentifier ::= var_identifier|builtInClassIdCommon|builtInClassIdNative|script
 
 referenceIdentifier ::= identifier
-{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
- implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
+ implements="com.intellij.plugin.applescript.psi.AppleScriptReferenceElement"}
 
 private topLevelStatement ::= userHandlerDefinition | <<parseUseStatement useStatement>>
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
@@ -221,13 +221,13 @@ exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
+topBlockBody ::= topBlockBodyPart sep (topBlockBodyPart sep)*
+{pin=1}
 blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
-{pin=1
-//recoverWhile=bodyRecover
-}
+{pin=1}
 //private bodyRecover ::= !((end|(on error)|else))
 private topBlockBodyPart ::= (applicationHandlerDefinition|topLevelStatement|statement|expression|RAW_CODE)
-
+{recoverWhile=bodyPartRecover}
 private blockBodyPart ::= statement|expression|RAW_CODE
 {recoverWhile=bodyPartRecover}
 private bodyPartRecover ::= !(sep)
@@ -256,7 +256,7 @@ repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopVal
 
 //todo expression does not always work.. (because of 'to' )
 private stepValue ::= expression
-private stopValue ::= (referenceIdentifier &by) | expression //integerLiteralExpression|referenceIdentifier|parenthesizedExpression|prefixExpression
+private stopValue ::= (referenceIdentifier &by) | expression
 private startValue ::= (referenceIdentifier &to) | expression
 private loopVariable ::= directParameterDeclaration
 
@@ -268,12 +268,12 @@ private listOrReferenceExpression ::= expression
 errorCommandExpression ::= error [errorMessage] [number errorNumber]
                                  [from offendingObject]
                                  [to expectedType]
-                                 [partial result resultList] //{pin=1}
-private resultList ::= expression//listLiteralExpression|referenceIdentifier
-private offendingObject ::= expression//typeSpecifier|objectReferenceWrapper
-private expectedType ::= expression//typeSpecifier|referenceIdentifier
-private errorNumber ::= expression//integerLiteralExpression|referenceIdentifier
-private errorMessage ::= expression//stringLiteralExpression|referenceIdentifier
+                                 [partial result resultList]
+private resultList ::= expression
+private offendingObject ::= (referenceIdentifier &to) | expression
+private expectedType ::= expression
+private errorNumber ::= expression
+private errorMessage ::= expression
 
 tryStatement ::= try sep
                      blockBody?
@@ -285,8 +285,8 @@ tryStatement ::= try sep
 //{recoverWhile=tryRecover}
 
 varDeclarationListPart ::= identifier
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
- implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+ implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 varDeclarationList ::= varAccessDeclaration (COMMA varDeclarationListPart)*
 
@@ -302,7 +302,7 @@ private tellStatement ::= parseTellSimpleStatement|<<parseTellCompoundStatement>
 tellCompoundStatement ::= tell objectReferenceWrapper sep
                                         blockBody?
                           end [tell] //{pin=6}
-{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName /*getApplicationReference*/]}
 //                      {recoverWhile="tellRecover"}
 //tellRecover ::= !(sep)
@@ -329,7 +329,7 @@ withTransactionStatement ::= with transaction [sessionSpecificator] sep
 private sessionSpecificator ::= expression//referenceIdentifier
 
 useStatement ::= useAppleScriptStatement|useApplicationOrScriptStatement|useFrameworkStatement
-{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName useStandardAdditions withImporting]}
 //todo 'considering numeric strings'
 
@@ -360,17 +360,17 @@ private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
 
 //see <<parseUsingTermsFromStatement>>
 usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<pushStdLibrary>>) sep
-                            ((topBlockBodyPart sep) (topBlockBodyPart sep)*)?
+                             topBlockBody?
                             end [using terms from] //{pin=3}
-{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName withImportingStdLibrary]}
 
 //todo: to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
 //and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
 //see also com.jetbrains.python.psi.impl.PyAssignmentStatementImpl#mapToValues
 targetVariable ::= identifier
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 private ifStatement ::= ifCompoundStatement|ifSimpleStatement
 
@@ -404,8 +404,8 @@ builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|/*save
 private scriptingAdditionsFolderConstant ::= SCRIPTING_ADDITIONS
 
 dictionaryConstant ::= <<parseDictionaryConstant>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier"
- implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier"
+ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 // SIMPLE literals
 
@@ -437,8 +437,8 @@ private Length ::= CENTIMETRES|CENTIMETERS|FEET|INCHES|KILOMETRES|KILOMETERS|MET
 //private parseBuiltInClassIdentifierPlural ::= <<parseBuiltInClassIdentifierPluralInner>>
 builtInClassIdentifierPlural ::= BUILT_IN_TYPE_S|scripts
 dictionaryClassIdentifierPlural ::= <<parseDictionaryClassName true useStatementsCondition>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
- implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
+ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 //>>Real class<<
 realLiteralExpression ::= ('.'(DIGITS)(DEC_EXPONENT))|(dec_significand DEC_EXPONENT?)
@@ -533,8 +533,8 @@ propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptPrope
 //todo do not check here for application classes! do it (if necessary) where the rule is used
 dictionaryPropertyName ::=  (<<parseDictionaryPropertyName>> &(of|in|COLON))//(assertPropertyCondition <<parseDictionaryPropertyName>>)
                            |(!dictionaryClassName <<parseDictionaryPropertyName>>)
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
-implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
+implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 private builtInClassProperty ::= stringProperty | BUILT_IN_PROPERTY |
 (&(builtInClassIdentifier of) builtInClassIdentifier) //this way or manually write all possible properties
@@ -581,12 +581,12 @@ left indexReferenceClassForm ::= [index] indexValueExpression
 private useStatementsCondition ::= <<parseCheckForUseStatements>>
 
 dictionaryClassName ::= <<parseDictionaryClassName false useStatementsCondition>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
- implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
+ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
 userClassName ::= identifier
-{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
-implements="com.idea.plugin.applescript.psi.AppleScriptReferenceElement"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
+implements="com.intellij.plugin.applescript.psi.AppleScriptReferenceElement"}
 
 middleElemReference ::= middle typeSpecifier {pin=1}
 
@@ -627,27 +627,27 @@ aReferenceToLiteralExpression ::= REF_OP objectReferenceWrapper //referenceExpre
 //- automatically, when an object is of a different class than was expected for a particular command or operation
 
 private propertyDeclarationStatement ::= scriptPropertyDeclaration//|objectPropertyDeclaration
-//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponentplements="com.idea.plugin.applescript.psi.AppleScriptComponent"
+//{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponentplements="com.intellij.plugin.applescript.psi.AppleScriptComponent"
 
 varAccessDeclaration ::= variableGlobalDeclaration|variableLocalDeclaration
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 //AppleScript propertyDeclaration
 scriptPropertyDeclaration ::= (property|prop) propertyLabelIdentifier COLON propertyInitializerExpression
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 //Object (AppleScript record or application object) propertyDeclaration
 //todo implement getIdentifier() method
 objectPropertyDeclaration ::= propertyLabelIdentifier COLON propertyInitializerExpression
-//{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponentnent"
-//implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+//{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponentnent"
+//implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 //identifier could consist from several identifiers (in case of dictionary property)
 objectTargetPropertyDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializerExpression)
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 private variableGlobalDeclaration ::= global identifier
 private variableLocalDeclaration ::= local identifier
@@ -741,20 +741,20 @@ handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParamet
                                            blockBody?
                                         end [referenceIdentifier]
 //                                        {pin=2}
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"
 methods=[getParameterComponentList]}
 
 labeledParameterDeclarationList ::= ((of|in) directParameterDeclaration)? labeledParameterDeclarationPart*
 {methods=[getComponentList]}
 
 directParameterDeclaration ::= THE_KW? identifier
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? identifier //userParameterVar //todo implement targetVariablePattern here !!!
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 //private handlerNameStrict ::=(referenceIdentifier !handlerParameterLabel)*
 
@@ -790,8 +790,8 @@ private parameterValue ::= expression
 commandParameterSelector ::= <<parseCommandParameterSelector>>
 //see
 commandParameter ::= given? commandParameterSelector parameterValue
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandParameter"
-implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandParameter"
+implements="com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter"}
 //private commandParameters ::= ( ((with|without) commandParameterSelector) | commandParameter )*
 //commandParameterSelector ::= <<parseCommandParameterSelector>>
 
@@ -813,7 +813,7 @@ private parseTellSimpleStatement ::= <<parseTellSimpleStatementInner>>
 //see <<parseTellSimpleStatementInner>>
 tellSimpleStatement ::= tell (referenceIdBeforeParamLabel | objectReferenceWrapper | currentApplicationConstant )
 to (statement | handlerInterleavedParametersCall | expression )
-{implements="com.idea.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator" //may be not needed?
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator" //may be not needed?
  methods=[getApplicationName]}
 
 handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
@@ -822,8 +822,8 @@ handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParam
                                             end [referenceIdentifier]
 //                                            {pin=3  //or Grammar kit will also make formalParameterList as Component
 //                                            }
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 
 //handlerPositionalParametersCallExpression ::= &(referenceIdentifier LPAREN) referenceIdentifier LPAREN argumentList? RPAREN
@@ -848,45 +848,45 @@ recordFormalParameter ::= LCURLY[objectNamedPropertyDeclaration] (COMMA objectNa
 {methods = [getParameters] }
 
 objectNamedPropertyDeclaration ::= propertyLabelIdentifier COLON (formalParameterListPartPattern|propertyInitializerExpression)
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 simpleFormalParameter ::= THE_KW? identifier
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
-implements="com.idea.plugin.applescript.psi.AppleScriptComponent"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
 handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersSelectorPart+ sep
                                                blockBody?
                                              end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
-{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
-implements="com.idea.plugin.applescript.psi.AppleScriptHandler"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
+implements="com.intellij.plugin.applescript.psi.AppleScriptHandler"}
 
 private handlerNamePartRef ::= referenceIdentifier
 
 //todo change to a named element (but is named element - it is not selected by resolver...)
 handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
  //todo or remove component name from here at all, or other things to try (several componentNames etc)?
-{mixin="com.idea.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
-implements="com.idea.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
+implements="com.intellij.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
 
 //this is needed so to redefine getIdentifier for handlerInterleavedParametersSelectorPart
 selectorId ::= identifier
 
 
 handlerInterleavedParametersCall ::= handlerArgument+
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"
-implements="com.idea.plugin.applescript.psi.AppleScriptHandlerCall"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"
+implements="com.intellij.plugin.applescript.psi.AppleScriptHandlerCall"}
 
 handlerArgument ::= argumentSelector userParameterVal
 
 scriptObjectDefinition ::= script scriptObjectName sep
-                                  ((topBlockBodyPart sep) (topBlockBodyPart sep)*)?
+                                  topBlockBody?
                            end [script] //{pin=2}
-{mixin="com.idea.plugin.applescript.psi.impl.AbstractAppleScriptScriptObject"
-implements="com.idea.plugin.applescript.psi.AppleScriptScriptObject"}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptScriptObject"
+implements="com.intellij.plugin.applescript.psi.AppleScriptScriptObject"}
 
 scriptObjectUnnamedDefinition ::= script sep
-                                  ((topBlockBodyPart sep) (topBlockBodyPart sep)*)?
+                                  topBlockBody?
                                  end [script] {pin=4}
 
 private scriptObjectName ::= identifier
@@ -993,13 +993,13 @@ private objectPointer ::= of|in|APS
 private valueExpression ::= primaryExpression filterReference?//coercionExpression*
 
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
- implements="com.idea.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
+ implements="com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall"}
 
 //see parseCommandHandlerCallExpression
 dictionaryCommandName ::= <<parseDictionaryCommandName>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
-implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
+implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 
 private primaryExpression ::=
      literalExpression
@@ -1013,8 +1013,8 @@ private primaryExpression ::=
  |   appleScriptCommandExpression
 
 incompleteCommandHandlerCall ::= <<parseIncompleteCommandCall>>
-{mixin="com.idea.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
-implements="com.idea.plugin.applescript.psi.sdef.DictionaryCompositeName"}
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
+implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 
 // todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
 private referenceExpression ::= applicationReference | referenceForm | referenceIdentifier

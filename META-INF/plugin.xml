@@ -1,6 +1,6 @@
 <idea-plugin version="2">
-    <id>com.idea.plugin.applescript</id>
-    <name>AppleScript Idea</name>
+    <id>com.intellij.plugin.applescript</id>
+    <name>AppleScript IDEA</name>
     <version>0.1</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://bitbucket.org/adernov/applescript-idea/issues">Andrey
@@ -8,7 +8,8 @@
 
     <description><![CDATA[
       Provides support for writing scripts with AppleScript 2.0<br>
-      <b>Requires Xcode application installed</b>
+      <b>Requires Xcode application installed.</b> It is used for application dictionary generation.<br><br>
+      <b>Plugin home page:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">AppleScript IDEA</a>
     ]]></description>
 
     <change-notes><![CDATA[
@@ -26,105 +27,105 @@
     <extensions defaultExtensionNs="com.intellij">
 
         <applicationService
-                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService"
-                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService"/>
+                serviceInterface="com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService"
+                serviceImplementation="com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryService"/>
         <projectService
-                serviceInterface="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService"
-                serviceImplementation="com.idea.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService"/>
+                serviceInterface="com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService"
+                serviceImplementation="com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionaryService"/>
 
-        <fileTypeFactory implementation="com.idea.plugin.applescript.AppleScriptFileTypeFactory"/>
+        <fileTypeFactory implementation="com.intellij.plugin.applescript.AppleScriptFileTypeFactory"/>
 
         <internalFileTemplate name="AppleScript File.scpt"/>
 
-        <!--<createFromTemplateHandler implementation="com.idea.plugin.applescript.lang.ide.actions.AppleScriptCreateFromTemplateHandler"/>-->
+        <!--<createFromTemplateHandler implementation="com.intellij.plugin.applescript.lang.ide.actions.AppleScriptCreateFromTemplateHandler"/>-->
 
         <lang.parserDefinition language="AppleScript"
-                               implementationClass="com.idea.plugin.applescript.lang.parser.AppleScriptParserDefinition"/>
+                               implementationClass="com.intellij.plugin.applescript.lang.parser.AppleScriptParserDefinition"/>
         <lang.syntaxHighlighterFactory key="AppleScript"
-                                       implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterFactory"/>
+                                       implementationClass="com.intellij.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterFactory"/>
         <colorSettingsPage
-                implementation="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptColorsAndFontsPage"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.highlighting.AppleScriptColorsAndFontsPage"/>
 
         <lang.braceMatcher language="AppleScript"
-                           implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptPairedBraceMatcher"/>
+                           implementationClass="com.intellij.plugin.applescript.lang.ide.highlighting.AppleScriptPairedBraceMatcher"/>
 
         <codeInsight.lineMarkerProvider language="AppleScript"
-                                        implementationClass="com.idea.plugin.applescript.lang.ide.highlighting.AppleScriptLineMarkerProvider"/>
+                                        implementationClass="com.intellij.plugin.applescript.lang.ide.highlighting.AppleScriptLineMarkerProvider"/>
 
 
         <lang.formatter language="AppleScript"
-                        implementationClass="com.idea.plugin.applescript.lang.formatter.AppleScriptFormattingModelBuilder"/>
+                        implementationClass="com.intellij.plugin.applescript.lang.formatter.AppleScriptFormattingModelBuilder"/>
 
         <codeStyleSettingsProvider
-                implementation="com.idea.plugin.applescript.lang.formatter.settings.AppleScriptCodeStyleSettingsProvider"/>
+                implementation="com.intellij.plugin.applescript.lang.formatter.settings.AppleScriptCodeStyleSettingsProvider"/>
 
         <langCodeStyleSettingsProvider
-                implementation="com.idea.plugin.applescript.lang.formatter.settings.AppleScriptLanguageCodeStyleSettingsProvider"/>
+                implementation="com.intellij.plugin.applescript.lang.formatter.settings.AppleScriptLanguageCodeStyleSettingsProvider"/>
 
         <lang.commenter language="AppleScript"
-                        implementationClass="com.idea.plugin.applescript.lang.ide.AppleScriptCommenter"/>
+                        implementationClass="com.intellij.plugin.applescript.lang.ide.AppleScriptCommenter"/>
 
         <annotator language="AppleScript"
-                   implementationClass="com.idea.plugin.applescript.lang.ide.annotator.AppleScriptColorAnnotator"/>
+                   implementationClass="com.intellij.plugin.applescript.lang.ide.annotator.AppleScriptColorAnnotator"/>
 
         <lang.documentationProvider language="AppleScript"
-                                    implementationClass="com.idea.plugin.applescript.lang.ide.AppleScriptDocumentationProvider"/>
+                                    implementationClass="com.intellij.plugin.applescript.lang.ide.AppleScriptDocumentationProvider"/>
         <!--not used -->
         <targetElementEvaluator language="AppleScript"
-                                implementationClass="com.idea.plugin.applescript.lang.resolve.AppleScriptTargetElementEvaluator"/>
+                                implementationClass="com.intellij.plugin.applescript.lang.resolve.AppleScriptTargetElementEvaluator"/>
 
-        <!--<gotoDeclarationHandler implementation="com.idea.plugin.applescript.lang.resolve.AppleScriptGotoDeclarationHandler"/>-->
+        <!--<gotoDeclarationHandler implementation="com.intellij.plugin.applescript.lang.resolve.AppleScriptGotoDeclarationHandler"/>-->
 
         <!-- find usages-->
         <lang.findUsagesProvider language="AppleScript"
-                                 implementationClass="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptFindUsagesProvider"/>
+                                 implementationClass="com.intellij.plugin.applescript.lang.ide.findUsages.AppleScriptFindUsagesProvider"/>
         <readWriteAccessDetector
-                implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptReadWriteAccessDetector"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.findUsages.AppleScriptReadWriteAccessDetector"/>
         <usageTypeProvider
-                implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptUsageTypeProvider"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.findUsages.AppleScriptUsageTypeProvider"/>
         <pom.declarationSearcher
-                implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerDeclarationSearcher"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.search.AppleScriptHandlerDeclarationSearcher"/>
         <referencesSearch
-                implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptHandlerReferencesSearch"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.search.AppleScriptHandlerReferencesSearch"/>
 
         <referencesSearch
-                implementation="com.idea.plugin.applescript.lang.ide.search.AppleScriptDictionaryComponentReferencesSearch"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.search.AppleScriptDictionaryComponentReferencesSearch"/>
 
         <lang.refactoringSupport language="AppleScript"
-                                 implementationClass="com.idea.plugin.applescript.lang.ide.refactoring.AppleScriptRefactoringSupportProvider"/>
+                                 implementationClass="com.intellij.plugin.applescript.lang.ide.refactoring.AppleScriptRefactoringSupportProvider"/>
 
         <!-- rename refactoring -->
         <lang.namesValidator language="AppleScript"
-                             implementationClass="com.idea.plugin.applescript.lang.util.AppleScriptNamesValidator"/>
+                             implementationClass="com.intellij.plugin.applescript.lang.util.AppleScriptNamesValidator"/>
 
 
         <elementDescriptionProvider
-                implementation="com.idea.plugin.applescript.lang.ide.findUsages.AppleScriptElementDescriptionProvider"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.findUsages.AppleScriptElementDescriptionProvider"/>
 
         <lang.refactoringSupport language="AppleScript"
-                                 implementationClass="com.idea.plugin.applescript.lang.ide.refactoring.AppleScriptElementRefactoringSupportProvider"/>
+                                 implementationClass="com.intellij.plugin.applescript.lang.ide.refactoring.AppleScriptElementRefactoringSupportProvider"/>
         <lang.psiStructureViewFactory language="AppleScript"
-                                      implementationClass="com.idea.plugin.applescript.lang.ide.structure.AppleScriptStructureViewFactory"/>
+                                      implementationClass="com.intellij.plugin.applescript.lang.ide.structure.AppleScriptStructureViewFactory"/>
         <lang.structureViewExtension
-                implementation="com.idea.plugin.applescript.lang.ide.structure.AppleScriptStructureViewExtension"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.structure.AppleScriptStructureViewExtension"/>
 
         <completion.contributor language="AppleScript"
-                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.CommandCompletionContributor"/>
+                                implementationClass="com.intellij.plugin.applescript.lang.ide.completion.CommandCompletionContributor"/>
 
         <completion.contributor language="AppleScript"
-                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.ApplicationNameCompletionContributor"/>
+                                implementationClass="com.intellij.plugin.applescript.lang.ide.completion.ApplicationNameCompletionContributor"/>
 
         <completion.contributor language="AppleScript"
-                                implementationClass="com.idea.plugin.applescript.lang.ide.completion.KeywordCompletionContributor"/>
+                                implementationClass="com.intellij.plugin.applescript.lang.ide.completion.KeywordCompletionContributor"/>
         <defaultLiveTemplatesProvider
-                implementation="com.idea.plugin.applescript.lang.ide.AppleScriptLiveTemplatesProvider"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.AppleScriptLiveTemplatesProvider"/>
 
-        <liveTemplateContext implementation="com.idea.plugin.applescript.lang.ide.AppleScriptTemplateContextType"/>
+        <liveTemplateContext implementation="com.intellij.plugin.applescript.lang.ide.AppleScriptTemplateContextType"/>
 
         <!-- Run Configuration-->
-        <configurationType implementation="com.idea.plugin.applescript.lang.ide.run.AppleScriptConfigurationType"/>
+        <configurationType implementation="com.intellij.plugin.applescript.lang.ide.run.AppleScriptConfigurationType"/>
         <runConfigurationProducer
-                implementation="com.idea.plugin.applescript.lang.ide.run.AppleScriptConfigurationProducer"/>
+                implementation="com.intellij.plugin.applescript.lang.ide.run.AppleScriptConfigurationProducer"/>
 
 
     </extensions>
@@ -132,7 +133,8 @@
     <application-components>
         <!-- Add your application components here -->
         <component>
-            <implementation-class>com.idea.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryComponent
+            <implementation-class>
+                com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryComponent
             </implementation-class>
         </component>
     </application-components>
@@ -144,13 +146,13 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="LoadDictionary" class="com.idea.plugin.applescript.lang.ide.actions.LoadDictionaryAction"
+        <action id="LoadDictionary" class="com.intellij.plugin.applescript.lang.ide.actions.LoadDictionaryAction"
                 text="Load Dictionary" description="testing">
             <add-to-group group-id="FileMenu" anchor="after" relative-to-action="FileOpenGroup"/>
         </action>
 
         <action id="NewAppleScriptFile"
-                class="com.idea.plugin.applescript.lang.ide.actions.CreateAppleScriptFileAction">
+                class="com.intellij.plugin.applescript.lang.ide.actions.CreateAppleScriptFileAction">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
     </actions>

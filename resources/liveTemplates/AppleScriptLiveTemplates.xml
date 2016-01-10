@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templateSet group="AppleScript">
+    <template name="tellapp" value="tell application &quot;$APP_NAME$&quot;&#10;$SELECTION$&#10;end tell"
+              description="surround with tell statement" toReformat="true" toShortenFQNames="true">
+        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="AppleScript" value="true"/>
+        </context>
+    </template>
     <template name="useapp" value="use application &quot;$APP_NAME$&quot;"
               description="using terms from given application" toReformat="true" toShortenFQNames="true">
         <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="AppleScript" value="true"/>
+        </context>
+    </template>
+    <template name="dd"
+              value="display dialog &quot;$DIALOG_TEXT$&quot; default answer &quot;$DEF_TEXT$&quot; with title &quot;$TITLE$&quot;"
+              description="disaply dialog with title template" toReformat="true" toShortenFQNames="true">
+        <variable name="DIALOG_TEXT" expression="" defaultValue="Dialog text" alwaysStopAt="true"/>
+        <variable name="DEF_TEXT" expression="" defaultValue="Default answer" alwaysStopAt="true"/>
+        <variable name="TITLE" expression="" defaultValue="Dialog titile" alwaysStopAt="true"/>
         <context>
             <option name="AppleScript" value="true"/>
         </context>
@@ -12,13 +29,6 @@
               toShortenFQNames="true">
         <variable name="LOOP_VAR" expression="" defaultValue="i" alwaysStopAt="true"/>
         <variable name="LIST" expression="complete()" defaultValue="" alwaysStopAt="true"/>
-        <context>
-            <option name="AppleScript" value="true"/>
-        </context>
-    </template>
-    <template name="tellapp" value="tell application &quot;$APP_NAME$&quot;&#10;$SELECTION$&#10;end tell"
-              description="surround with tell statement" toReformat="true" toShortenFQNames="true">
-        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
         <context>
             <option name="AppleScript" value="true"/>
         </context>
