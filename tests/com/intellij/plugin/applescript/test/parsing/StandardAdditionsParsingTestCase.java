@@ -9,11 +9,6 @@ public class StandardAdditionsParsingTestCase extends AbstractParsingFixtureTest
     return "standard_additions";
   }
 
-  @Override
-  protected String getMyTestDataDir() {
-    return "D:/Dropbox/IDEA_Projects/IdeaPluginDev/AppleScript/testData/parse";
-  }
-
   public void testScriptingAdditions() throws IOException {
     doParseScriptInPackageTest("scripting_additions");
   }

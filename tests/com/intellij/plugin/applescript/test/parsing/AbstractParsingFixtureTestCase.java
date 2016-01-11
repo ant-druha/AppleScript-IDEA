@@ -21,7 +21,7 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
   protected abstract String getMyTargetDirectoryPath();
 
   protected String getMyTestDataDir() {
-    return "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/AppleScript/testData/parse";
+    return "testData/parse";
   }
 
   @Override
