@@ -7,19 +7,18 @@
     </vendor>
 
     <description><![CDATA[
-      Provides support for writing scripts with AppleScript 2.0<br>
-      <b>Requires Xcode application installed.</b> It is used for application dictionary generation.<br><br>
-      <b>Plugin home page:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">AppleScript IDEA</a>
-    ]]></description>
+        Provides support for writing scripts with AppleScript 2.0<br>
+        <b>Requires Xcode application installed.</b> It is used for application dictionary generation.<br><br>
+        <b>Wiki:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">How to AppleScript in IDEA</a>
+        <b>Plugin page:</b> <a href="https://plugins.jetbrains.com/plugin/8149">https://plugins.jetbrains.com/plugin/8149</a>
+        ]]></description>
 
     <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      <li>IntelliJ build 143 compatibility</li>
     ]]>
     </change-notes>
 
-    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="131"/>
+    <idea-version since-build="143"/>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>

@@ -711,7 +711,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
       long execEnd = System.currentTimeMillis();
       if (exitCode != 0) throw new NotScriptableApplicationException(applicationName,
-              "Command " + Arrays.toString(shellCommand) + " failed with code=" + exitCode + ". Looks like " +
+              "Command " + Arrays.toString(shellCommand) + " failed with code=" + exitCode + ". Seems that " +
                       "application \"" + applicationName + "\" is not scriptable.");
 
       LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");

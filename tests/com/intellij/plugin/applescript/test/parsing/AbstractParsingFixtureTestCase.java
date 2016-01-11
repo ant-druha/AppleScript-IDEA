@@ -15,11 +15,14 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
 
   private static final Logger LOG = Logger.getInstance("#" + AbstractParsingFixtureTestCase.class.getName());
 
-  private final String myTestDataDir = "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/AppleScript/testData/parse";
-  String myTargetTestDataDir = myTestDataDir + "/" + getMyTargetDirectoryPath();
+  String myTargetTestDataDir = getMyTestDataDir() + "/" + getMyTargetDirectoryPath();
   private List<PsiFile> myPsiFiles = new ArrayList<PsiFile>();
 
   protected abstract String getMyTargetDirectoryPath();
+
+  protected String getMyTestDataDir() {
+    return "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/AppleScript/testData/parse";
+  }
 
   @Override
   protected void setUp() throws Exception {

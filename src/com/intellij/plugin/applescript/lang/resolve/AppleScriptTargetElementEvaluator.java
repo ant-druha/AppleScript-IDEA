@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AppleScriptTargetElementEvaluator extends TargetElementEvaluatorEx2 {
 
-  //todo why does not this method work? - how to extend Ex2 ?
   @Nullable
   @Override
   public PsiElement getNamedElement(@NotNull PsiElement element) {
