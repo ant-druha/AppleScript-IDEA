@@ -5,7 +5,6 @@ import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.plugin.applescript.AppleScriptNames;
-import com.intellij.plugin.applescript.lang.parcer.AppleScriptParser;
 import com.intellij.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.intellij.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.intellij.plugin.applescript.lang.sdef.CommandDirectParameter;
@@ -310,7 +309,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    */
   public static boolean isHandlerLabeledParametersCallAllowed(PsiBuilder b, int l) {
     return b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE
-            && b.getUserData(PARSING_TELL_SIMPLE_STATEMENT) != Boolean.TRUE
+//            && b.getUserData(PARSING_TELL_SIMPLE_STATEMENT) != Boolean.TRUE
             && b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
   }
 
@@ -733,7 +732,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //      r = typeSpecifier(b, l + 1);
 //    }
 //    if (!r)
-    r = com.intellij.plugin.applescript.lang.parcer.AppleScriptParser.expression(b, l + 1);
+    r = com.intellij.plugin.applescript.lang.parser.AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, DIRECT_PARAMETER_VAL, r, false, null);
     // A tell statement specifies a default target for all commands contained
     // within it, so the direct parameter is optional.
@@ -1064,18 +1063,30 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
   }
 
+  public static boolean parseCommandParametersExpression(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseCommandParametersExpression")) return false;
+    boolean r;
+    b.putUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS, true);
+    r = AppleScriptParser.expression(b, l + 1);
+    b.putUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS, false);
+    return r;
+  }
+
   public static boolean parseDictionaryConstant(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
-    boolean r;
+    boolean r, propertyOrClassExists = false;
     String toldApplicationName = getTargetApplicationName(b);
     //TODO: to think how to better handle such situations?
     // (if there are too many constants defined -> lead to many incorrect parsing errors like
     // 'end' tell/repeat etc is not detected
     // dictionary constant could appear only if we are inside dictionary command call
     if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)
-            && b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE)
+            && (b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE
+            && b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE))
       return false;
 
+    final StringHolder currentTokenText = new StringHolder();
+    currentTokenText.value = "";
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImportFrom = null;
     if (areThereUseStatements) {
@@ -1103,7 +1114,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "tryToParseStdConstant")) return false;
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
-    boolean r = false, constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
+    boolean r = false, propertyOrClassExists = false, constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
             .isStdConstantWithPrefixExist(currentTokenText.value);
     String nextTokenText = currentTokenText.value;
     PsiBuilder.Marker m = enter_section_(b);
@@ -1118,6 +1129,17 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         break;
       }
     }
+    if (r) {
+      // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
+      // className or propertyName tokens. We check and return false if the property or class with the longer name
+      // exists, as it will be parsed later
+      currentTokenText.value += " " + b.getTokenText();
+      propertyOrClassExists = ParsableScriptSuiteRegistryHelper
+              .isStdPropertyWithPrefixExist(currentTokenText.value) ||
+              ParsableScriptSuiteRegistryHelper
+                      .isStdClassWithPrefixExist(currentTokenText.value);
+    }
+    r = r && !propertyOrClassExists;
     exit_section_(b, m, null, r);
     return r;
   }
@@ -1126,7 +1148,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "tryToParseApplicationConstant")) return false;
     StringHolder currentTokenText = new StringHolder();
     currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
-    boolean r = false, constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
+    boolean r = false, propertyOrClassExists = false, constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
             .isConstantWithPrefixExist(applicationName, currentTokenText.value);
     String nextTokenText = currentTokenText.value;
     PsiBuilder.Marker m = enter_section_(b);
@@ -1142,6 +1164,17 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         break;
       }
     }
+    if (r) {
+      // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
+      // className or propertyName tokens. We check and return false if the property or class with the longer name
+      // exists, as it will be parsed later
+      currentTokenText.value += " " + b.getTokenText();
+      propertyOrClassExists = ParsableScriptSuiteRegistryHelper
+              .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||
+              ParsableScriptSuiteRegistryHelper
+                      .isClassWithPrefixExist(applicationName, currentTokenText.value);
+    }
+    r = r && !propertyOrClassExists;
     exit_section_(b, m, null, r);
     return r;
   }
