@@ -84,7 +84,7 @@ public class AppleScriptProjectDictionaryService {
   @Nullable
   private ApplicationDictionary createDictionaryFromInfo(final @NotNull DictionaryInfo dInfo) {
     if (!dInfo.isInitialized()) {
-      LOG.error("Attempt to create dictionary for not initilized Dictionary Info for application" +
+      LOG.error("Attempt to create dictionary for not initialized Dictionary Info for application" +
               dInfo.getApplicationName());
       return null;
     }

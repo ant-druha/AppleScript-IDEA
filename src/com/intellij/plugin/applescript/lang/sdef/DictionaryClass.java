@@ -19,7 +19,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   // relationships, while elements are synonymous with to-many relationships. For more information on these and
   // related terms, see the Glossary.
   @NotNull private List<AppleScriptClass> elements = new ArrayList<AppleScriptClass>();
-  @NotNull private List<String> elementNames = new ArrayList<String>();
+  @NotNull private List<String> elementNames;
   private boolean initialized;
 
   //<!-- CLASSES -->
@@ -35,6 +35,8 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     this.pluralClassName = StringUtil.isEmpty(pluralClassName) ? name + "s" : pluralClassName;
     if (elementNames != null) {
       this.elementNames = elementNames;
+    } else {
+      this.elementNames = new ArrayList<String>();
     }
   }
 
@@ -44,6 +46,7 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     super(suite, name, code, xmlTagClass, description);
     this.properties = properties;
     this.parentClassName = parentClassName;
+    this.elementNames = new ArrayList<String>();
   }
 
   @NotNull

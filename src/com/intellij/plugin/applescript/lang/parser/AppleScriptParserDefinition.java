@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.plugin.applescript.AppleScriptFile;
 import com.intellij.plugin.applescript.AppleScriptLanguage;
 import com.intellij.plugin.applescript.lang.lexer._AppleScriptLexer;
-import com.intellij.plugin.applescript.lang.parcer.AppleScriptParser;
 import com.intellij.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;

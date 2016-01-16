@@ -717,8 +717,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
       return true;
     } catch (InterruptedException e) {
+      LOG.error("Failed to create dictionary file for application [" + applicationName + "] Command:" + cmdName +
+              " target path: " + appFilePath + " Reason: " + e.getCause());
       e.printStackTrace();
     } catch (IOException e) {
+      LOG.error("Failed to create dictionary file for application [" + applicationName + "] Command:" + cmdName +
+              " target path: " + appFilePath + " Reason: " + e.getCause());
       e.printStackTrace();
     }
     return false;

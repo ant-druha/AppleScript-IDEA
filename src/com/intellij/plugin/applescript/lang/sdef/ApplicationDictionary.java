@@ -18,8 +18,8 @@ import java.util.Map;
  */
 public interface ApplicationDictionary extends DictionarySuite {
 
-  List<String> SUPPORTED_DICTIONARY_EXTENSIONS = Arrays.asList("xml", "app", "osax", "sdef");
-  List<String> SUPPORTED_APPLICATION_EXTENSIONS = Arrays.asList("app", "osax");
+  List<String> SUPPORTED_DICTIONARY_EXTENSIONS = Arrays.asList("xml", "app", "osax", "scptd", "sdef");
+  List<String> SUPPORTED_APPLICATION_EXTENSIONS = Arrays.asList("app", "osax", "scptd");
   // supported by default in a scriptable application
   String COCOA_STANDARD_LIBRARY = "Standard Terminology";
   // name for imitated dictionary which includes all installed in Osx ScriptingAdditions suites
