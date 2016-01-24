@@ -27,7 +27,7 @@ end repeat
 
 make new mailbox with properties {name:"* items to store"}
 
-exists mailbox "* items to store"
+--exists mailbox "* items to store"
 exists mailbox
 tell application "Mail"
   exists mailbox "sdsd"
@@ -49,7 +49,7 @@ end tell
 --((some message whose message id is theTempID) of mailbox "* items to shift")--mailbox is parsed as a property (not a class)
 
 --delete ((some message whose message id is theTempID) of mailbox "* items to shift")
-exists process "Mail"
+--exists process "Mail"
 process
 --if not (exists process "Mail") then exit repeat --process class is lot loaded
 

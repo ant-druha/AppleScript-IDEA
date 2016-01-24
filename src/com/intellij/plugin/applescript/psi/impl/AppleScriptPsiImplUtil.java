@@ -341,7 +341,9 @@ public class AppleScriptPsiImplUtil {
 
   @Nullable
   public static String getApplicationName(@NotNull AppleScriptTellSimpleStatement tellSimple) {
-    AppleScriptApplicationReference appRef = tellSimple.getApplicationReference();
+    AppleScriptApplicationReference appRef = PsiTreeUtil
+            .findChildOfType(tellSimple, AppleScriptApplicationReference.class);
+//    AppleScriptApplicationReference appRef = tellSimple.getApplicationReference();
     return appRef != null ? appRef.getApplicationName() : null;
   }
 

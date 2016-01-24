@@ -177,31 +177,27 @@
     consumeTokenMethod(".*(Expression|Recover|Condition)")="consumeTokenFast"
 }
 
-appleScriptFile ::= compilation_unit_
+appleScriptFile ::= compilation_unit_*
 
-private compilation_unit_ ::=
-                      (
-                      topLevelStatement
-                      | statement
-                      | expression
-                      | RAW_CODE
-                      | sep
-                      )*
-//mainScriptRecover ::= !(sep (expression|statement))
-                      //{recoverWhile = not_next_expression}
+private compilation_unit_ ::= topBlockBodyPart|sep
+
+private topBlockBodyPart ::= (topLevelStatement|statement|expression|RAW_CODE)
+{recoverWhile=topBodyPartRecover}
+private topBodyPartRecover ::= !(sep/*|tell*/)
+
 private sep ::= (COMMENT? NLS COMMENT?)+ // one or more new lines and spaces
-private nls ::= COMMENT? NLS+ // one or more new lines and spaces
 
-identifier ::= var_identifier//|appleScriptProperty
-//dictionaryIdentifier ::= var_identifier|builtInClassIdCommon|builtInClassIdNative|script
+scriptBody ::= topBlockBodyPart (sep topBlockBodyPart)* sep?
+{pin=1}
+
+identifier ::= var_identifier
 
 referenceIdentifier ::= identifier
 {mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
  implements="com.intellij.plugin.applescript.psi.AppleScriptReferenceElement"}
 
-private topLevelStatement ::= userHandlerDefinition | <<parseUseStatement useStatement>>
+private topLevelStatement ::= applicationHandlerDefinition|userHandlerDefinition | <<parseUseStatement useStatement>>
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
-//                      |userHandlerDefinition
                       |scriptObjectDefinition
                       |scriptObjectUnnamedDefinition
                       |returnStatement|continue_statement
@@ -213,9 +209,9 @@ private userHandlerDefinition ::= handlerLabeledParametersDefinition|handlerPosi
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
-private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseRepeatStatement repeatStatement>> | exitStatement
-|consideringStatement|ignoringStatement|withTimeoutStatement|withTransactionStatement|
-/*<<parseUseStatement useStatement>> |*/ <<parseUsingTermsFromStatement>>
+private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseRepeatStatement repeatStatement>>
+| exitStatement | consideringStatement | ignoringStatement | withTimeoutStatement | withTransactionStatement
+| <<parseUsingTermsFromStatement>>
 
 exitStatement ::= exit [repeat]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
@@ -226,8 +222,7 @@ topBlockBody ::= topBlockBodyPart sep (topBlockBodyPart sep)*
 blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
 {pin=1}
 //private bodyRecover ::= !((end|(on error)|else))
-private topBlockBodyPart ::= (applicationHandlerDefinition|topLevelStatement|statement|expression|RAW_CODE)
-{recoverWhile=bodyPartRecover}
+
 private blockBodyPart ::= statement|expression|RAW_CODE
 {recoverWhile=bodyPartRecover}
 private bodyPartRecover ::= !(sep)
@@ -691,7 +686,7 @@ private parentProperty ::= parent
 private versionProperty ::= version
 
 //todo redefine necessary methods (is property, getName etc.)
-appleScriptProperty ::= BUILT_IN_PROPERTY|resultProperty|versionProperty/*|missing_value_constant*//*??*/|anythingProperty
+appleScriptProperty ::= BUILT_IN_PROPERTY|resultProperty|versionProperty|anythingProperty
 |textItemDelimitersProperty|parentProperty//|itMeProperty//|text_constant /*?? */
 
 private itMeProperty ::= it|me
@@ -807,13 +802,14 @@ private userParameterVal ::= expression
 
 //todo replace to just expression, add custom parsing ?
 directParameterVal ::=  referenceIdBeforeParamLabel | expression
-  //{recoverWhile="setRecover"}
-//todo add custom parsing (user data holder not, so not to detect as followed expression as labeled handler call)
+
 private parseTellSimpleStatement ::= <<parseTellSimpleStatementInner>>
 //see <<parseTellSimpleStatementInner>>
-tellSimpleStatement ::= tell (referenceIdBeforeParamLabel | objectReferenceWrapper | currentApplicationConstant )
+//todo:restrict handler labeled call before to unless it is not parenthesizedExpression
+//tellSimpleStatement ::= tell (referenceIdBeforeParamLabel | objectReferenceWrapper )
+tellSimpleStatement ::= tell <<parseTellSimpleObjectReference>>
 to (statement | handlerInterleavedParametersCall | expression )
-{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator" //may be not needed?
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName]}
 
 handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
@@ -880,13 +876,13 @@ implements="com.intellij.plugin.applescript.psi.AppleScriptHandlerCall"}
 handlerArgument ::= argumentSelector userParameterVal
 
 scriptObjectDefinition ::= script scriptObjectName sep
-                                  topBlockBody?
+                                  scriptBody?
                            end [script] //{pin=2}
 {mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptScriptObject"
 implements="com.intellij.plugin.applescript.psi.AppleScriptScriptObject"}
 
 scriptObjectUnnamedDefinition ::= script sep
-                                  topBlockBody?
+                                  scriptBody?
                                  end [script] {pin=4}
 
 private scriptObjectName ::= identifier
@@ -982,13 +978,13 @@ left powerExpression ::= POW objectReferenceWrapper
 private prefixExpression ::= (prefixOperator prefixExpression) | valueExpression
 private prefixOperator ::= PLUS|MINUS
 
-private objectReferenceWrapper ::= THE_KW? prefixExpression objectReference*//<<parseObjectReference>>*
+private objectReferenceWrapper ::= THE_KW? prefixExpression objectReferenceExpression*//<<parseObjectReference>>*
 //move down to primary? and add a check for possessive form to keep it uniform
 private possessiveFormAndInterleavedCall ::= APS handlerInterleavedParametersCall
 
 // custom parsing is needed not to parse as a labeled handler call: TELL referenceIdentifier's referenceIdentifier TO expression
 // see <<parseObjectReference>>
-left objectReference ::=  ( possessiveFormAndInterleavedCall | objectPointer /*<<parseObjectReferencePointer>>*/
+left objectReferenceExpression ::=  ( possessiveFormAndInterleavedCall | objectPointer /*<<parseObjectReferencePointer>>*/
 THE_KW? prefixExpression)
 private objectPointer ::= of|in|APS
 private valueExpression ::= primaryExpression filterReference?//coercionExpression*

@@ -85,6 +85,9 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
 //        }
 //      }
     }
+    if (getParent() instanceof AppleScriptAssignmentStatement) {
+
+    }
     return null;
   }
 
@@ -118,6 +121,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   @Override
   public String getName() {
     PsiElement nameIdentifier = getNameIdentifier();
+//    if (nameIdentifier == null) nameIdentifier = findChildByClass(AppleScriptPropertyReference.class);//ugly
     if (nameIdentifier != null) {
       return nameIdentifier.getText();
     }
@@ -132,7 +136,9 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   @Nullable
   @Override
   public PsiElement getNameIdentifier() {
-    return getIdentifier();
+    PsiElement id = getIdentifier();
+    if (id == null) id = findChildByClass(AppleScriptPropertyReference.class);//ugly need to change psi
+    return id;
   }
 
   @NotNull //todo check all identifiers

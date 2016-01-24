@@ -6,8 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.tree.IElementType;
 
-import static com.intellij.plugin.applescript.psi.AppleScriptTypes.BLOCK_BODY;
-import static com.intellij.plugin.applescript.psi.AppleScriptTypes.TOP_BLOCK_BODY;
+import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
 
 /**
  * Andrey 08.04.2015
@@ -30,7 +29,7 @@ public class AppleScriptIndentProcessor {
 
     final PsiElement psi = node.getPsi();
 
-    if (elementType == BLOCK_BODY || elementType == TOP_BLOCK_BODY) {
+    if (elementType == BLOCK_BODY || elementType == TOP_BLOCK_BODY || elementType == SCRIPT_BODY) {
       return Indent.getNormalIndent();
     }
 

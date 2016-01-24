@@ -19,5 +19,5 @@ public interface AppleScriptScriptObject extends AppleScriptComponent {
   List<AppleScriptComponent> getHandlers();
 
   @Nullable
-  AppleScriptTopBlockBody getScriptBody();
+  AppleScriptScriptBody getScriptBody();
 }

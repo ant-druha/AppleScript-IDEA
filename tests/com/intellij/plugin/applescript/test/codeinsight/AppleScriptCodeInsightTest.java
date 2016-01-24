@@ -1,16 +1,20 @@
 package com.intellij.plugin.applescript.test.codeinsight;
 
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.codeInsight.generation.actions.CommentByLineCommentAction;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.plugin.applescript.AppleScriptFileType;
 import com.intellij.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.intellij.plugin.applescript.lang.sdef.DictionaryComponent;
+import com.intellij.plugin.applescript.psi.AppleScriptTargetVariable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.usageView.UsageInfo;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -77,5 +81,34 @@ public class AppleScriptCodeInsightTest extends LightCodeInsightFixtureTestCase 
       }
     }.execute();
     myFixture.checkResultByFile("format/test_block_indent_result.scpt");
+  }
+
+  public void testRename(){
+    myFixture.configureByFiles("codeinsight/set_var.scpt");
+    myFixture.renameElementAtCaret("myVarNewName");
+    myFixture.checkResultByFile("codeinsight/set_var_result.scpt");
+  }
+
+  public void testUsages(){
+    Collection<UsageInfo> usageInfos = myFixture.testFindUsages("codeinsight/set_var.scpt");
+    assertEquals(2, usageInfos.size());
+  }
+  public void testCommenter() {
+    myFixture.configureByText(AppleScriptFileType.INSTANCE, "<caret>set myVar to 123");
+    CommentByLineCommentAction commentAction = new CommentByLineCommentAction();
+    commentAction.actionPerformedImpl(getProject(), myFixture.getEditor());
+    myFixture.checkResult("--set myVar to 123");
+    commentAction.actionPerformedImpl(getProject(), myFixture.getEditor());
+    myFixture.checkResult("set myVar to 123");
+  }
+  public void testReference() {
+    myFixture.configureByFile("codeinsight/set_var_ref.scpt");
+    PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset());
+    PsiElement parent = element != null ? element.getParent() : null;
+    PsiElement superParent = parent != null ? parent.getParent() : null;
+    assert (superParent != null);
+    AppleScriptTargetVariable resolveResult = (AppleScriptTargetVariable) superParent.getReferences()[0].resolve();
+    assertNotNull(resolveResult);
+    assertEquals("myVar", resolveResult.getText());
   }
 }

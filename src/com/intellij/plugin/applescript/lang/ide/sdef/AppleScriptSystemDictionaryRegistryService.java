@@ -692,7 +692,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   /**
    * @param applicationName name of the application for which dictionary will be generated
    * @param serializePath   file path of the generated dictionary
-   * @param cmdName         command name to use for dictionary file generation
+   * @param cmdName         command name to use for dictionary file generation (cat or sdef)
    * @param appFilePath     path of the application bundle (or dictionary file if generating from already existing
    *                        dictionary file)
    * @return true if file was generated successfully

@@ -1,21 +1,22 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript IDEA</name>
-    <version>0.102</version>
+    <version>0.103</version>
     <vendor email="andrey.dernov@gmail.com"
-            url="https://bitbucket.org/adernov/applescript-idea/issues">Andrey
+            url="https://twitter.com/ant_druha">Andrey
     </vendor>
 
     <description><![CDATA[
         Provides support for writing scripts with AppleScript 2.0<br>
-        <b>Requires Xcode application installed.</b> It is used for application dictionary generation.<br><br>
+        For application dictionary generation <b>requires Xcode application installed.</b><br><br>
         <b>Wiki:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">How to AppleScript in IDEA</a>
         <br>
         <b>Plugins repository page:</b> <a href="https://plugins.jetbrains.com/plugin/8149">https://plugins.jetbrains.com/plugin/8149</a>
         ]]></description>
 
     <change-notes><![CDATA[
-      <li>Added loading of script library bundles (.scptd application format)</li>
+      <li>Better error recovery</li>
+      <li>Parser tuning</li>
     ]]>
     </change-notes>
 
@@ -155,10 +156,10 @@
                 class="com.intellij.plugin.applescript.lang.ide.actions.CreateAppleScriptFileAction">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
-        <action id="NewScriptObject" class="com.intellij.plugin.applescript.lang.ide.actions.GenerateScriptObjectAction"
-                text="Script Object..." description="Creates new script object in current file">
-            <add-to-group group-id="GenerateGroup" anchor="last"/>
-        </action>
+        <!--<action id="NewScriptObject" class="com.intellij.plugin.applescript.lang.ide.actions.GenerateScriptObjectAction"-->
+        <!--text="Script Object..." description="Creates new script object in current file">-->
+        <!--<add-to-group group-id="GenerateGroup" anchor="last"/>-->
+        <!--</action>-->
     </actions>
 
 </idea-plugin>

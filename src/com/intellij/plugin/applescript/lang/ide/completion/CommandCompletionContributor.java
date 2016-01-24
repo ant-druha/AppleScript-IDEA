@@ -98,8 +98,6 @@ public class CommandCompletionContributor extends CompletionContributor {
                     handlerCallExpression = (AppleScriptCommandHandlerCall) expression;
                   }
                 }
-//parameters.getPosition().getParent().getParent().getParent() (handler call if invoked after parameters
-//parameters.getPosition().getParent().getParent().getParent().getParent().getParent() if after handler call
                 if (handlerCallExpression != null) {
                   PsiReference ref = handlerCallExpression.getReference();
                   PsiElement target = ref.resolve();
@@ -122,7 +120,8 @@ public class CommandCompletionContributor extends CompletionContributor {
                 AppleScriptCommandHandlerCall handlerCallExpression;
                 handlerCallExpression = PsiTreeUtil.getParentOfType(parameters.getPosition(),
                         AppleScriptCommandHandlerCall.class);
-                PsiElement elemAtCaret = parameters.getOriginalFile().findElementAt(parameters.getOffset());
+                final PsiElement elemAtCaret = parameters.getOriginalFile().findElementAt(parameters.getOffset());
+                final int currLine = parameters.getEditor().getDocument().getLineNumber(parameters.getOffset());
                 PsiElement prevSibling = elemAtCaret != null ? elemAtCaret.getPrevSibling() : null;
                 while (prevSibling != null
                         && prevSibling.getNode().getElementType() == com.intellij.psi.TokenType.WHITE_SPACE) {
@@ -135,6 +134,10 @@ public class CommandCompletionContributor extends CompletionContributor {
                 }
 
                 if (handlerCallExpression != null) {
+                  final int handlerLine = parameters.getEditor().getDocument()
+                          .getLineNumber(handlerCallExpression.getTextOffset());
+                  if (handlerLine != currLine) return;
+
                   PsiReference ref = handlerCallExpression.getReference();
                   PsiElement target = ref.resolve();
                   if (target instanceof AppleScriptCommand) {

@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.plugin.applescript.AppleScriptIcons;
 import com.intellij.plugin.applescript.psi.AppleScriptComponent;
+import com.intellij.plugin.applescript.psi.AppleScriptScriptBody;
 import com.intellij.plugin.applescript.psi.AppleScriptScriptObject;
-import com.intellij.plugin.applescript.psi.AppleScriptTopBlockBody;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,7 +79,7 @@ public abstract class AbstractAppleScriptScriptObject extends AbstractAppleScrip
 
   @Nullable
   @Override
-  public AppleScriptTopBlockBody getScriptBody() {
-    return findChildByClass(AppleScriptTopBlockBody.class);
+  public AppleScriptScriptBody getScriptBody() {
+    return findChildByClass(AppleScriptScriptBody.class);
   }
 }

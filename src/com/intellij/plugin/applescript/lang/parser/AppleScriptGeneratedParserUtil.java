@@ -38,6 +38,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
           Key.create("applescript.parsing.current.dictionary.id.stack");
   private static final Key<Boolean> PARSING_TELL_SIMPLE_STATEMENT =
           Key.create("applescript.parsing.tell.simple.statement");
+  private static final Key<Boolean> PARSING_TELL_SIMPLE_OBJECT_REF =
+          Key.create("applescript.parsing.tell.simple.object.ref");
   private static final Key<Boolean> PARSING_TELL_COMPOUND_STATEMENT =
           Key.create("applescript.parsing.tell.simple.statement");
   private static final Key<Boolean> APPLICATION_NAME_PUSHED =
@@ -292,11 +294,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       r = parseCommandDirectParameterValue(b, l + 1, parsedCommandDefinition.getDirectParameter());
     }
     if (!parsedCommandDefinition.getParameters().isEmpty()) {
-      r = r && parseCommandParameters(b, l + 1, parsedCommandDefinition);
+      r = parseCommandParameters(b, l + 1, parsedCommandDefinition);
     }
     exit_section_(b, l, m, null, r, false, null);
     b.putUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS, false);
-    return r;
+    return true;
   }
 
   /**
@@ -310,6 +312,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   public static boolean isHandlerLabeledParametersCallAllowed(PsiBuilder b, int l) {
     return b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE
 //            && b.getUserData(PARSING_TELL_SIMPLE_STATEMENT) != Boolean.TRUE
+            && b.getUserData(PARSING_TELL_SIMPLE_OBJECT_REF) != Boolean.TRUE
             && b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE;
   }
 
@@ -338,6 +341,21 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     b.putUserData(PARSING_TELL_SIMPLE_STATEMENT, false);
     popApplicationNameIfWasPushed(b);
     b.putUserData(APPLICATION_NAME_PUSHED, pushStateBefore);
+    return r;
+  }
+
+  /**
+   * For custom parsing, so not to detect 'referenceIdentifier to ...' as labeled handler call
+   */
+  public static boolean parseTellSimpleObjectReference(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parseTellSimpleObjectReference")) return false;
+    boolean r;
+    r = nextTokenIsFast(b, LPAREN) && AppleScriptParser.parenthesizedExpression(b, l + 1);
+    if (!r) {
+      b.putUserData(PARSING_TELL_SIMPLE_OBJECT_REF, true);
+      r = AppleScriptParser.expression(b, l + 1);
+      b.putUserData(PARSING_TELL_SIMPLE_OBJECT_REF, false);
+    }
     return r;
   }
 
@@ -600,6 +618,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       }
     }
     r = mandatoryParams.isEmpty();//we only need to ensure that all mandatory params were specified
+    r = true;
     exit_section_(b, l, m, null, r, false, null);
 
     return r;
@@ -716,7 +735,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static boolean parseCommandDirectParameterValue(PsiBuilder b, int l,
                                                           @NotNull CommandDirectParameter parameter) {
     if (!recursion_guard_(b, l, "parseCommandDirectParameterValue")) return false;
-    boolean r;
+    boolean r = false;
 //    String parameterTypeSpecifier = parameter.getTypeSpecifier();
     // if we are inside tell compound statement=> direct parameter is optional
     // so it may be wrongly detected instead of parameter selector. So, checking if it is a parameter selector first
@@ -728,11 +747,15 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       }
     }
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Direct Parameter Value >");
-//    if ("type".equals(parameterTypeSpecifier)) {
-//      r = typeSpecifier(b, l + 1);
-//    }
-//    if (!r)
-    r = com.intellij.plugin.applescript.lang.parser.AppleScriptParser.expression(b, l + 1);
+    String parameterTypeSpecifier = parameter.getTypeSpecifier();
+    if ("type".equals(parameterTypeSpecifier)) {
+      r = typeSpecifier(b, l + 1);
+    } else if ("text".equals(parameterTypeSpecifier)) {
+      r = AppleScriptParser.concatenationExpressionWrapper(b, l + 1);
+      if (!r) r = AppleScriptParser.stringLiteralExpression(b, l + 1);
+    }
+    if (!r)
+      r = com.intellij.plugin.applescript.lang.parser.AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, DIRECT_PARAMETER_VAL, r, false, null);
     // A tell statement specifies a default target for all commands contained
     // within it, so the direct parameter is optional.
@@ -1080,7 +1103,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // (if there are too many constants defined -> lead to many incorrect parsing errors like
     // 'end' tell/repeat etc is not detected
     // dictionary constant could appear only if we are inside dictionary command call
-    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)
+    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)//only inside tell statements?
             && (b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE
             && b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE))
       return false;
@@ -1168,11 +1191,17 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
       // className or propertyName tokens. We check and return false if the property or class with the longer name
       // exists, as it will be parsed later
-      currentTokenText.value += " " + b.getTokenText();
       propertyOrClassExists = ParsableScriptSuiteRegistryHelper
               .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||
               ParsableScriptSuiteRegistryHelper
                       .isClassWithPrefixExist(applicationName, currentTokenText.value);
+      if (!propertyOrClassExists) {
+        currentTokenText.value += " " + b.getTokenText();
+        propertyOrClassExists = ParsableScriptSuiteRegistryHelper
+                .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||
+                ParsableScriptSuiteRegistryHelper
+                        .isClassWithPrefixExist(applicationName, currentTokenText.value);
+      }
     }
     r = r && !propertyOrClassExists;
     exit_section_(b, m, null, r);

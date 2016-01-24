@@ -43,7 +43,7 @@ public class AppleScriptResolveUtil {
   @NotNull
   public static List<AppleScriptComponent> getNamedSubComponentsFor(@NotNull AppleScriptScriptObject script) {
     List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
-    AppleScriptTopBlockBody scriptBody = script.getScriptBody();
+    AppleScriptScriptBody scriptBody = script.getScriptBody();
     AppleScriptComponent[] namedComponents = PsiTreeUtil.getChildrenOfType(scriptBody, AppleScriptComponent.class);
     AppleScriptAssignmentStatement[] varsCreations = PsiTreeUtil.getChildrenOfType(scriptBody,
             AppleScriptAssignmentStatement.class);

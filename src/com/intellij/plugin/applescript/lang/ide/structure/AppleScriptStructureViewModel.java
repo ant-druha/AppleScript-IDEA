@@ -7,6 +7,8 @@ import com.intellij.ide.util.treeView.smartTree.Sorter;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.plugin.applescript.psi.AppleScriptHandlerLabeledParametersDefinition;
 import com.intellij.plugin.applescript.psi.AppleScriptIdentifier;
+import com.intellij.plugin.applescript.psi.AppleScriptScriptBody;
+import com.intellij.plugin.applescript.psi.AppleScriptScriptObject;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +24,7 @@ public class AppleScriptStructureViewModel extends StructureViewModelBase implem
   public AppleScriptStructureViewModel(@NotNull PsiFile psiFile, @Nullable Editor editor) {
     super(psiFile, editor, new AppleScriptStructureViewElement(psiFile));
     withSorters(Sorter.ALPHA_SORTER);
-//    withSuitableClasses(AppleScriptScriptObject.class, AppleScriptScriptScriptObjectDefinition.class);
+    withSuitableClasses(AppleScriptScriptBody.class, AppleScriptScriptObject.class);
   }
 
 
