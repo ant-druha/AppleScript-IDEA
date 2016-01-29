@@ -127,16 +127,14 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
           importedDictionary = dictionaryRegistry.createDictionary(appName);
         }
       }
-      if (importedDictionary != null) {
-        if (element instanceof AppleScriptUseStatement) {
-          AppleScriptUseStatement useStatement = (AppleScriptUseStatement) element;
-          mySortedUseStatements.add(useStatement);
-          if (useStatement.withImporting()) {
-            collectedDictionaries.add(importedDictionary);
-          }
-        } else {
+      if (element instanceof AppleScriptUseStatement) {
+        AppleScriptUseStatement useStatement = (AppleScriptUseStatement) element;
+        mySortedUseStatements.add(useStatement);
+        if (useStatement.withImporting() && importedDictionary != null) {
           collectedDictionaries.add(importedDictionary);
         }
+      } else if (importedDictionary != null) {
+        collectedDictionaries.add(importedDictionary);
       }
     }
     return true;

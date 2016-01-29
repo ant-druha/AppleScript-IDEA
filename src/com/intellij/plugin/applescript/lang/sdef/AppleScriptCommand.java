@@ -34,4 +34,8 @@ public interface AppleScriptCommand extends DictionaryComponent {
   void setParameters(List<CommandParameter> parameters);
 
   void setDirectParameter(CommandDirectParameter directParameter);
+
+  @NotNull
+  @Override
+  Suite getSuite();
 }

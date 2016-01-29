@@ -76,6 +76,8 @@
     UNICODE_TEXT='regexp:unicode[\ \t\f]+text'
     RGB_COLOR='regexp:rgb[\ \t\f]+color'
     STYLED_CLIPBOARD_TEXT='regexp:styled[\ \t\f]+clipboard[\ \t\f]+text'
+    //==> statement tokens
+    REPEAT='repeat'
     //==> builtInClassIdNative ==>
     ANY='any'
     BOOLEAN='boolean'
@@ -209,11 +211,11 @@ private userHandlerDefinition ::= handlerLabeledParametersDefinition|handlerPosi
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
-private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseRepeatStatement repeatStatement>>
+private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseExpression '"repeat"' repeatStatement>>
 | exitStatement | consideringStatement | ignoringStatement | withTimeoutStatement | withTransactionStatement
 | <<parseUsingTermsFromStatement>>
 
-exitStatement ::= exit [repeat]
+exitStatement ::= exit [REPEAT]
 private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
 | repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
 
@@ -227,27 +229,27 @@ private blockBodyPart ::= statement|expression|RAW_CODE
 {recoverWhile=bodyPartRecover}
 private bodyPartRecover ::= !(sep)
 
-repeatForeverStatement ::= repeat sep
+repeatForeverStatement ::= REPEAT sep
                             blockBody?
-                           end [repeat]
+                           end [REPEAT]
 
-repeatNumTimesStatement ::= repeat numTimes [times] sep
+repeatNumTimesStatement ::= REPEAT numTimes [times] sep
                             blockBody?
-                            end [repeat]
+                            end [REPEAT]
 
 private numTimes ::= expression//integerLiteralExpression|referenceIdentifier|parenthesizedExpression
 
-repeatWhileStatement ::= repeat while expression sep
+repeatWhileStatement ::= REPEAT while expression sep
                             blockBody?
-                         end [repeat] {pin=2}
+                         end [REPEAT] {pin=2}
 
-repeatUntilStatement ::= repeat until expression sep
+repeatUntilStatement ::= REPEAT until expression sep
                          blockBody?
-                         end [repeat] {pin=2}
+                         end [REPEAT] {pin=2}
 
-repeatWithRangeStatement ::= repeat with loopVariable from startValue to stopValue [by stepValue] sep
+repeatWithRangeStatement ::= REPEAT with loopVariable from startValue to stopValue [by stepValue] sep
                              blockBody?
-                             end [repeat] {pin=4}
+                             end [REPEAT] {pin=4}
 
 //todo expression does not always work.. (because of 'to' )
 private stepValue ::= expression
@@ -255,9 +257,9 @@ private stopValue ::= (referenceIdentifier &by) | expression
 private startValue ::= (referenceIdentifier &to) | expression
 private loopVariable ::= directParameterDeclaration
 
-repeatWithListStatement ::= repeat with loopVariable in listOrReferenceExpression sep
+repeatWithListStatement ::= REPEAT with loopVariable in listOrReferenceExpression sep
                          blockBody?
-                         end [repeat] {pin=4}
+                         end [REPEAT] {pin=4}
 private listOrReferenceExpression ::= expression
 
 errorCommandExpression ::= error [errorMessage] [number errorNumber]
@@ -389,11 +391,11 @@ private literalExpression ::=
               |builtInConstantLiteralExpression
               |listLiteralExpression
               |recordLiteralExpression
-              |dateLiteralExpression
+              |<<parseExpression '"date"' dateLiteralExpression>>
               |aReferenceToLiteralExpression
 
 /** Numeric, string, regexp, boolean, date, string(space,tab,return) constant*/
-builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|/*save_opt_constant|*/text_constant|itMeProperty
+builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|text_constant|itMeProperty
 |currentApplicationConstant| missing_value_constant | scriptingAdditionsFolderConstant
 //|appleScriptPropertiesConstant
 private scriptingAdditionsFolderConstant ::= SCRIPTING_ADDITIONS
@@ -893,8 +895,10 @@ continue_statement ::= continue expression
 
 //===COMMANDS===
 private appleScriptCommandExpression ::= getCommandExpression|runCommandExpression|countCommandExpression|
-errorCommandExpression|logCommandExpression
+errorCommandExpression|logCommandExpression|activateCommandExpression|launchCommandExpression
 //|runCommandExpression|errorCommandExpression//|setCommandSyntaxReturning
+activateCommandExpression ::= activate expression?
+launchCommandExpression ::= launch expression?
 
 // standard built-in AppleScript commands
 //There are only five AppleScript commands: Get, Set, Count, Copy, and Run.

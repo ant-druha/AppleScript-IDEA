@@ -15,6 +15,9 @@ public interface Suite extends DictionaryComponent {
   @Nullable
   AppleScriptClass findClassByCode(String code);
 
+  @Nullable
+  AppleScriptCommand findCommandByCode(String code);
+
   boolean addProperty(AppleScriptPropertyDefinition property);
 
   boolean addEnumeration(DictionaryEnumeration enumeration);

@@ -423,24 +423,46 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+//  /**
+//   * Checks if inside &lt;tell statement&gt; - first check it's terms
+//   */
+//  public static boolean parseRepeatStatement(PsiBuilder b, int l, Parser repeatStatement) {
+//    if (!recursion_guard_(b, l, "parseRepeatStatement")) return false;
+//    boolean r;
+//    if (!nextTokenIs(b, REPEAT)) return false;
+//    //if we are in tell statement - check application terms first
+//    String toldAppName = peekTargetApplicationName(b);
+//    if (!StringUtil.isEmpty(toldAppName)) {
+//      StringHolder parsedName = new StringHolder();
+//      PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Repeat Statement>");
+//      r = parseCommandNameForApplication(b, l + 1, parsedName, toldAppName, true);
+//      exit_section_(b, l, mComName, null, r, false, null);
+//      if (r) return false;
+//    }
+//    r = repeatStatement.parse(b, l + 1);
+//    return r;
+//  }
+
   /**
-   * Checks if inside &lt;tell statement&gt; - first check it's terms
+   * If inside tell (only in a tell?) compound statement - first check it's terms
    */
-  public static boolean parseRepeatStatement(PsiBuilder b, int l, Parser repeatStatement) {
-    if (!recursion_guard_(b, l, "parseRepeatStatement")) return false;
+  public static boolean parseExpression(PsiBuilder b, int l, String dictionaryTermToken, Parser expression) {
+    if (!recursion_guard_(b, l, "parseExpression")) return false;
     boolean r;
-    if (!nextTokenIs(b, REPEAT)) return false;
-    //if we are in tell statement - check application terms first
-    String toldAppName = peekTargetApplicationName(b);
-    if (!StringUtil.isEmpty(toldAppName)) {
-      StringHolder parsedName = new StringHolder();
-      PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Repeat Statement>");
-      r = parseCommandNameForApplication(b, l + 1, parsedName, toldAppName, true);
-      exit_section_(b, l, mComName, null, r, false, null);
-      if (r) return false;
+    if (!nextTokenIsFast(b, dictionaryTermToken)) return false;
+
+    //check application terms first
+    if (b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) {
+      String toldAppName = peekTargetApplicationName(b);
+      if (!StringUtil.isEmpty(toldAppName)) {
+        StringHolder parsedName = new StringHolder();
+        PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Expression>");
+        r = parseCommandNameForApplication(b, l + 1, parsedName, toldAppName, true);
+        exit_section_(b, l, mComName, null, r, false, null);
+        if (r) return false;
+      }
     }
-    r = repeatStatement.parse(b, l + 1);
-    return r;
+    return expression.parse(b, l + 1);
   }
 
   /**

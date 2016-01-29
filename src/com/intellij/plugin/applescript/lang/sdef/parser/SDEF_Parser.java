@@ -202,9 +202,10 @@ public class SDEF_Parser {
     if (parentClassName == null || parentClassCode == null) return null;
 
     List<String> elementNames = initClassElements(classExtensionTag);
+    List<String> respondingCommands = initClassRespondingMessages(classExtensionTag);
 
     final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode,
-            classExtensionTag, null, elementNames, pluralName);
+            classExtensionTag, null, elementNames, respondingCommands, pluralName);
     String description = classExtensionTag.getAttributeValue("description");
     classExtension.setDescription(description);
 
@@ -287,10 +288,11 @@ public class SDEF_Parser {
 
     String parentClassName = classTag.getAttributeValue("inherits");
     List<String> elementNames = initClassElements(classTag);
+    List<String> respondingCommands = initClassRespondingMessages(classTag);
 
 
     final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag, parentClassName, elementNames,
-            pluralName);
+            respondingCommands, pluralName);
     String description = classTag.getAttributeValue("description");
     aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
@@ -314,6 +316,18 @@ public class SDEF_Parser {
     }
     aClass.setProperties(properties);
     return aClass;
+  }
+
+  private static List<String> initClassRespondingMessages(XmlTag classTag) {
+    XmlTag[] elementNameTags = classTag.findSubTags("responds-to");
+    List<String> commandNames = new ArrayList<String>();
+    for (XmlTag elemTag : elementNameTags) {
+      String val = elemTag.getAttributeValue("command");
+      if (val != null) {
+        commandNames.add(val);
+      }
+    }
+    return commandNames;
   }
 
   private static List<String> initClassElements(XmlTag classTag) {

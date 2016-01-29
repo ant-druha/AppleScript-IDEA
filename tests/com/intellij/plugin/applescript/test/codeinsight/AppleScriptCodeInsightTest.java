@@ -55,7 +55,7 @@ public class AppleScriptCodeInsightTest extends LightCodeInsightFixtureTestCase 
     System.out.println("All elements=" + arElements.length);
     System.out.println("Std lib count=" + stdAdditionsElementCount);
     System.out.println("Cocoa lib count=" + cocoaStandardElementCount);
-    assertEquals(392, strings.size());
+    assertEquals(394, strings.size());
     assertEquals(257, stdAdditionsElementCount);
     assertEquals(45, cocoaStandardElementCount);
   }

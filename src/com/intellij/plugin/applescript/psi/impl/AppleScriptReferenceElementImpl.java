@@ -154,7 +154,17 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
       el.getDictionary().getName();
       addLookupElement(lookupElements, el);
     }
+    addAppleScriptCommandsSuite(lookupElements);
     return !lookupElements.isEmpty() ? lookupElements.toArray() : LookupElement.EMPTY_ARRAY;
+  }
+
+  private void addAppleScriptCommandsSuite(@NotNull List<LookupElement> lookupElements) {
+    lookupElements.add(LookupElementBuilder
+            .create(AppleScriptTypes.LAUNCH.toString().toLowerCase()).bold()
+            .withTypeText("command", true).withIcon(AppleScriptComponentType.HANDLER.getIcon()));
+    lookupElements.add(LookupElementBuilder
+            .create(AppleScriptTypes.ACTIVATE.toString().toLowerCase()).bold()
+            .withTypeText("command", true).withIcon(AppleScriptComponentType.HANDLER.getIcon()));
   }
 
   private void addLookupElement(List<LookupElement> lookupElements, PsiElement el) {

@@ -170,7 +170,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "result"                     { return RESULT; }
   "try"                        { return TRY; }
   "on"                         { return ON; }
-  "app"                        { return APP; }
   "tell"                       { return TELL; }
   "considering"                { return CONSIDERING; }
   "but"                        { return BUT; }
@@ -253,6 +252,8 @@ RAW_CODE=("<<"[^">>"]*">>")
   "open"                       { return OPEN; }
   "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
+  "activate"                   { return ACTIVATE; }
+  "launch"                     { return LAUNCH; }
   "copy"                       { return COPY; }
   "put"                        { return PUT; }
   "count"                      { return COUNT; }

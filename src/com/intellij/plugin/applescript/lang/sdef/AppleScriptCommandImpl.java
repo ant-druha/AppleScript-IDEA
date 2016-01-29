@@ -109,13 +109,10 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
     return cocoaClassName;
   }
 
-  @NotNull
   @Override
-  public String getDocumentation() {
+  protected String getDocFooter() {
     StringBuilder sb = new StringBuilder();
     final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";
-    sb.append(super.getDocumentation());
-
     CommandDirectParameter p = getDirectParameter();
     List<CommandParameter> parameters = getParameters();
     if (p != null || !parameters.isEmpty()) {

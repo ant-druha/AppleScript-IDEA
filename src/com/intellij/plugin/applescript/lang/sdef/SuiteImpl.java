@@ -16,6 +16,7 @@ public class SuiteImpl extends AbstractDictionaryComponent<ApplicationDictionary
   private List<AppleScriptClass> classDefinitions = new ArrayList<AppleScriptClass>();
   private Map<String, AppleScriptClass> classDefinitionsMap = new HashMap<String, AppleScriptClass>();
   private Map<String, AppleScriptClass> classDefinitionToCodeMap = new HashMap<String, AppleScriptClass>();
+  private Map<String, AppleScriptCommand> commandDefinitionToCodeMap = new HashMap<String, AppleScriptCommand>();
   private List<AppleScriptPropertyDefinition> propertyDefinitions = new ArrayList<AppleScriptPropertyDefinition>();
 
   private List<DictionaryRecord> dictionaryRecordList = new ArrayList<DictionaryRecord>();
@@ -117,6 +118,12 @@ public class SuiteImpl extends AbstractDictionaryComponent<ApplicationDictionary
     return classDefinitionToCodeMap.get(code);
   }
 
+  @Nullable
+  @Override
+  public AppleScriptCommand findCommandByCode(String code) {
+    return commandDefinitionToCodeMap.get(code);
+  }
+
   @Override
   public boolean addProperty(AppleScriptPropertyDefinition property) {
     return propertyDefinitions.add(property);
@@ -134,7 +141,8 @@ public class SuiteImpl extends AbstractDictionaryComponent<ApplicationDictionary
 
   @Override
   public boolean addCommand(AppleScriptCommand command) {
-    return command != null && commandDefinitions.add(command) &&
-            dictionaryCommandMap.put(command.getName(), command) != null;
+    if (command == null) return false;
+    commandDefinitionToCodeMap.put(command.getCode(), command);
+    return commandDefinitions.add(command) && dictionaryCommandMap.put(command.getName(), command) != null;
   }
 }

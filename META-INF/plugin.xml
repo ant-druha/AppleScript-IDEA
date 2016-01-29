@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript IDEA</name>
-    <version>0.103</version>
+    <version>0.104</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -17,6 +17,8 @@
     <change-notes><![CDATA[
       <li>Better error recovery</li>
       <li>Parser tuning</li>
+      <li>Better command parameters completion</li>
+      <li>New "responds to" section in class documentation</li>
     ]]>
     </change-notes>
 
@@ -118,6 +120,8 @@
 
         <completion.contributor language="AppleScript"
                                 implementationClass="com.intellij.plugin.applescript.lang.ide.completion.KeywordCompletionContributor"/>
+        <weigher key="completion" id="DartServerCompletionWeigher" order="after prefix"
+                 implementationClass="com.intellij.plugin.applescript.lang.ide.completion.AppleScriptCompletionWeigher"/>
         <defaultLiveTemplatesProvider
                 implementation="com.intellij.plugin.applescript.lang.ide.AppleScriptLiveTemplatesProvider"/>
 

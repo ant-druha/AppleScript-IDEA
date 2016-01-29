@@ -1,20 +1,20 @@
 package com.intellij.plugin.applescript.lang.ide.completion;
 
 import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.plugin.applescript.lang.sdef.AppleScriptCommand;
 import com.intellij.plugin.applescript.lang.sdef.CommandParameter;
-import com.intellij.plugin.applescript.psi.AppleScriptDirectParameterVal;
-import com.intellij.plugin.applescript.psi.AppleScriptIdentifier;
 import com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
-import com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
@@ -34,82 +34,9 @@ public class CommandCompletionContributor extends CompletionContributor {
   }
 
   public CommandCompletionContributor() {
-    final PsiElementPattern.Capture<PsiElement> idInExpression =
-            psiElement().withSuperParent(1, AppleScriptIdentifier.class).
-                    withSuperParent(2, AppleScriptCommandHandlerCall.class);
 
-    final PsiElementPattern.Capture<PsiElement> id =
-            psiElement().withSuperParent(1, AppleScriptIdentifier.class);
+    final PsiElementPattern.Capture<PsiElement> any = psiElement();
 
-    final PsiElementPattern.Capture<PsiElement> any =
-            psiElement();
-
-//    psiElement().
-
-    extend(CompletionType.BASIC,
-            idInExpression,
-            new CompletionProvider<CompletionParameters>() {
-              @Override
-              protected void addCompletions(@NotNull CompletionParameters parameters,
-                                            ProcessingContext context,
-                                            @NotNull CompletionResultSet result) {
-                AppleScriptCommandHandlerCall handlerCallExpression =
-                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptCommandHandlerCall.class);
-//                if (handlerCallExpression != null) {
-//                  PsiReference ref = handlerCallExpression.getReference();
-//                  PsiElement target = ref.resolve();
-//                  if (target instanceof AppleScriptCommand) {
-//                    AppleScriptCommand command = (AppleScriptCommand) target;
-//                    for (CommandParameter par : command.getParameters()) {
-//                      result.addElement(LookupElementBuilder.create(par.getName()));
-//                    }
-//                  }
-//                }
-
-              }
-            });
-    extend(CompletionType.BASIC,
-            id,
-            new CompletionProvider<CompletionParameters>() {
-              @Override
-              protected void addCompletions(@NotNull CompletionParameters parameters,
-                                            ProcessingContext context,
-                                            @NotNull CompletionResultSet result) {
-                AppleScriptCommandHandlerCall handlerCallExpression =
-                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptCommandHandlerCall.class);
-                AppleScriptDirectParameterVal directParameter =
-                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptDirectParameterVal.class);
-                //todo here to get commandParameterSelector name (to be implemented) and get appropriate variants for
-                //completion based on type of the commandParameterValue
-                AppleScriptCommandHandlerParameter commandParameter =
-                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptCommandHandlerParameter.class);
-                PsiElement prevLeaf = PsiTreeUtil.prevVisibleLeaf(parameters.getPosition());
-                if (handlerCallExpression == null) {
-
-                  PsiElement appId = PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptIdentifier.class);
-                  PsiElement refId = appId != null ? appId.getParent() : null;
-                  PsiElement expression = refId != null ? refId.getParent() : null;
-                  PsiElement directParam = expression != null ? expression.getParent() : null;
-                  PsiElement handlerCall = directParam != null ? directParam.getParent() : null;
-                  if (handlerCall instanceof AppleScriptCommandHandlerCall) {
-                    handlerCallExpression = (AppleScriptCommandHandlerCall) handlerCall;
-                  }
-                  if (expression instanceof AppleScriptCommandHandlerCall) {
-                    handlerCallExpression = (AppleScriptCommandHandlerCall) expression;
-                  }
-                }
-                if (handlerCallExpression != null) {
-                  PsiReference ref = handlerCallExpression.getReference();
-                  PsiElement target = ref.resolve();
-                  if (target instanceof AppleScriptCommand) {
-                    AppleScriptCommand command = (AppleScriptCommand) target;
-                    for (CommandParameter par : command.getParameters()) {
-                      result.addElement(LookupElementBuilder.create(par.getName()));
-                    }
-                  }
-                }
-              }
-            });
     extend(CompletionType.BASIC,
             any,
             new CompletionProvider<CompletionParameters>() {
@@ -127,7 +54,6 @@ public class CommandCompletionContributor extends CompletionContributor {
                         && prevSibling.getNode().getElementType() == com.intellij.psi.TokenType.WHITE_SPACE) {
                   prevSibling = prevSibling.getPrevSibling();
                 }
-//                PsiElement mayBeHandler = prevSibling;
                 if (handlerCallExpression == null) {
                   handlerCallExpression = prevSibling instanceof AppleScriptCommandHandlerCall ?
                           (AppleScriptCommandHandlerCall) prevSibling : null;
@@ -142,57 +68,26 @@ public class CommandCompletionContributor extends CompletionContributor {
                   PsiElement target = ref.resolve();
                   if (target instanceof AppleScriptCommand) {
                     AppleScriptCommand command = (AppleScriptCommand) target;
-//                    CommandDirectParameter dirPar = command.getDirectParameter();
-//                    if (dirPar != null) {
-//                      String lb = "", rb = "";
-//                      if (dirPar.isOptional()) {
-//                        lb = "[";
-//                        rb = "]";
-//                      }
-//                      String text = lb + dirPar.getTypeSpecifier() + rb;
-//                      result.addElement(LookupElementBuilder.create(text));
-//                    }
-                    for (CommandParameter par : command.getParameters()) {
-//                      String lb = "", rb = "";
-//                      if (par.isOptional()) {
-//                        lb = "[";
-//                        rb = "]";
-//                      }
-//                      String text = lb + par.getName() + rb;
-                      LookupElement le = LookupElementBuilder.create(par.getName());
-
-                      result.addElement(le);
+                    List<CommandParameter> sortedParams = command.getParameters();
+                    Collections.sort(sortedParams, new Comparator<CommandParameter>() {
+                      @Override
+                      public int compare(CommandParameter par1, CommandParameter par2) {
+                        int res = 0;
+                        boolean o1 = par1.isOptional();
+                        boolean o2 = par2.isOptional();
+                        if (o1 && o2 || !o1 && !o2) res = 0;
+                        if (!o1 && o2) res = -1;
+                        if (o1 && !o2) res = 1;
+                        return res;
+                      }
+                    });
+                    for (CommandParameter par : sortedParams) {
+                      result.addElement(LookupElementBuilder.create(par).withBoldness(!par.isOptional())
+                              .withIcon(par.getIcon(0)));
                     }
                     result.stopHere();
                   }
                 }
-
-              }
-            });
-
-    extend(CompletionType.BASIC,
-            psiElement(AppleScriptCommandHandlerCall.class),
-            new CompletionProvider<CompletionParameters>() {
-              @Override
-              protected void addCompletions(@NotNull CompletionParameters parameters,
-                                            ProcessingContext context,
-                                            @NotNull CompletionResultSet result) {
-                AppleScriptCommandHandlerCall handlerCallExpression =
-                        PsiTreeUtil.getParentOfType(parameters.getPosition(), AppleScriptCommandHandlerCall.class);
-                if (handlerCallExpression != null) {
-                  PsiReference ref = handlerCallExpression.getReference();
-                  PsiElement target = ref.resolve();
-                  if (target instanceof AppleScriptCommand) {
-                    AppleScriptCommand command = (AppleScriptCommand) target;
-                    for (CommandParameter par : command.getParameters()) {
-                      LookupElement le = LookupElementBuilder.create(par.getName());
-
-                      result.addElement(le);
-                    }
-                    result.stopHere();
-                  }
-                }
-
               }
             });
   }

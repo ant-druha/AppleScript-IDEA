@@ -19,7 +19,9 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   // relationships, while elements are synonymous with to-many relationships. For more information on these and
   // related terms, see the Glossary.
   @NotNull private List<AppleScriptClass> elements = new ArrayList<AppleScriptClass>();
+  @NotNull private List<AppleScriptCommand> respondingCommands = new ArrayList<AppleScriptCommand>();
   @NotNull private List<String> elementNames;
+  @NotNull private List<String> respondingCommandNames;
   private boolean initialized;
 
   //<!-- CLASSES -->
@@ -27,9 +29,9 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
   //<!ELEMENT class ((%implementation;)?, access-group*, type*, (%class-contents;)*)>
 
   public DictionaryClass(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                         @NotNull XmlTag xmlTagClass, @Nullable String parentClassName, @Nullable List<String>
-                                 elementNames,
-                         String pluralClassName) {
+                         @NotNull XmlTag xmlTagClass, @Nullable String parentClassName,
+                         @Nullable List<String> elementNames, @Nullable List<String> respondingCommandNames,
+                         @Nullable String pluralClassName) {
     super(suite, name, code, xmlTagClass, null);
     this.parentClassName = parentClassName;
     this.pluralClassName = StringUtil.isEmpty(pluralClassName) ? name + "s" : pluralClassName;
@@ -37,6 +39,11 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
       this.elementNames = elementNames;
     } else {
       this.elementNames = new ArrayList<String>();
+    }
+    if (respondingCommandNames != null) {
+      this.respondingCommandNames = respondingCommandNames;
+    } else {
+      this.respondingCommandNames = new ArrayList<String>();
     }
   }
 
@@ -47,19 +54,16 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     this.properties = properties;
     this.parentClassName = parentClassName;
     this.elementNames = new ArrayList<String>();
+    this.respondingCommandNames = new ArrayList<String>();
   }
 
-  @NotNull
   @Override
-  public String getDocumentation() {
+  protected String getDocFooter() {
     StringBuilder sb = new StringBuilder();
-    sb.append("<HTML>");
-    final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-    //todo repeating super =(
-    sb.append(super.getDocumentation());
     AppleScriptDocHelper.appendClassAttributes(sb, this);
     AppleScriptClass parentClass = getParentClass();
     if (parentClass != null) {
+      final String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
       sb.append("<p>").append(indent).append("INHERITED FROM ").append(parentClass.getName().toUpperCase()).
               append("</p>");
       AppleScriptDocHelper.appendClassAttributes(sb, parentClass);
@@ -106,16 +110,34 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
 
   @NotNull
   public List<AppleScriptClass> getElements() {
-    if (!initialized && !elementNames.isEmpty()) {
+    if (!initialized) {
+      initializeElements();
+    }
+    return elements;
+  }
+
+  @NotNull
+  public List<AppleScriptCommand> getRespondingCommands() {
+    if (!initialized) {
+      initializeElements();
+    }
+    return respondingCommands;
+  }
+
+  private void initializeElements() {
       for (String className : elementNames) {
         AppleScriptClass cls = getDictionary().findClass(className);
         if (cls != null) {
           elements.add(cls);
         }
       }
-      initialized = true;
+    for (String commandName : respondingCommandNames) {
+      AppleScriptCommand cmd = getDictionary().findCommand(commandName);
+      if (cmd != null) {
+        respondingCommands.add(cmd);
+      }
     }
-    return elements;
+    initialized = true;
   }
 
   @NotNull

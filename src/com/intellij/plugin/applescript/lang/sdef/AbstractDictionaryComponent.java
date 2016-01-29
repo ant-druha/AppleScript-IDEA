@@ -131,23 +131,21 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
     return null;
   }
 
-  @NotNull
-  @Override
-  public String getDocumentation() {
+  protected String getDocHeader() {
     StringBuilder sb = new StringBuilder();
-    String type = StringUtil.capitalizeWords(getType(), true);
     String name = getName();
     sb.append("<b>");
     AppleScriptDocHelper.appendElementLink(sb, getDictionary(), getDictionary().getName());
     sb.append("</b> ").append(" Dictionary").append("<br>");
-//    if (!(this instanceof DictionaryClass
-//            || this instanceof AppleScriptCommand
-//            || this instanceof Suite)) {
-    sb.append("<p>");
-    sb.append(type.toLowerCase().contains("dictionary") ? type.substring(10) : type).append(" <b>").append(name)
-            .//todo remove 10 !!
-            append("</b>");
+    return sb.toString();
+  }
 
+  protected String getTypeDescription() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<p>");
+    String type = StringUtil.capitalizeWords(getType(), true);
+    sb.append(type.toLowerCase().contains("dictionary") ? type.substring(10) : type).append(" <b>").append(name)
+            .append("</b>");
     if (this instanceof AppleScriptClass) {
       AppleScriptClass parentClass = ((AppleScriptClass) this).getParentClass();
       if (parentClass != null) {
@@ -163,12 +161,27 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
         } while (parentClass != null && recursionGuard > 0);
         sb.append(" ]");
       }
+    } else if (this instanceof CommandParameter) {
+      CommandParameter param = (CommandParameter) this;
+      String pType = StringUtil.notNullize(param.getTypeSpecifier());
+      sb.append(" [").append(pType).append("]");
     }
-
     sb.append(" : ").append(StringUtil.notNullize(getDescription()));
-    sb.append("</p>");
-//    }
     return sb.toString();
+  }
+
+  @NotNull
+  @Override
+  public String getDocumentation() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(getDocHeader());
+    sb.append(getTypeDescription());
+    sb.append(getDocFooter());
+    return sb.toString();
+  }
+
+  protected String getDocFooter() {
+    return "</p>";
   }
 
   @NotNull

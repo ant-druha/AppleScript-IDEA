@@ -57,7 +57,8 @@ public enum AppleScriptComponentType {
       final AppleScriptComponent component = (AppleScriptComponent) element;
       if (component.isHandler()) {
         return HANDLER;
-      } else if (element instanceof AppleScriptSimpleFormalParameter) {//todo handle detection for all handlers
+      } else if (element instanceof AppleScriptSimpleFormalParameter
+              || element instanceof CommandParameter) {//todo handle detection for all handlers
         return PARAMETER;
       } else if (component.isVariable()) {
         return VARIABLE;

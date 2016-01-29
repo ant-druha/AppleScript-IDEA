@@ -1,4 +1,4 @@
-package com.idea.plugin.applescript.lang.lexer;
+package com.intellij.plugin.applescript.lang.lexer;
 import com.intellij.lexer.*;
 import com.intellij.psi.tree.IElementType;
 import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
@@ -170,7 +170,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "result"                     { return RESULT; }
   "try"                        { return TRY; }
   "on"                         { return ON; }
-  "app"                        { return APP; }
   "tell"                       { return TELL; }
   "considering"                { return CONSIDERING; }
   "but"                        { return BUT; }
@@ -226,9 +225,6 @@ RAW_CODE=("<<"[^">>"]*">>")
   "prop"                       { return PROP; }
   "global"                     { return GLOBAL; }
   "local"                      { return LOCAL; }
-//  "yes"                        { return YES; }
-//  "no"                         { return NO; }
-//  "ask"                        { return ASK; }
   "space"                      { return SPACE; }
   "tab"                        { return TAB; }
   "linefeed"                   { return LINEFEED; }
@@ -256,11 +252,14 @@ RAW_CODE=("<<"[^">>"]*">>")
   "open"                       { return OPEN; }
   "given"                      { return GIVEN; }
   "continue"                   { return CONTINUE; }
+  "activate"                   { return ACTIVATE; }
+  "launch"                     { return LAUNCH; }
   "copy"                       { return COPY; }
   "put"                        { return PUT; }
   "count"                      { return COUNT; }
   "each"                       { return EACH; }
   "get"                        { return GET; }
+  "log"                        { return LOG; }
   "set"                        { return SET; }
   "returning"                  { return RETURNING; }
   "my"                         { return MY; }

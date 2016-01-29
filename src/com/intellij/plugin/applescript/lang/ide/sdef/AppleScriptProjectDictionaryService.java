@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -145,5 +146,10 @@ public class AppleScriptProjectDictionaryService {
   @Nullable
   public ApplicationDictionary getDictionary(@NotNull String applicationName) {
     return dictionaryMap.get(applicationName);
+  }
+
+  @NotNull
+  public Collection<ApplicationDictionary> getDictionaries() {
+    return dictionaryMap.values();
   }
 }
