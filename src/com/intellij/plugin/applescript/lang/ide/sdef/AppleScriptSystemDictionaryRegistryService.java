@@ -716,13 +716,12 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   public boolean isXcodeInstalled() {
-    File xCodeApp;
+    if (!SystemInfo.isMac) return false;
     if (xCodeApplicationFile != null && xCodeApplicationFile.exists()) return true;
-
     //"null" name means that Xcode was not found previously
     if (xCodeApplicationFile != null && "null".equals(xCodeApplicationFile.getName())) return false;
 
-    xCodeApp = new File("/Applications/Xcode.app");
+    File xCodeApp = new File("/Applications/Xcode.app");
     if (xCodeApp.exists()) {
       xCodeApplicationFile = xCodeApp;
       return true;
@@ -730,18 +729,25 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     try {
       ScriptEngineManager engineManager = new ScriptEngineManager();
       ScriptEngine engine = engineManager.getEngineByName("AppleScriptEngine");
-      String script = "try\n" +
+      if (engine == null) {
+        xCodeApplicationFile = new File("null");
+        return false;
+      }
+      final String script = "try\n" +
               "tell application \"Finder\" to return POSIX path of (get application file id \"com.apple.dt.Xcode\" as" +
               " alias)\n" +
               "on error\n" +
               "  return \"null\"\n" +
               "end try";
-      String xCodeAppPath = engine.eval(script).toString();
-      xCodeApplicationFile = new File(xCodeAppPath);
-      if (xCodeApplicationFile.exists()) return true;
+      final Object scriptResult = engine.eval(script);
+      if (scriptResult != null) {
+        xCodeApplicationFile = new File(scriptResult.toString());
+        return xCodeApplicationFile.exists();
+      }
     } catch (ScriptException e) {
       LOG.error("Error evaluating applescript: " + e.getMessage());
     }
+    xCodeApplicationFile = new File("null");
     return false;
   }
 
