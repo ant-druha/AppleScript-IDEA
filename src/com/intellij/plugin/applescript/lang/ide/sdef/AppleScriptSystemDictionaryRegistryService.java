@@ -729,20 +729,15 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     try {
       ScriptEngineManager engineManager = new ScriptEngineManager();
       ScriptEngine engine = engineManager.getEngineByName("AppleScriptEngine");
-      if (engine == null) {
-        xCodeApplicationFile = new File("null");
-        return false;
-      }
-      final String script = "try\n" +
-              "tell application \"Finder\" to return POSIX path of (get application file id \"com.apple.dt.Xcode\" as" +
-              " alias)\n" +
-              "on error\n" +
-              "  return \"null\"\n" +
-              "end try";
-      final Object scriptResult = engine.eval(script);
-      if (scriptResult != null) {
-        xCodeApplicationFile = new File(scriptResult.toString());
-        return xCodeApplicationFile.exists();
+      if (engine != null) {
+        final String script = "try\n" +
+                "tell application \"Finder\" to return POSIX path of (get application file id \"com.apple.dt.Xcode\" " +
+                "as alias)\n" + "on error\n" + "  return \"null\"\n" + "end try";
+        final Object scriptResult = engine.eval(script);
+        if (scriptResult != null) {
+          xCodeApplicationFile = new File(scriptResult.toString());
+          return xCodeApplicationFile.exists();
+        }
       }
     } catch (ScriptException e) {
       LOG.error("Error evaluating applescript: " + e.getMessage());
