@@ -268,6 +268,17 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       } else if (ParsableScriptSuiteRegistryHelper.isApplicationCommand(applicationName, parsedName.value)) {
         //if there is std command with longer prefix exists do not parse it here
         r = !checkStdLib || !ParsableScriptSuiteRegistryHelper.isStdCommandWithPrefixExist(nextTokenText);
+        // if there is class name with longer prefix exists !! AND !! next is NLS token => do not this as command name
+//        boolean longerClassNameExists = ParsableScriptSuiteRegistryHelper
+//                .isClassWithPrefixExist(applicationName, nextTokenText);
+//        if (r && longerClassNameExists) {
+//          while (b.getTokenType() != NLS) {
+//            b.advanceLexer();
+//            nextTokenText += " " + b.getTokenText();
+//          }
+//          r = ParsableScriptSuiteRegistryHelper.isApplicationClass(applicationName, nextTokenText);
+//        }
+        r = r && !ParsableScriptSuiteRegistryHelper.isClassWithPrefixExist(applicationName, nextTokenText);
         break;
       }
     }

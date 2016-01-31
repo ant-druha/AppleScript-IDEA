@@ -105,6 +105,8 @@ public class AppleScriptColorAnnotator implements Annotator {
           }
         }
       }
+    } else if (element instanceof AppleScriptIncompleteExpression) {
+      holder.createErrorAnnotation(element, "Incomplete expression");
     }
     // duplicated labels
     if (elementType == HANDLER_LABELED_PARAMETERS_DEFINITION ||
@@ -130,17 +132,18 @@ public class AppleScriptColorAnnotator implements Annotator {
       }
     }
 
-
   }
 
   @Nullable
-  private String checkWarningReason(@NotNull String appName, @NotNull AppleScriptSystemDictionaryRegistryService
-          dictionaryRegistryService) {
+  private String checkWarningReason(@NotNull String appName,
+                                    @NotNull AppleScriptSystemDictionaryRegistryService dictionaryRegistryService) {
     String warningReason = null;
-    if (dictionaryRegistryService.isNotScriptable(appName)) {
+    if (dictionaryRegistryService.isNotScriptable(appName) && dictionaryRegistryService.isXcodeInstalled()) {
       warningReason = "Application \"" + appName + "\" is not scriptable";
     } else if (dictionaryRegistryService.isInUnknownList(appName)) {
       warningReason = "Application \"" + appName + "\" not found";
+    } else if (!dictionaryRegistryService.isXcodeInstalled()) {
+      warningReason = "Can not create dictionary: Xcode Developer Tools are not installed";
     }
     return warningReason;
   }

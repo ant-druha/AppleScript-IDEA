@@ -346,11 +346,13 @@ public class SDEF_Parser {
     String name = commandTag.getAttributeValue("name");
     String code = commandTag.getAttributeValue("code");
     String description = commandTag.getAttributeValue("description");
+    String documentation = commandTag.getSubTagText("documentation");
 
     if (name == null || code == null) return null;
 
     final AppleScriptCommand command = new AppleScriptCommandImpl(suite, name, code, commandTag);
     command.setDescription(description);
+    command.setDictionaryDoc(documentation);
 
     XmlTag resultTag = commandTag.findFirstSubTag("result");
     if (resultTag != null) {

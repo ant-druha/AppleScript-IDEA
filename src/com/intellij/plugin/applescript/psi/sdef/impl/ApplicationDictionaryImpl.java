@@ -52,8 +52,9 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull private final List<PsiFile> includedFiles = new ArrayList<PsiFile>();
   @NotNull private String applicationName;
   @NotNull private String dictionaryName;
-  private XmlTag myRootTag;
+  @Nullable private String documentation;
 
+  private XmlTag myRootTag;
   private final List<Suite> mySuites = new ArrayList<Suite>();
   private final Map<String, AppleScriptPropertyDefinition> dictionaryPropertyMap = new HashMap<String,
           AppleScriptPropertyDefinition>();
@@ -453,6 +454,11 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @Override
   public void setDescription(String description) {
 
+  }
+
+  @Override
+  public void setDictionaryDoc(@Nullable String documentation) {
+    this.documentation = documentation;
   }
 
   @NotNull

@@ -56,6 +56,8 @@ public interface DictionaryComponent extends AppleScriptComponent {
 
   void setDescription(String description);
 
+  void setDictionaryDoc(@Nullable String documentation);
+
   @NotNull
   ApplicationDictionary getDictionary();
 

@@ -26,10 +26,10 @@ import org.jdom.output.XMLOutputter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.*;
 import java.util.*;
 
 public class AppleScriptSystemDictionaryRegistryService implements ParsableScriptHelper {
@@ -44,6 +44,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private final HashSet<String> scriptingAdditions = new HashSet<String>();
   private final HashSet<String> notFoundApplicationList = new HashSet<String>();
   private final HashSet<String> discoveredApplicationNames = new HashSet<String>();
+
+  private File xCodeApplicationFile;
 
   public static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
   private static final int APP_DEPTH_SEARCH = 3;
@@ -667,6 +669,15 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     } catch (NotScriptableApplicationException e) {
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
       notScriptableApplicationList.add(e.getApplicationName());
+    } catch (DeveloperToolsNotInstalledException e) {
+      LOG.warn("Generation failed: " + e.getMessage() + " Will try to find application scripting definition file...");
+      File sdefFile = findSdefForApplication(applicationIoFile);
+      if (sdefFile != null && sdefFile.exists()) {
+        fileGenerated = copyDictionaryFileToCacheDir(applicationName, sdefFile, targetFile, true);
+      } else {
+        LOG.warn("Scripting definition was not found for application " + applicationIoFile.getAbsolutePath());
+        notScriptableApplicationList.add(applicationName);
+      }
     } finally {
       if (!fileGenerated) {
         LOG.warn("Error occurred while generating file.");
@@ -689,6 +700,51 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return null;
   }
 
+  @Nullable
+  private File findSdefForApplication(@NotNull File applicationIoFile) {
+    File appResources = new File(applicationIoFile, "/Contents/Resources");
+    File[] files = appResources.listFiles(new FilenameFilter() {
+      @Override
+      public boolean accept(File file, String s) {
+        return s.endsWith("sdef");
+      }
+    });
+    if (files != null && files.length > 0) {
+      return files[0];
+    }
+    return null;
+  }
+
+  public boolean isXcodeInstalled() {
+    File xCodeApp;
+    if (xCodeApplicationFile != null && xCodeApplicationFile.exists()) return true;
+
+    //"null" name means that Xcode was not found previously
+    if (xCodeApplicationFile != null && "null".equals(xCodeApplicationFile.getName())) return false;
+
+    xCodeApp = new File("/Applications/Xcode.app");
+    if (xCodeApp.exists()) {
+      xCodeApplicationFile = xCodeApp;
+      return true;
+    }
+    try {
+      ScriptEngineManager engineManager = new ScriptEngineManager();
+      ScriptEngine engine = engineManager.getEngineByName("AppleScriptEngine");
+      String script = "try\n" +
+              "tell application \"Finder\" to return POSIX path of (get application file id \"com.apple.dt.Xcode\" as" +
+              " alias)\n" +
+              "on error\n" +
+              "  return \"null\"\n" +
+              "end try";
+      String xCodeAppPath = engine.eval(script).toString();
+      xCodeApplicationFile = new File(xCodeAppPath);
+      if (xCodeApplicationFile.exists()) return true;
+    } catch (ScriptException e) {
+      LOG.error("Error evaluating applescript: " + e.getMessage());
+    }
+    return false;
+  }
+
   /**
    * @param applicationName name of the application for which dictionary will be generated
    * @param serializePath   file path of the generated dictionary
@@ -696,12 +752,14 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
    * @param appFilePath     path of the application bundle (or dictionary file if generating from already existing
    *                        dictionary file)
    * @return true if file was generated successfully
-   * @throws NotScriptableApplicationException if application does not support AppleScript scripting
+   * @throws NotScriptableApplicationException   if application does not support AppleScript scripting
+   * @throws DeveloperToolsNotInstalledException if Xcode is not installed
    */
   private boolean doGenerateDictionaryFile(@NotNull final String applicationName,
                                            @NotNull final String serializePath,
                                            @NotNull final String cmdName,
-                                           @NotNull final String appFilePath) throws NotScriptableApplicationException {
+                                           @NotNull final String appFilePath)
+          throws NotScriptableApplicationException, DeveloperToolsNotInstalledException {
     try {
       final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
               "> " + serializePath};
@@ -710,9 +768,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       long execStart = System.currentTimeMillis();
       exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
       long execEnd = System.currentTimeMillis();
-      if (exitCode != 0) throw new NotScriptableApplicationException(applicationName,
-              "Command " + Arrays.toString(shellCommand) + " failed with code=" + exitCode + ". Seems that " +
-                      "application \"" + applicationName + "\" is not scriptable.");
+      if (exitCode != 0) {
+        if (isXcodeInstalled()) {
+          throw new NotScriptableApplicationException(applicationName,
+                  "Command " + Arrays.toString(shellCommand) + " failed with code=" + exitCode + ". Seems that " +
+                          "application \"" + applicationName + "\" is not scriptable.");
+        } else throw new DeveloperToolsNotInstalledException();
+      }
 
       LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
       return true;
@@ -733,7 +795,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
    * @param applicationDictionaryFile application file
    * @param targetFile                file to be created
    * @param rewrite                   rewrite if same dictionary file exists
-   * @return true if file was copied succesfully
+   * @return true if file was copied successfully
    */
   private boolean copyDictionaryFileToCacheDir(@NotNull final String applicationName,
                                                @NotNull final File applicationDictionaryFile,

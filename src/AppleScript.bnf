@@ -183,7 +183,7 @@ appleScriptFile ::= compilation_unit_*
 
 private compilation_unit_ ::= topBlockBodyPart|sep
 
-private topBlockBodyPart ::= (topLevelStatement|statement|expression|RAW_CODE)
+private topBlockBodyPart ::= topLevelStatement | statement | expression | RAW_CODE | incompleteExpression
 {recoverWhile=topBodyPartRecover}
 private topBodyPartRecover ::= !(sep/*|tell*/)
 
@@ -191,6 +191,8 @@ private sep ::= (COMMENT? NLS COMMENT?)+ // one or more new lines and spaces
 
 scriptBody ::= topBlockBodyPart (sep topBlockBodyPart)* sep?
 {pin=1}
+
+incompleteExpression ::= tell expression | set objectReferenceWrapper | copy expression | if expression
 
 identifier ::= var_identifier
 
@@ -709,7 +711,7 @@ private userLabelReference ::= THE_KW? referenceIdentifier
 //===HANDLERS===
 // handler is a collection of statements which can be invoked by name
 //todo consider add all in handlerLabeledParametersDefinition and handledLabeledParametersName
-handlerRunDefinition ::= on run sep
+handlerRunDefinition ::= on run directParameterDeclaration? sep
                             blockBody?
                           end run {pin=2}
 

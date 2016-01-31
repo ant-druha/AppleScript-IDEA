@@ -140,6 +140,9 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
       sb.append("<p>").append("<b>Returns:</b></p>").append(indent).append(indent).
               append(res.getType()).append(" : ").append(StringUtil.notNullize(res.getDescription()));
     }
+//    if (!StringUtil.isEmpty(documentation)) {
+//      sb.append("<p>").append(documentation).append("</p>");
+//    }
     return sb.toString();
   }
 

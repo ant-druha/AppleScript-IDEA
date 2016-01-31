@@ -2,7 +2,7 @@ package com.intellij.plugin.applescript.psi.impl;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
-import com.intellij.plugin.applescript.AppleScriptIcons;
+import com.intellij.plugin.applescript.lang.AppleScriptComponentType;
 import com.intellij.plugin.applescript.psi.AppleScriptComponent;
 import com.intellij.plugin.applescript.psi.AppleScriptScriptBody;
 import com.intellij.plugin.applescript.psi.AppleScriptScriptObject;
@@ -56,7 +56,7 @@ public abstract class AbstractAppleScriptScriptObject extends AbstractAppleScrip
   @Nullable
   @Override
   public Icon getIcon(int flags) {
-    return AppleScriptIcons.FILE;
+    return AppleScriptComponentType.DICTIONARY_CLASS.getIcon();
   }
 
   @Nullable

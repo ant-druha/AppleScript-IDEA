@@ -29,6 +29,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @NotNull private final String code;
   @NotNull private final String name;
   @Nullable private String description;
+  @Nullable protected String dictionaryDoc;
 
   protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name, @NotNull String code,
                                         @NotNull XmlTag myXmlTag, @Nullable String description) {
@@ -240,5 +241,9 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @Override
   public PsiElement getNameIdentifier() {
     return getIdentifier();
+  }
+
+  public void setDictionaryDoc(@Nullable String documentation) {
+    this.dictionaryDoc = documentation;
   }
 }
