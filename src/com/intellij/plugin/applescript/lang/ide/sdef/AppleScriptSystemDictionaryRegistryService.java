@@ -543,13 +543,23 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         }
         if (dInfo != null)
           scriptingAdditions.add(dInfo.getApplicationName());
-        else
-          LOG.warn("Can not initialize scripting addition library from file: " + stdLib);
+        else {
+          LOG.warn("Can not initialize scripting addition library from file: " + stdLib + ". Will copy bundled lib.");
+          try {
+            dInfo = initStdTerms(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
+            if (dInfo != null) {
+              scriptingAdditions.add(dInfo.getApplicationName());
+            }
+          } catch (IOException e) {
+            LOG.warn("Can not initialize scripting addition library from bundle: " + e.getMessage());
+          }
+        }
       }
     }
   }
 
-  private void initStdTerms(@NotNull String stdLibName) throws IOException {
+  @Nullable
+  private DictionaryInfo initStdTerms(@NotNull String stdLibName) throws IOException {
     DictionaryInfo stdDInfo = dictionaryInfoMap.get(stdLibName);
     if (stdDInfo != null) {
       initializeDictionaryFromInfo(stdDInfo);
@@ -558,15 +568,16 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
               ApplicationDictionary.COCOA_STANDARD_FILE :
               stdLibName.equals(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY) ?
                       ApplicationDictionary.STANDARD_ADDITIONS_FILE : null;
-      if (libPathResource == null) return;
+      if (libPathResource == null) return null;
 
       InputStream isStd = getClass().getResourceAsStream(libPathResource);
       final File tmpFile = stream2file(isStd, stdLibName.replaceAll(" ", "_"), ".sdef");
       if (tmpFile.exists() && tmpFile.isFile())
-        createAndInitializeInfo(tmpFile, stdLibName);
+        stdDInfo = createAndInitializeInfo(tmpFile, stdLibName);
       else
         LOG.warn("Can not find standard suite dictionary in the classpath");
     }
+    return stdDInfo;
   }
 
   /**
@@ -670,13 +681,17 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       LOG.warn("Generation failed: " + e.getMessage() + ". Adding to ignore list");
       notScriptableApplicationList.add(e.getApplicationName());
     } catch (DeveloperToolsNotInstalledException e) {
-      LOG.warn("Generation failed: " + e.getMessage() + " Will try to find application scripting definition file...");
-      File sdefFile = findSdefForApplication(applicationIoFile);
-      if (sdefFile != null && sdefFile.exists()) {
-        fileGenerated = copyDictionaryFileToCacheDir(applicationName, sdefFile, targetFile, true);
-      } else {
-        LOG.warn("Scripting definition was not found for application " + applicationIoFile.getAbsolutePath());
-        notScriptableApplicationList.add(applicationName);
+      LOG.warn("Generation failed: " + e.getMessage());
+      //DispatchThread is needed for write action in #copyDictionaryFileToCacheDir()
+      if (ApplicationManager.getApplication().isDispatchThread()) {
+        LOG.warn("Will try to find application scripting definition file...");
+        File sdefFile = findSdefForApplication(applicationIoFile);
+        if (sdefFile != null && sdefFile.exists()) {
+          fileGenerated = copyDictionaryFileToCacheDir(applicationName, sdefFile, targetFile, true);
+        } else {
+          LOG.warn("Scripting definition was not found for application " + applicationIoFile.getAbsolutePath());
+          notScriptableApplicationList.add(applicationName);
+        }
       }
     } finally {
       if (!fileGenerated) {
@@ -765,7 +780,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
               "> " + serializePath};
       LOG.info("executing command: " + Arrays.toString(shellCommand));
-      Integer exitCode;
+      final Integer exitCode;
       long execStart = System.currentTimeMillis();
       exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
       long execEnd = System.currentTimeMillis();
@@ -803,7 +818,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
                                                @NotNull final File targetFile,
                                                final boolean rewrite) {
     if (!targetFile.getParentFile().exists()) return false;
-    if (!targetFile.exists() || rewrite) {
+    if (ApplicationManager.getApplication().isDispatchThread() && (!targetFile.exists() || rewrite)) {
       ApplicationManager.getApplication().runWriteAction(new Runnable() {
         @Override
         public void run() {
