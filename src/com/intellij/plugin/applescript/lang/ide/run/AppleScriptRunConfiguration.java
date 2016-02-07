@@ -19,8 +19,14 @@ import org.jetbrains.annotations.Nullable;
 public class AppleScriptRunConfiguration extends LocatableConfigurationBase {
 
   private static final String SCRIPT_PATH_URL = "scriptUrl";
+  private static final String SCRIPT_PARAMETERS = "scriptParameters";
+  private static final String SCRIPT_OPTIONS = "scriptOptions";
+  private static final String SCRIPT_SHOW_EVENTS = "logEvents";
 
   private String scriptPath;
+  private String scriptParameters;
+  private String scriptOptions;
+  private boolean myShowAppleEvents;
 
   public AppleScriptRunConfiguration(Project project, ConfigurationFactory configurationFactory, String name) {
     super(project, configurationFactory, name);
@@ -44,17 +50,36 @@ public class AppleScriptRunConfiguration extends LocatableConfigurationBase {
     return scriptPath;
   }
 
+  @Nullable
+  public String getScriptParameters() {
+    return scriptParameters;
+  }
+
   public void setScriptPath(String scriptPath) {
     this.scriptPath = scriptPath;
+  }
+
+  public void setScriptParameters(String scriptParameters) {
+    this.scriptParameters = scriptParameters;
   }
 
   @Override
   public void readExternal(Element element) throws InvalidDataException {
     super.readExternal(element);
     String scriptUrl = element.getAttributeValue(SCRIPT_PATH_URL);
+    String scriptParams = element.getAttributeValue(SCRIPT_PARAMETERS);
+    String scriptOptions = element.getAttributeValue(SCRIPT_OPTIONS);
+    String logEvents = element.getAttributeValue(SCRIPT_SHOW_EVENTS);
     if (!StringUtil.isEmpty(scriptUrl)) {
       scriptPath = scriptUrl;
     }
+    if (!StringUtil.isEmpty(scriptParams)) {
+      scriptParameters = scriptParams;
+    }
+    if (!StringUtil.isEmpty(scriptOptions)) {
+      this.scriptOptions = scriptOptions;
+    }
+    if (!StringUtil.isEmpty(logEvents)) myShowAppleEvents = "true".equals(logEvents);
   }
 
   @Override
@@ -63,6 +88,28 @@ public class AppleScriptRunConfiguration extends LocatableConfigurationBase {
     if (!StringUtil.isEmpty(scriptPath)) {
       element.setAttribute(SCRIPT_PATH_URL, scriptPath);
     }
+    if (!StringUtil.isEmpty(scriptParameters)) {
+      element.setAttribute(SCRIPT_PARAMETERS, scriptParameters);
+    }
+    if (!StringUtil.isEmpty(scriptOptions)) {
+      element.setAttribute(SCRIPT_OPTIONS, scriptOptions);
+    }
+    element.setAttribute(SCRIPT_SHOW_EVENTS, myShowAppleEvents ? "true" : "false");
   }
 
+  public String getScriptOptions() {
+    return scriptOptions;
+  }
+
+  public void setScriptOptions(String scriptOptions) {
+    this.scriptOptions = scriptOptions;
+  }
+
+  public boolean isShowAppleEvents() {
+    return myShowAppleEvents;
+  }
+
+  public void setShowAppleEvents(boolean showAppleEvents) {
+    myShowAppleEvents = showAppleEvents;
+  }
 }

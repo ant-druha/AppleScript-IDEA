@@ -17,6 +17,9 @@ public class AppleScriptRunSettingsEditor extends SettingsEditor<AppleScriptRunC
   AppleScriptRunConfiguration runConfiguration;
   private JPanel mainPanel;
   private TextFieldWithBrowseButton scriptTextField;
+  private JTextField parametersTextField;
+  private JTextField scriptOptionsTextField;
+  private JCheckBox showAppleEventsCheckBox;
 
   public AppleScriptRunSettingsEditor(Project project, AppleScriptRunConfiguration runConfiguration) {
     this.project = project;
@@ -24,12 +27,14 @@ public class AppleScriptRunSettingsEditor extends SettingsEditor<AppleScriptRunC
 
     FileChooserDescriptor descriptor = new FileChooserDescriptor(true, false, false, false, false, false);
     scriptTextField.addBrowseFolderListener("Chose script", "Please choose script to run", project, descriptor);
-//    mainPanel.setEnabled(false);
   }
 
   @Override
   protected void resetEditorFrom(AppleScriptRunConfiguration configuration) {
     String scriptPath = configuration.getScriptPath();
+    String scriptParameters = configuration.getScriptParameters();
+    String scriptOptions = configuration.getScriptOptions();
+    boolean showAppleEvents = configuration.isShowAppleEvents();
     if (!StringUtil.isEmpty(scriptPath)) {
       scriptTextField.setText(scriptPath);
       String[] parts = scriptPath.split("/");
@@ -37,11 +42,21 @@ public class AppleScriptRunSettingsEditor extends SettingsEditor<AppleScriptRunC
         runConfiguration.setName(parts[parts.length - 1]);
       }
     }
+    if (!StringUtil.isEmpty(scriptParameters)) {
+      parametersTextField.setText(scriptParameters);
+    }
+    if (!StringUtil.isEmpty(scriptOptions)) {
+      scriptOptionsTextField.setText(scriptOptions);
+    }
+    showAppleEventsCheckBox.setSelected(showAppleEvents);
   }
 
   @Override
   protected void applyEditorTo(AppleScriptRunConfiguration configuration) throws ConfigurationException {
     configuration.setScriptPath(scriptTextField.getText().trim());
+    configuration.setScriptParameters(parametersTextField.getText().trim());
+    configuration.setScriptOptions(scriptOptionsTextField.getText().trim());
+    configuration.setShowAppleEvents(showAppleEventsCheckBox.isSelected());
   }
 
   @NotNull
