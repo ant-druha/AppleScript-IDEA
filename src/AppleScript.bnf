@@ -1,5 +1,4 @@
 {
-
   parserClass="com.intellij.plugin.applescript.lang.parser.AppleScriptParser"
   psiImplUtilClass="com.intellij.plugin.applescript.psi.impl.AppleScriptPsiImplUtil"
 
@@ -150,6 +149,9 @@
     TEXT_ITEM_DELIMETERS='regexp:text[\ \t\f]+item[\ \t\f]+delimiters'
     MISSING_VALUE='regexp:missing[\ \t\f]+value'
 
+    //considerIgnoreAttributes
+    CONSIDER_IGNORE_ATTRIBUTE='regexp:(case|diacriticals|hyphens|numeric[\ \t\f]+strings|punctuation)'
+
     //constants
     PI_CONSTANT='pi'              //3.1412926
     MINUTES_CONSTANT='minutes'    // =60seconds
@@ -196,7 +198,7 @@ incompleteExpression ::= tell expression | set objectReferenceWrapper | copy exp
 
 identifier ::= var_identifier
 
-referenceIdentifier ::= identifier
+referenceExpression ::= identifier
 {mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
  implements="com.intellij.plugin.applescript.psi.AppleScriptReferenceElement"}
 
@@ -225,7 +227,6 @@ topBlockBody ::= topBlockBodyPart sep (topBlockBodyPart sep)*
 {pin=1}
 blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
 {pin=1}
-//private bodyRecover ::= !((end|(on error)|else))
 
 private blockBodyPart ::= statement|expression|RAW_CODE
 {recoverWhile=bodyPartRecover}
@@ -239,7 +240,7 @@ repeatNumTimesStatement ::= REPEAT numTimes [times] sep
                             blockBody?
                             end [REPEAT]
 
-private numTimes ::= expression//integerLiteralExpression|referenceIdentifier|parenthesizedExpression
+private numTimes ::= expression
 
 repeatWhileStatement ::= REPEAT while expression sep
                             blockBody?
@@ -253,10 +254,10 @@ repeatWithRangeStatement ::= REPEAT with loopVariable from startValue to stopVal
                              blockBody?
                              end [REPEAT] {pin=4}
 
-//todo expression does not always work.. (because of 'to' )
 private stepValue ::= expression
-private stopValue ::= (referenceIdentifier &by) | expression
-private startValue ::= (referenceIdentifier &to) | expression
+//expression does not always work.. (because of 'to' )
+private stopValue ::= (referenceExpression &by) | expression
+private startValue ::= (referenceExpression &to) | expression
 private loopVariable ::= directParameterDeclaration
 
 repeatWithListStatement ::= REPEAT with loopVariable in listOrReferenceExpression sep
@@ -269,7 +270,7 @@ errorCommandExpression ::= error [errorMessage] [number errorNumber]
                                  [to expectedType]
                                  [partial result resultList]
 private resultList ::= expression
-private offendingObject ::= (referenceIdentifier &to) | expression
+private offendingObject ::= (referenceExpression &to) | expression
 private expectedType ::= expression
 private errorNumber ::= expression
 private errorMessage ::= expression
@@ -315,7 +316,7 @@ ignoringStatement ::= ignoring considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr
                         [but considering considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)? ] sep
                            blockBody?
                       end ignoring {pin=2}
-private considerOrIgnoreAttr ::= expression
+private considerOrIgnoreAttr ::= CONSIDER_IGNORE_ATTRIBUTE|C_WHITE_SPACE|expression
 
 withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second) sep
                            blockBody?
@@ -325,12 +326,11 @@ private timeoutIntegerExpression ::= expression
 withTransactionStatement ::= with transaction [sessionSpecificator] sep
                                blockBody?
                              end [transaction] {pin=2}
-private sessionSpecificator ::= expression//referenceIdentifier
+private sessionSpecificator ::= expression
 
 useStatement ::= useAppleScriptStatement|useApplicationOrScriptStatement|useFrameworkStatement
 {implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
  methods=[getApplicationName useStandardAdditions withImporting]}
-//todo 'considering numeric strings'
 
 private useAppleScriptStatement ::= use 'AppleScript' [version expression] {pin=2}
 
@@ -387,7 +387,6 @@ ifCompoundStatement ::= if expression [then] sep
 private literalExpression ::=
               stringLiteralExpression
               |styledTextLiteralExpression
-              //|built_in_type
               |numberLiteralExpression
               |dictionaryConstant
               |builtInConstantLiteralExpression
@@ -445,17 +444,6 @@ private dec_significand ::= ('.'DIGITS)|(DIGITS'.'DIGITS*)
 
 // >>Date class<<
 dateLiteralExpression ::= date (stringLiteralExpression|expression)
-//private currentDateCommand ::= CURRENT_DATE
-
-//>> List reference
-//private list_specifier ::= (class|length|rest|reverse) of list_literal_expression // ref by properties
-//                            item [index]
-//A value of class Constant is a reserved word defined by AppleScript or an application in its dictionary.
-// Applications define sets of values that can be used for parameters of a particular command. For example,
-// the value of the saving parameter of a Close command must be one of the three constants yes, no, and ask
-//For a complete listing of the constants AppleScript provides, see Table A-3(page 358) and Table A-2 (page 355).
-// !! NOT CASE SENSITIVE !!
-//You cannot define your own constants; constants can be defined only by applications and AppleScript.
 
 textItemDelimitersProperty ::= TEXT_ITEM_DELIMETERS
 
@@ -487,30 +475,10 @@ private styledTextLiteralExpression ::= STRING_LITERAL
 private boolean_constant ::= true|false
 
 // COMMANDS
-// commands  is a word or a series of words used in AppleScript statements to request an action.
-// we need to parse xml files -> index command names and signatures they have -> after user inters some command
-
 //An AppleScript command is one that is built into the AppleScript language. There currently are five such
 // commands: get , set, count, copy, and run.
 // Except for copy , each of these commands can also be implemented by applications.
 
-/**
-todo refactor application reference parsing rule so to insert and use anywhere in the
-grammar: (tell/using terms/use statements). in general place do not push any app names, but redefine it for
-each specific case: tell/use/using.
-Examples:
-tell application "App name" .. end tell
-tell scripting additions ..end tell
-use application "App name"
-use scripting additions
-using terms of application "App Name" end using terms of
-
-<<parseApplicationName isCompoundStatement
-
-The same for script reference:
-tell script "Name" ... end tell
-use script "Name"
-*/
 applicationReference ::= applicationName
 [of THE_KW? machine machineName (of THE_KW? zone appleTalkZoneName)?] | THE_KW? currentApplicationConstant
 {methods=[getApplicationName]}
@@ -521,14 +489,11 @@ private appleTalkZoneName ::= STRING_LITERAL
 private tellStatementStartCondition ::= <<isTellStatementStart>>
 
 private handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier ::= handlerInterleavedParametersCall |
-propertyReference | (referenceIdentifier handlerPositionalParametersCallExpression?)
+propertyReference | (referenceExpression handlerPositionalParametersCallExpression?)
 
 //text itemS of item => could be plural class names here also
 propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
 
-//todo check for longest match + check if inside tell stmt AND there is a class with
-// longer matching name -> do not parse as a property
-// !! + check the position -> priority to class name or command name if there is no (of|in) before and after
 //todo do not check here for application classes! do it (if necessary) where the rule is used
 dictionaryPropertyName ::=  (<<parseDictionaryPropertyName>> &(of|in|COLON))//(assertPropertyCondition <<parseDictionaryPropertyName>>)
                            |(!dictionaryClassName <<parseDictionaryPropertyName>>)
@@ -556,7 +521,7 @@ left idReference ::= id expression
 //The Index reference form specifies an object or a location by describing its position with respect
 // to the beginning or end of a container. For related information, see “Relative” (page 185).
 //todo change to expression !
-private indexValueExpression ::= referenceIdentifier|integerLiteralExpression|parenthesizedExpression
+private indexValueExpression ::= referenceExpression|integerLiteralExpression|parenthesizedExpression
 
 indexReference ::=  (integerLiteralExpression('st'|'rd'|'th') (typeSpecifier|userClassName))
                    |((first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) (typeSpecifier|userClassName) )
@@ -605,8 +570,8 @@ private startIndex ::= integerLiteralExpression | expression
 
 relativeReference ::=  relativeBeforeReference | relativeAfterReference
 
-private relativeBeforeReference ::= (before|([in] ( front | beginning ) of) )referenceExpression
-private relativeAfterReference ::= (after|([in]( back | end ) of)|behind )referenceExpression
+private relativeBeforeReference ::= (before|([in] ( front | beginning ) of) )primaryReferenceExpression
+private relativeAfterReference ::= (after|([in]( back | end ) of)|behind )primaryReferenceExpression
 // >>Reference class<<
 //private aRefTo ::= 'a reference to'|'a ref to'|'a ref'|'reference to'|'ref'
 aReferenceToLiteralExpression ::= REF_OP objectReferenceWrapper //referenceExpression
@@ -706,7 +671,7 @@ argumentSelector ::= identifier COLON
 // after the command name. The word of or in before directParamName is required in user-defined handlers,
 // but is optional in terminology-defined handlers (for example, those defined by applications).
 private userParameterVar ::= THE_KW? targetVariablePattern /// instead of componentName
-private userLabelReference ::= THE_KW? referenceIdentifier
+private userLabelReference ::= THE_KW? referenceExpression
 
 //===HANDLERS===
 // handler is a collection of statements which can be invoked by name
@@ -738,7 +703,7 @@ handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParamet
                                          [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
                                          [varDeclarationList] sep
                                            blockBody?
-                                        end [referenceIdentifier]
+                                        end [referenceExpression]
 //                                        {pin=2}
 {mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
 implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"
@@ -800,7 +765,7 @@ private labelForFalseParam ::= expression //referenceIdentifier
 parameterVal ::= referenceIdBeforeParamLabel | expression
 
 //sayHello to name -> only if referenceIdentifier followed by 'to'
-private referenceIdBeforeParamLabel ::= referenceIdentifier &handlerParameterLabel
+private referenceIdBeforeParamLabel ::= referenceExpression &handlerParameterLabel
 
 private userParameterVal ::= expression
 
@@ -819,7 +784,7 @@ to (statement | handlerInterleavedParametersCall | expression )
 handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
                                             [varDeclarationList] sep
                                                blockBody?
-                                            end [referenceIdentifier]
+                                            end [referenceExpression]
 //                                            {pin=3  //or Grammar kit will also make formalParameterList as Component
 //                                            }
 {mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
@@ -840,7 +805,7 @@ private argListRecover ::= !(RPAREN)
 private argumentListPart ::= statement | expression {recoverWhile="argListPartRecover"}
 private argListPartRecover ::= !(RPAREN|COMMA)
 
-private formalParameterListPartPattern ::= simpleFormalParameter|listFormalParameter|recordFormalParameter
+private formalParameterListPartPattern ::= simpleFormalParameter|listFormalParameter|recordFormalParameter|expression
 listFormalParameter ::= LCURLY [formalParameterListPartPattern|expression] (COMMA formalParameterListPartPattern|expression)* RCURLY //{pin=4}
 {methods = [getParameters] }
 
@@ -861,7 +826,7 @@ handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersS
 {mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
 implements="com.intellij.plugin.applescript.psi.AppleScriptHandler"}
 
-private handlerNamePartRef ::= referenceIdentifier
+private handlerNamePartRef ::= referenceExpression
 
 //todo change to a named element (but is named element - it is not selected by resolver...)
 handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
@@ -925,7 +890,7 @@ getCommandExpression ::= get <<parseCommandParametersExpression>>
 //>>Run<< / Run Script
 runCommandExpression ::= (run [script] [script_object_variable])|(run [referenceToApplicationVar]) // application command syntax
 private referenceToApplicationVar ::= applicationReference
-private script_object_variable ::= referenceIdentifier
+private script_object_variable ::= referenceExpression
 // log - is a built into Script Editor command http://stackoverflow.com/a/21341372/2000323
 logCommandExpression ::= log expression
 //scriptObjectVariable A variable identifier whose value is a script object. This parameter is optional if the
@@ -992,7 +957,7 @@ private possessiveFormAndInterleavedCall ::= APS handlerInterleavedParametersCal
 // see <<parseObjectReference>>
 left objectReferenceExpression ::=  ( possessiveFormAndInterleavedCall | objectPointer /*<<parseObjectReferencePointer>>*/
 THE_KW? prefixExpression)
-private objectPointer ::= of|in|APS
+private objectPointer ::= of|in|APS//|its
 private valueExpression ::= primaryExpression filterReference?//coercionExpression*
 
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
@@ -1007,7 +972,7 @@ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 private primaryExpression ::=
      literalExpression
  |   dictionaryCommandHandlerCallExpression
- | ( referenceExpression
+ | ( primaryReferenceExpression
      ( <<isTreePrevSimpleReference>>
        (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCallExpression )
      )?
@@ -1020,7 +985,7 @@ incompleteCommandHandlerCall ::= <<parseIncompleteCommandCall>>
 implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 
 // todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
-private referenceExpression ::= applicationReference | referenceForm | referenceIdentifier
+private primaryReferenceExpression ::= applicationReference | referenceForm | referenceExpression
 
 private referenceForm ::=
       (my handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier )

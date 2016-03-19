@@ -23,6 +23,8 @@ public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
           new BracePair(AppleScriptTypes.REPEAT, AppleScriptTypes.END, true),
           new BracePair(AppleScriptTypes.LCURLY, AppleScriptTypes.RCURLY, true),
           new BracePair(AppleScriptTypes.LPAREN, AppleScriptTypes.RPAREN, true),
+          new BracePair(AppleScriptTypes.SCRIPT, AppleScriptTypes.END, true),
+          new BracePair(AppleScriptTypes.CONSIDERING, AppleScriptTypes.END, true),
   };
 
   TokenSet startOfBlockTokens = TokenSet.create(AppleScriptTypes.TELL, AppleScriptTypes.USE, AppleScriptTypes.TRY,

@@ -329,7 +329,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean isTreePrevSimpleReference(PsiBuilder b, int l) {
     return b.getLatestDoneMarker() != null
-            && b.getLatestDoneMarker().getTokenType() == REFERENCE_IDENTIFIER;
+            && b.getLatestDoneMarker().getTokenType() == REFERENCE_EXPRESSION;
   }
 
   public static boolean parseAssignmentStatementInner(PsiBuilder b, int l) {
