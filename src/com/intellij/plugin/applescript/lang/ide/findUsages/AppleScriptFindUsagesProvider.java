@@ -27,7 +27,11 @@ public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
   @Nullable
   @Override
   public WordsScanner getWordsScanner() {
-    return WORDS_SCANNER;
+    return new DefaultWordsScanner(new AppleScriptLexerAdapter(),
+            TokenSet.create(AppleScriptTypes.IDENTIFIER),
+            TokenSet.create(AppleScriptTypes.COMMENT),
+            TokenSet.create(AppleScriptTypes.STRING_LITERAL));
+//    return WORDS_SCANNER;
   }
 
   @Override
