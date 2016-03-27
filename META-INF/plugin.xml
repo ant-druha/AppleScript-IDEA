@@ -20,7 +20,7 @@
         <html>
         <dl>
             <dt>0.106</dt>
-            <dd>&#183; Flaten PSI;</dd>
+            <dd>&#183; Flatten PSI;</dd>
             <dd>&#183; Stability fixes.</dd>
             <dt>0.105</dt>
             <dd>&#183; Parameters and options in Run Configuration.</dd>
