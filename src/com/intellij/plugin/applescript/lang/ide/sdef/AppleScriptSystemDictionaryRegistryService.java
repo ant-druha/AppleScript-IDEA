@@ -108,6 +108,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       discoverInstalledApplicationNames();
     } catch (Exception e) {
       LOG.error("Error while initializing service: " + e.getCause());
+    } finally {
+      systemDictionaryRegistry.setDictionaryService(this);
     }
   }
 
@@ -119,7 +121,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private void initDictionariesInfoFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent
                                                      systemDictionaryRegistry) {
     notScriptableApplicationList.addAll(systemDictionaryRegistry.getNotScriptableApplications());
-    LocalFileSystem.getInstance().refresh(false);
+    LocalFileSystem.getInstance().refresh(!ApplicationManager.getApplication().isDispatchThread());
     for (DictionaryInfo.State dInfoState : systemDictionaryRegistry.getDictionariesPersistedInfo()) {
       String appName = dInfoState.applicationName;
       String dictionaryUrl = dInfoState.dictionaryUrl;
@@ -427,7 +429,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     try {
       VfsUtilCore.visitChildrenRecursively(appDirectory, fileVisitor, MyStopVisitingException.class);
     } catch (MyStopVisitingException e) {
-      LOG.info("Application file found for application " + applicationName + " : " + e.getResult());
+      LOG.debug("Application file found for application " + applicationName + " : " + e.getResult());
       return new File(e.getResult().getPath());
     }
     return null;
@@ -659,7 +661,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     String appExtension = Files.getFileExtension(applicationIoFile.getPath());
     if (!SystemInfo.isMac && !("xml".equals(appExtension) || "sdef".equals(appExtension))) return null;
     DictionaryInfo dInfo;
-    LOG.info("=== Caching Dictionary for application [" + applicationName + "] ===");
+    LOG.debug("=== Caching Dictionary for application [" + applicationName + "] ===");
     final String serializePath = serializeDictionaryPathForApplication(applicationName);
     boolean fileGenerated = false;
     final File targetFile = new File(serializePath);
@@ -698,7 +700,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         LOG.warn("Error occurred while generating file.");
         if (targetFile.delete()) LOG.warn("Created file was deleted");
       } else if (notFoundApplicationList.remove(applicationName)) {
-        LOG.info("Application was removed from ignored list");
+        LOG.debug("Application was removed from ignored list");
       }
     }
     if (fileGenerated && targetFile.exists()) {
@@ -708,7 +710,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
                 .contains(appExtension) ? applicationIoFile : null;
         dInfo = new DictionaryInfo(applicationName, generatedFile, applicationBundle);
         addDictionaryInfo(dInfo);
-        LOG.info("Dictionary file generated for application [" + applicationName + "]" + generatedFile);
+        LOG.debug("Dictionary file generated for application [" + applicationName + "]" + generatedFile);
         return dInfo;
       }
     }
@@ -779,7 +781,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     try {
       final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
               "> " + serializePath};
-      LOG.info("executing command: " + Arrays.toString(shellCommand));
+      LOG.debug("executing command: " + Arrays.toString(shellCommand));
       final Integer exitCode;
       long execStart = System.currentTimeMillis();
       exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
@@ -792,7 +794,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         } else throw new DeveloperToolsNotInstalledException();
       }
 
-      LOG.info("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+      LOG.debug("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
       return true;
     } catch (InterruptedException e) {
       LOG.error("Failed to create dictionary file for application [" + applicationName + "] Command:" + cmdName +
@@ -834,10 +836,10 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         }
       });
     } else {
-      LOG.info("Generated file already exists for application " + applicationName);
+      LOG.debug("Generated file already exists for application " + applicationName);
     }
     if (targetFile.exists()) {
-      LOG.info("Dictionary file moved to " + targetFile.getParent() + " directory");
+      LOG.debug("Dictionary file moved to " + targetFile.getParent() + " directory");
       return true;
     }
     return false;

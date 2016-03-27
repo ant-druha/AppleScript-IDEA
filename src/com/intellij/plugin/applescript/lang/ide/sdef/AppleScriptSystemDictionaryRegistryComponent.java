@@ -10,6 +10,7 @@ import com.intellij.util.xmlb.annotations.AbstractCollection;
 import com.intellij.util.xmlb.annotations.CollectionBean;
 import com.intellij.util.xmlb.annotations.Tag;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -17,7 +18,8 @@ import java.util.*;
  * This {@link ApplicationComponent} stores information about generated dictionary files for applications
  */
 @State(name = AppleScriptSystemDictionaryRegistryComponent.COMPONENT_NAME,
-        storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml")})
+        storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml",
+                roamingType = RoamingType.PER_OS)})
 public class AppleScriptSystemDictionaryRegistryComponent implements ApplicationComponent,
         PersistentStateComponent<AppleScriptSystemDictionaryRegistryComponent.State> {
 
@@ -28,6 +30,8 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
   private final List<DictionaryInfo.State> dictionariesPersistedInfo = new ArrayList<DictionaryInfo.State>();
   // application names which do not support AppleScript commands
   private final SmartList<String> notScriptableApplications = new SmartList<String>();
+  @Nullable
+  private AppleScriptSystemDictionaryRegistryService dictionaryService;
 
 
   public static class State {
@@ -38,22 +42,24 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     public final List<String> notScriptableApplications = new SmartList<String>();
   }
 
+  public void setDictionaryService(@NotNull AppleScriptSystemDictionaryRegistryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
   /**
-   * @return {@State} class, which stores current information about all {@link DictionaryInfo}
+   * @return {@link State} class, which stores current information about all {@link DictionaryInfo}
    */
-  @NotNull
   @Override
   public State getState() {
     State state = new State();
-    AppleScriptSystemDictionaryRegistryService dictionaryRegistry = ServiceManager.getService
-            (AppleScriptSystemDictionaryRegistryService.class);
-    Collection<DictionaryInfo> dictionaryInfos = dictionaryRegistry.getDictionaryInfoList();
+    if (dictionaryService == null) return null;
+    Collection<DictionaryInfo> dictionaryInfos = dictionaryService.getDictionaryInfoList();
     state.dictionariesInfo = new DictionaryInfo.State[dictionaryInfos.size()];
     Iterator<DictionaryInfo> it = dictionaryInfos.iterator();
     for (int i = 0; i < dictionaryInfos.size(); i++) {
       state.dictionariesInfo[i] = it.next().getState();
     }
-    state.notScriptableApplications.addAll(dictionaryRegistry.getNotScriptableApplicationList());
+    state.notScriptableApplications.addAll(dictionaryService.getNotScriptableApplicationList());
     return state;
   }
 

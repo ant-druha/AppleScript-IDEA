@@ -27,7 +27,7 @@ public class SDEF_Parser {
 
   public static void parse(@NotNull XmlFile file, @NotNull ApplicationDictionary parsedDictionary) {
     System.out.println("Start parsing xml file --- " + file.toString() + " ---");
-    LOG.info("Start parsing xml file --- " + file.toString() + " ---");
+    LOG.debug("Start parsing xml file --- " + file.toString() + " ---");
 
     if (parsedDictionary.getRootTag() == null) {
       parsedDictionary.setRootTag(file.getRootTag());
@@ -47,7 +47,7 @@ public class SDEF_Parser {
       }
     }
     System.out.println("parsing completed for file.");
-    LOG.info("parsing completed for file.");
+    LOG.debug("parsing completed for file.");
   }
 
   public static void parseRootTag(@NotNull ApplicationDictionary parsedDictionary, @NotNull XmlTag rootTag) {

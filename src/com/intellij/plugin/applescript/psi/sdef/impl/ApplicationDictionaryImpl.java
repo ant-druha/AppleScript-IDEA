@@ -148,7 +148,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
       }
       includedFiles.add(xmlFile);
       System.out.println("Processed included file: " + xmlFile);
-      LOG.info("Processed included file:: " + xmlFile);
+      LOG.debug("Processed included file:: " + xmlFile);
     }
     return xmlFile;
   }
@@ -471,7 +471,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     if (xmlFile1.isValid()) {
       setRootTag(xmlFile1.getRootTag());
       SDEF_Parser.parse(xmlFile1, this);
-      LOG.info("Dictionary loaded. Virtual file: " + xmlFile1);
+      LOG.debug("Dictionary loaded. Virtual file: " + xmlFile1);
     }
   }
 

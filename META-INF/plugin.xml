@@ -1,14 +1,14 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript IDEA</name>
-    <version>0.105</version>
+    <version>0.106</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
 
     <description><![CDATA[
         <p>Provides support for writing and executing scripts with
-            <a href="https://en.wikipedia.org/wiki/AppleScript">AppleScript</a>.<br>
+            <a href="https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptLangGuide/introduction/ASLR_intro.html">AppleScript</a>.<br>
             For applications with legacy dictionary formats <b>requires installed Xcode</b> for dictionary file
             generation.<br><br></p>
         <b>Wiki:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">How to AppleScript in IDEA</a>
@@ -19,6 +19,9 @@
     <change-notes><![CDATA[
         <html>
         <dl>
+            <dt>0.106</dt>
+            <dd>&#183; Flaten PSI;</dd>
+            <dd>&#183; Stability fixes.</dd>
             <dt>0.105</dt>
             <dd>&#183; Parameters and options in Run Configuration.</dd>
 

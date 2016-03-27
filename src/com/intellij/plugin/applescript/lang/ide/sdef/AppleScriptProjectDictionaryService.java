@@ -132,12 +132,13 @@ public class AppleScriptProjectDictionaryService {
    */
   private boolean isInIgnoreList(@NotNull String applicationName, @Nullable VirtualFile applicationFile) {
     if (dictionaryRegistryService.isNotScriptable(applicationName)) {
-      LOG.info("Application " + applicationName + " is not scriptable. Can not create dictionary for it.");
+      LOG.debug("Application " + applicationName + " is not scriptable. Can not create dictionary for it.");
       return true;
     }
     //do not proceed if application location was previously not found
     if (applicationFile == null && dictionaryRegistryService.isInUnknownList(applicationName)) {
-      LOG.warn("Application " + applicationName + " was added to unknown list. Can not create dictionary for it.");
+      LOG.debug("WARNING: Application " + applicationName + " was added to unknown list. Can not create dictionary " +
+              "for it.");
       return true;
     }
     return false;
