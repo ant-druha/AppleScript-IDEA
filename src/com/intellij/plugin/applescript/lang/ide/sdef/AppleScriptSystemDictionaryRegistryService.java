@@ -121,7 +121,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private void initDictionariesInfoFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent
                                                      systemDictionaryRegistry) {
     notScriptableApplicationList.addAll(systemDictionaryRegistry.getNotScriptableApplications());
-    LocalFileSystem.getInstance().refresh(!ApplicationManager.getApplication().isDispatchThread());
+    final boolean asyncRefresh = !ApplicationManager.getApplication().isDispatchThread();
+    LocalFileSystem.getInstance().refresh(asyncRefresh);
     for (DictionaryInfo.State dInfoState : systemDictionaryRegistry.getDictionariesPersistedInfo()) {
       String appName = dInfoState.applicationName;
       String dictionaryUrl = dInfoState.dictionaryUrl;
@@ -132,7 +133,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
         File applicationFile = !StringUtil.isEmpty(applicationUrl) ?
                 new File(applicationUrl) : null;
         if (dictionaryFile != null) {
-          dictionaryFile.refresh(false, false);
+          dictionaryFile.refresh(asyncRefresh, false);
           if (!dictionaryFile.exists()) continue;
           DictionaryInfo dInfo = new DictionaryInfo(appName, dictionaryFile, applicationFile);
           addDictionaryInfo(dInfo);
