@@ -1,5 +1,6 @@
 package com.intellij.plugin.applescript.lang.parser;
 
+import com.intellij.lang.LighterASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;
@@ -823,6 +824,12 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   public static boolean parseCommandParameterSelector(PsiBuilder b, int l) {
     return false;
+  }
+
+  public static boolean isPossessivePpronoun(PsiBuilder b, int l) {
+    LighterASTNode prevNode = b.getLatestDoneMarker();
+    return prevNode != null && prevNode.getTokenType() == BUILT_IN_CONSTANT_LITERAL_EXPRESSION
+            && prevNode.toString().equalsIgnoreCase("its");
   }
 
   public static boolean parseDictionaryCommandName(PsiBuilder b, int l) {

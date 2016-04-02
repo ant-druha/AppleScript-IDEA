@@ -137,7 +137,7 @@
     INSTEAD_OF='regexp:instead[\ \t\f]+of'
     THAT='that'
     REFERENCE='reference'
-//    ITS='its'
+    ITS='its'
     C_WHITE_SPACE='regexp:(white[\ \t\f]+space)'
     APP_RESPONSES='regexp:((application[\ \t\f]+responses)|(app[\ \t\f]+responses))'
     SCRIPTING_ADDITIONS='regexp:scripting[\ \t\f]+additions'
@@ -290,11 +290,11 @@ varDeclarationListPart ::= identifier
 
 varDeclarationList ::= varAccessDeclaration (COMMA varDeclarationListPart)*
 
-private errorMessageVar ::= directParameterDeclaration
-private errorNumberVar ::= directParameterDeclaration
-private offendingObjectVar ::= directParameterDeclaration
-private resultListVar ::= directParameterDeclaration
-private expectedTypeVar ::= directParameterDeclaration
+private errorMessageVar ::= directParameterDeclaration|expression
+private errorNumberVar ::= directParameterDeclaration|expression
+private offendingObjectVar ::= directParameterDeclaration|expression
+private resultListVar ::= directParameterDeclaration|expression
+private expectedTypeVar ::= directParameterDeclaration|expression
 
 private tellStatement ::= parseTellSimpleStatement|<<parseTellCompoundStatement>>
 
@@ -658,7 +658,7 @@ private versionProperty ::= version
 appleScriptProperty ::= BUILT_IN_PROPERTY|resultProperty|versionProperty|anythingProperty
 |textItemDelimitersProperty|parentProperty//|itMeProperty//|text_constant /*?? */
 
-private itMeProperty ::= it|me
+private itMeProperty ::= it|me|ITS //see https://bitbucket.org/adernov/applescript-internal/issues/16/parsing-its-possessive-form-of-it
 //todo add via regexp (spaces)
 handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|at|below|beneath|beside|between|by|for
 |from|'instead of'|into|on|onto|'out of'|over|since|thru|through|under|to //there is no 'to' label in documentation but it works!
@@ -712,7 +712,7 @@ methods=[getParameterComponentList]}
 labeledParameterDeclarationList ::= ((of|in) directParameterDeclaration)? labeledParameterDeclarationPart*
 {methods=[getComponentList]}
 
-directParameterDeclaration ::= THE_KW? identifier
+directParameterDeclaration ::= THE_KW? identifier//todo change to simpleFormalParameter
 {mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
 implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
@@ -951,13 +951,13 @@ private prefixOperator ::= PLUS|MINUS
 
 private objectReferenceWrapper ::= THE_KW? prefixExpression objectReferenceExpression*//<<parseObjectReference>>*
 //move down to primary? and add a check for possessive form to keep it uniform
-private possessiveFormAndInterleavedCall ::= APS handlerInterleavedParametersCall
+private possessiveFormAndInterleavedCall ::= (APS|<<isPossessivePpronoun>>) handlerInterleavedParametersCall
 
 // custom parsing is needed not to parse as a labeled handler call: TELL referenceIdentifier's referenceIdentifier TO expression
 // see <<parseObjectReference>>
 left objectReferenceExpression ::=  ( possessiveFormAndInterleavedCall | objectPointer /*<<parseObjectReferencePointer>>*/
 THE_KW? prefixExpression)
-private objectPointer ::= of|in|APS//|its
+private objectPointer ::= of|in|APS|<<isPossessivePpronoun>>//|its
 private valueExpression ::= primaryExpression filterReference?//coercionExpression*
 
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>

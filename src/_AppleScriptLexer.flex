@@ -82,7 +82,7 @@ RAW_CODE=("<<"[^">>"]*">>")
 
 %%
 <YYINITIAL> {
-  {WHITE_SPACE}                { return com.intellij.psi.TokenType.WHITE_SPACE; }
+  {WHITE_SPACE}                    { return com.intellij.psi.TokenType.WHITE_SPACE; }
 
   "("                              { return LPAREN; }
   ")"                              { return RPAREN; }
@@ -141,6 +141,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "the"                            { return THE_KW; }
   "does"                           { return DOES; }
   "that"                           { return THAT; }
+  "its"                            { return ITS; }
   "current"                        { return CURRENT; }
   "application"                    { return APPLICATION; }
   "app"                            { return APP; }

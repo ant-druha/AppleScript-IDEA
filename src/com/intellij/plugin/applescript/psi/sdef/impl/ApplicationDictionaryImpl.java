@@ -80,8 +80,8 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
     }
     if (StringUtil.isEmpty(dictionaryName))
       dictionaryName = this.applicationName;
-    LOG.info("=== Dictionary [" + dictionaryName + "] for application [" + this.applicationName + "] " +
-            "initialized In project[" + project.getName() + "] " + "==== Commands: " + dictionaryCommandMap.size() +
+    LOG.info("Dictionary [" + dictionaryName + "] for application [" + this.applicationName + "] " +
+            "initialized In project[" + project.getName() + "] " + " Commands: " + dictionaryCommandMap.size() +
             ". " + "Classes: " + dictionaryClassMap.size() + "\n");
   }
 
