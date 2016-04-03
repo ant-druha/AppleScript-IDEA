@@ -1235,7 +1235,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
               .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||
               ParsableScriptSuiteRegistryHelper
                       .isClassWithPrefixExist(applicationName, currentTokenText.value);
-      if (!propertyOrClassExists) {
+      if (propertyOrClassExists) {
         currentTokenText.value += " " + b.getTokenText();
         propertyOrClassExists = ParsableScriptSuiteRegistryHelper
                 .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||

@@ -9,24 +9,24 @@ public class LiveSamplesParsingTestCase extends AbstractParsingFixtureTestCase {
     return "live_samples";
   }
 
-//  public void testMail() throws IOException {
-//    doParseScriptInPackageTest("mail");
-//  }
-//
-//  public void testQuickTime() throws IOException {
-//    doParseScriptInPackageTest("QuickTime");
-//  }
-//
-//  public void testAuthenticateDialog() throws IOException {
-//    doParseScriptInPackageTest("authenticate_dialog");
-//  }
-//
-//  public void testNewEvent() throws IOException {
-//    doParseScriptInPackageTest("new_event");
-//  }
-
-  public void testLiveSamplesPackage() throws IOException {
-    doParseAllInPackageTest();
+  public void testMail() throws IOException {
+    doParseScriptInPackageTest("mail");
   }
+
+  public void testQuickTime() throws IOException {
+    doParseScriptInPackageTest("QuickTime");
+  }
+
+  public void testAuthenticateDialog() throws IOException {
+    doParseScriptInPackageTest("authenticate_dialog");
+  }
+
+  public void testNewEvent() throws IOException {
+    doParseScriptInPackageTest("new_event");
+  }
+
+//  public void testLiveSamplesPackage() throws IOException {
+//    doParseAllInPackageTest();
+//  }
 
 }

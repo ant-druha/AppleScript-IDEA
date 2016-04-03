@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript IDEA</name>
-    <version>0.106</version>
+    <version>0.107</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -19,9 +19,13 @@
     <change-notes><![CDATA[
         <html>
         <dl>
+            <dt>0.107</dt>
+            <dd>&#183; Parser tuning;</dd>
+
             <dt>0.106</dt>
             <dd>&#183; Flatten PSI;</dd>
             <dd>&#183; Stability fixes.</dd>
+
             <dt>0.105</dt>
             <dd>&#183; Parameters and options in Run Configuration.</dd>
 
