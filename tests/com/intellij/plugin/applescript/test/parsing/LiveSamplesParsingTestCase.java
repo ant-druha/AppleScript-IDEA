@@ -25,6 +25,14 @@ public class LiveSamplesParsingTestCase extends AbstractParsingFixtureTestCase {
     doParseScriptInPackageTest("new_event");
   }
 
+  public void testClassNameCase() throws IOException {
+    doParseScriptInPackageTest("class_name_case");
+  }
+
+  public void testNativeClasses() throws IOException {
+    doParseScriptInPackageTest("native_classes");
+  }
+
 //  public void testLiveSamplesPackage() throws IOException {
 //    doParseAllInPackageTest();
 //  }

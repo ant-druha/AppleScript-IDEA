@@ -71,10 +71,14 @@
     TEXT_ITEM='regexp:text[\ \t\f]+item'
     ITEM='item'
     FILE_SPECIFICATION='regexp:file[\ \t\f]+specification'
-    INTERNATIONAL_TEXT='regexp:international[\ \t\f]+text'
-    UNICODE_TEXT='regexp:unicode[\ \t\f]+text'
+    INTERNATIONAL_TEXT='regexp:[Ii]nternational[\ \t\f]+[Tt]ext'
+    UNICODE_TEXT='regexp:[Uu]nicode[\ \t\f]+[Tt]ext'
     RGB_COLOR='regexp:rgb[\ \t\f]+color'
     STYLED_CLIPBOARD_TEXT='regexp:styled[\ \t\f]+clipboard[\ \t\f]+text'
+    //elements of text object class
+    CHARACTER='character'
+    PARAGRAPH='paragraph'
+    WORD='word'
     //==> statement tokens
     REPEAT='repeat'
     //==> builtInClassIdNative ==>
@@ -119,8 +123,7 @@
     MILES='miles'
     YARDS='yards'
 
-    BUILT_IN_TYPE_S='regexp:(string|integer|real|boolean|class|constant|list|record|data|date|number|reference|styled text|text item|text|item)s'
-
+    BUILT_IN_TYPE_S='regexp:(string|integer|real|boolean|class|constant|list|record|data|date|number|reference|[Ss]tyled [Tt]ext|text item|text|item|character|paragraph|word)s'
     //todo not only for literals
     //==>built in properties==>
     BUILT_IN_PROPERTY='regexp:("class"|day|weekday|month|year|time|date string|time string|(quoted[\ \t\f]+form)|length|rest|reverse|contents)'
@@ -423,7 +426,7 @@ private builtInClassIdNative::= ANY|BOOLEAN|DATE|FILE|INTEGER|LOCATION_SPECIFIER
 SPECIFIER|TEXT|TYPE|ALIAS
 
 private builtInClassIdCommon::= STRING|CLASS|CONSTANT|LIST|DATA|REFERENCE|STYLED_TEXT|TEXT_ITEM|ITEM|FILE_SPECIFICATION|
-INTERNATIONAL_TEXT|RGB_COLOR|STYLED_CLIPBOARD_TEXT|UNICODE_TEXT|unitTypeValueClasses
+INTERNATIONAL_TEXT|RGB_COLOR|STYLED_CLIPBOARD_TEXT|UNICODE_TEXT|unitTypeValueClasses|CHARACTER|PARAGRAPH|WORD
 
 private unitTypeValueClasses ::= Length|SQUARE_AREA|CUBIC_VOL|LiquidVolume|Weight|TEMPERATURE
 private Weight ::= GRAMS|KILOGRAMS|OUNCES|POUNDS

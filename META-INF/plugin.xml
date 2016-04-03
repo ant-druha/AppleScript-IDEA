@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript IDEA</name>
-    <version>0.107</version>
+    <version>0.109</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -19,7 +19,7 @@
     <change-notes><![CDATA[
         <html>
         <dl>
-            <dt>0.107</dt>
+            <dt>0.109</dt>
             <dd>&#183; Parser tuning;</dd>
 
             <dt>0.106</dt>

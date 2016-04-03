@@ -43,8 +43,8 @@ DIV=("/"|"÷")
 STYLED_TEXT="styled"{WHITE_SPACE}+"text"
 TEXT_ITEM="text"{WHITE_SPACE}+"item"
 FILE_SPECIFICATION="file"{WHITE_SPACE}+"specification"
-INTERNATIONAL_TEXT="international"{WHITE_SPACE}+"text"
-UNICODE_TEXT="unicode"{WHITE_SPACE}+"text"
+INTERNATIONAL_TEXT=["I""i"]"nternational"{WHITE_SPACE}+["T""t"]"ext"
+UNICODE_TEXT=(["U""u"]"nicode"{WHITE_SPACE}+["T""t"]"ext")
 RGB_COLOR="rgb"{WHITE_SPACE}+"color"
 STYLED_CLIPBOARD_TEXT="styled"{WHITE_SPACE}+"clipboard"{WHITE_SPACE}+"text"
 LOCATION_SPECIFIER="location"{WHITE_SPACE}+"specifier"
@@ -52,7 +52,7 @@ TEMPERATURE="degrees"{WHITE_SPACE}+("Celsius"|"Fahrenheit"|"Kelvin")
 CUBIC_VOL="cubic"{WHITE_SPACE}+("centimetres"|"centimeters"|"feet"|"inches"|"metres"|"meters"|"yards")
 SQUARE_AREA="square"{WHITE_SPACE}+("feet"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards")
 //class name plural form
-BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"//|"script"
+BUILT_IN_TYPE={STYLED_TEXT}|{TEXT_ITEM}|{FILE_SPECIFICATION}|{INTERNATIONAL_TEXT}|{UNICODE_TEXT}|{RGB_COLOR}|{STYLED_CLIPBOARD_TEXT}|{LOCATION_SPECIFIER}|{TEMPERATURE}|{CUBIC_VOL}|{SQUARE_AREA}|"string"|"integer"|"real"|"boolean"|"class"|"constant"|"list"|"record"|"data"|"date"|"number"|"reference"|"text"|"item"|"any"|"file"|"alias"|"point"|"rectangle"|"specifier"|"type"|"gallons"|"litres"|"liters"|"quarts"|"grams"|"kilograms"|"ounces"|"pounds"|"centimetres"|"centimeters"|"feet"|"inches"|"kilometres"|"kilometers"|"metres"|"meters"|"miles"|"yards"|"character"|"paragraph"|"word"//|"script"
 BUILT_IN_TYPE_S={BUILT_IN_TYPE}"s"
 
 //built in classes properties
@@ -105,6 +105,9 @@ RAW_CODE=("<<"[^">>"]*">>")
   "data"                           { return DATA; }
   "reference"                      { return REFERENCE; }
   "item"                           { return ITEM; }
+  "character"                      { return CHARACTER; }
+  "paragraph"                      { return PARAGRAPH; }
+  "word"                           { return WORD; }
   "repeat"                         { return REPEAT; }
   "any"                            { return ANY; }
   "boolean"                        { return BOOLEAN; }

@@ -83,7 +83,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // dictionary term
     //if there are use statements, do not check terms from scripting additions library (they should be explicitly
     // imported in this case)
-    boolean checkStdLib = !areThereUseStatements;
+    boolean checkStdLib = !areThereUseStatements || applicationsToImportFrom == null
+            || applicationsToImportFrom.contains(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
     ParsableScriptSuiteRegistryHelper.ensureKnownApplicationInitialized(toldApplicationName);
     r = parseCommandNameForApplication(b, l + 1, parsedName, toldApplicationName, checkStdLib);
     if (r) return true;

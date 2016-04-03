@@ -377,8 +377,12 @@ public class SDEF_Parser {
 
       } else {//could be sub-tag
         XmlTag typeTag = directParam.findFirstSubTag("type");
-        if (typeTag != null && typeTag.getAttribute("type") != null) {
+        if (typeTag != null) {
           XmlAttribute typeAttr = typeTag.getAttribute("type");
+          if (typeAttr == null) {
+            XmlTag typeSubTag = typeTag.findFirstSubTag("type");
+            typeAttr = typeSubTag != null ? typeSubTag.getAttribute("type") : null;
+          }
           typeVal = typeAttr != null ? typeAttr.getValue() : null;
         }
       }

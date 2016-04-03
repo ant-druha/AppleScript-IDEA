@@ -29,6 +29,12 @@ public class DictionariesRandomParsingTestCase extends AbstractParsingFixtureTes
     doParseScriptInPackageTest("CoreServices");
   }
 
+  public void testDictionaryCommands() throws IOException {
+    doParseScriptInPackageTest("dictionary_commands");
+  }
+
+
+
 //  public void testDictionariesRandomPackage() throws IOException {
 //    doParseAllInPackageTest();
 //  }
