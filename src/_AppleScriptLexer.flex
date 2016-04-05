@@ -57,7 +57,7 @@ BUILT_IN_TYPE_S={BUILT_IN_TYPE}"s"
 
 //built in classes properties
 QUOTED_FORM="quoted"{WHITE_SPACE}+"form"
-BUILT_IN_PROPERTY=("class"|"day"|"weekday"|"month"|"year"|"time"|"date string"|"time string"|"length"|"rest"|"reverse"|"contents"|{QUOTED_FORM})
+BUILT_IN_PROPERTY=("class"|"day"|"weekday"|"month"|"year"|"time"|"date"{WHITE_SPACE}+"string"|"short"{WHITE_SPACE}+"date"{WHITE_SPACE}+"string"|"time"{WHITE_SPACE}+"string"|"length"|"rest"|"reverse"|"contents"|{QUOTED_FORM})
 
 APART_FROM="apart"{WHITE_SPACE}+"from"
 ASIDE_FROM="aside"{WHITE_SPACE}+"from"

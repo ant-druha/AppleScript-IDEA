@@ -126,7 +126,7 @@
     BUILT_IN_TYPE_S='regexp:(string|integer|real|boolean|class|constant|list|record|data|date|number|reference|[Ss]tyled [Tt]ext|text item|text|item|character|paragraph|word)s'
     //todo not only for literals
     //==>built in properties==>
-    BUILT_IN_PROPERTY='regexp:("class"|day|weekday|month|year|time|date string|time string|(quoted[\ \t\f]+form)|length|rest|reverse|contents)'
+    BUILT_IN_PROPERTY='regexp:("class"|day|weekday|month|year|time|date string|short date string|time string|(quoted[\ \t\f]+form)|length|rest|reverse|contents)'
     //properties of standard classes
     //string
     QUOTED_FORM='regexp:quoted[\ \t\f]+form'
