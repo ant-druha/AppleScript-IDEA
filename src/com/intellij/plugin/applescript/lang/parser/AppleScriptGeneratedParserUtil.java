@@ -641,14 +641,16 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     //just remove i < ...size() condition ?
     final List<CommandParameter> mandatoryParams = commandDefinition.getMandatoryParameters();
     if (!mandatoryParams.isEmpty()) {
+      boolean givenForm = consumeToken(b, GIVEN);
       for (int i = 0; i < commandDefinition.getParameters().size() && !nextTokenIs(b, "", COMMENT, NLS) && r; i++) {
-        r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector);
+        r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector, givenForm, i == 0);
         mandatoryParams.remove(commandDefinition.getParameterByName(parsedParameterSelector.value));
         parsedParameterSelector.value = "";
       }
     } else {
+      boolean givenForm = consumeToken(b, GIVEN);
       for (int i = 0; i < commandDefinition.getParameters().size() && !nextTokenIs(b, "", COMMENT, NLS) && r; i++) {
-        r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector);
+        r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector, givenForm, i == 0);
         parsedParameterSelector.value = "";
       }
     }
@@ -662,11 +664,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   // (given? commandParameterSelector parameterValue)
   // | ( (with|without) commandParameterSelector )
   private static boolean parseParameterForCommand(PsiBuilder b, int l, AppleScriptCommand command,
-                                                  StringHolder parsedParameterSelector) {
+                                                  StringHolder parsedParameterSelector, boolean givenForm, boolean first) {
     if (!recursion_guard_(b, l, "parseParameterForCommand")) return false;
     boolean r;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Parameter For Command>");//todo check here if it works
-    r = parseGivenParameter(b, l + 1, command, parsedParameterSelector);
+    r = parseGivenParameter(b, l + 1, command, parsedParameterSelector, givenForm, first);
     //todo and here exit and enter once again if it is true??
     if (!r) r = parseBooleanParameter(b, l + 1, command, parsedParameterSelector);
 
@@ -691,18 +693,20 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
-  // TODO: 08/12/15 the correct syntax is: (given paramSelector : paramValue) | (paramSelector paramValue)
+  // TODO: 08/12/15 the correct syntax is: (given paramSelector:paramValue (,paramSelector:paramValue)*) |
+  // (paramSelector paramValue)
   //given? commandParameterSelector parameterValue
   private static boolean parseGivenParameter(PsiBuilder b, int l, AppleScriptCommand command,
-                                             StringHolder parsedParameterSelector) {
+                                             StringHolder parsedParameterSelector, boolean givenForm, boolean first) {
     if (!recursion_guard_(b, l, "parseGivenParameter")) return false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Given Parameter>");
-    consumeToken(b, GIVEN);//optional
-    boolean r;
-    r = parseCommandParameterSelector(b, l + 1, command, parsedParameterSelector);
+    boolean r = !givenForm || first || consumeToken(b, COMMA);//if it is a given form and not the first parameter ->
+    // should be comma
+    r = r && parseCommandParameterSelector(b, l + 1, command, parsedParameterSelector);
     final CommandParameter parameterDefinition = command.getParameterByName(parsedParameterSelector.value);
     //todo: parameter value expression could be incorrectly parsed and needed to be rolled backed (__AND__ modifier?)
     //as in example: mount volume "" in AppleTalk zone ""  (in - parsed as range ref form)
+    if (givenForm) r = consumeToken(b, COLON);
     r = r && parseCommandParameterValue(b, l + 1, parameterDefinition);
     exit_section_(b, l, m, null, r, false, null);
     return r;
@@ -785,10 +789,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     String parameterTypeSpecifier = parameter.getTypeSpecifier();
     if ("type".equals(parameterTypeSpecifier)) {
       r = typeSpecifier(b, l + 1);
-    } else if ("text".equals(parameterTypeSpecifier)) {
-      r = AppleScriptParser.concatenationExpressionWrapper(b, l + 1);
-      if (!r) r = AppleScriptParser.stringLiteralExpression(b, l + 1);
     }
+    // see https://bitbucket.org/adernov/applescript-internal/issues/23/coercion-expression-priority
+//    else if ("text".equals(parameterTypeSpecifier)) {
+//      r = AppleScriptParser.coercionExpressionWrapper(b, l + 1);
+//      if (!r) r = AppleScriptParser.concatenationExpressionWrapper(b, l + 1);
+//      if (!r) r = AppleScriptParser.stringLiteralExpression(b, l + 1);
+//    }
     if (!r)
       r = com.intellij.plugin.applescript.lang.parser.AppleScriptParser.expression(b, l + 1);
     exit_section_(b, l, m, DIRECT_PARAMETER_VAL, r, false, null);

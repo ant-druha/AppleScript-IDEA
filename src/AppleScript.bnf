@@ -63,6 +63,8 @@
     //==> builtInClassIdCommon ==>
     STRING='string'
     CLASS='class'
+    EVENT='event'
+    PREPOSITION='preposition'
     CONSTANT='constant'
     LIST='list'
     DATA='data'
@@ -169,7 +171,9 @@
     var_identifier='regexp:([_a-zA-Z][a-zA-Z0-9_]*)|(\|(([^\|])|(\\\|))*[^\\]\|)'
   //todo nested comments (in a lexer with the states...)
     COMMENT='regexp:((#.*)|(--.*)|((\(\*[^\*](([^\*]*(\*+[^\*\)])?)*(\*+\))?))|\(\*))'
-    RAW_CODE='regexp:(<<[^>>]*>>)'
+//    RAW_CODE='regexp:(«[^»]*»)'
+    RAW_LBR='«'
+    RAW_RBR='»'
     MULTI_LINE_COMMENT_START='(*'
     MULTI_LINE_COMMENT_END='*)'
     WHITE_SPACE='regexp:[\ \t\f]'
@@ -188,7 +192,7 @@ appleScriptFile ::= compilation_unit_*
 
 private compilation_unit_ ::= topBlockBodyPart|sep
 
-private topBlockBodyPart ::= topLevelStatement | statement | expression | RAW_CODE | incompleteExpression
+private topBlockBodyPart ::= topLevelStatement | statement | expression /*| RAW_CODE*/ | incompleteExpression
 {recoverWhile=topBodyPartRecover}
 private topBodyPartRecover ::= !(sep/*|tell*/)
 
@@ -231,7 +235,7 @@ topBlockBody ::= topBlockBodyPart sep (topBlockBodyPart sep)*
 blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
 {pin=1}
 
-private blockBodyPart ::= statement|expression|RAW_CODE
+private blockBodyPart ::= statement|expression/*|RAW_CODE*/
 {recoverWhile=bodyPartRecover}
 private bodyPartRecover ::= !(sep)
 
@@ -880,11 +884,19 @@ private copyCommandStatement ::= (copy|put) expression (to|into) (targetVariable
 countCommandExpression ::= (count [[each|every] typeSpecifier (in|of)] composite_value)
                         |(number of [typeSpecifier (in|of)] composite_value)
 
-private typeSpecifier ::= pluralClassName|singularClassName
-private pluralClassName ::= builtInClassIdentifierPlural|dictionaryClassIdentifierPlural //items?
-private singularClassName ::= (dictionaryClassName|builtInClassIdentifier) ITEM?
+private typeSpecifier ::= pluralClassName | singularClassName
+private pluralClassName ::= builtInClassIdentifierPlural | dictionaryClassIdentifierPlural | rawClassExpression //items?
+private singularClassName ::= (dictionaryClassName | builtInClassIdentifier | rawClassExpression) ITEM?
 private composite_value ::= expression
+rawClassExpression ::= RAW_LBR CLASS identifier RAW_RBR
+//todo add parsing of raw parameters (and in usual handler call also!)
+rawDictionaryCommandHandlerCallExpression ::= RAW_LBR EVENT identifier RAW_RBR commandRawParameters?
+private commandRawParameters ::= expression? (rawParameterExpression | givenRawParameterExpression)*
+givenRawParameterExpression ::= given rawClassExpression COLON expression (COMMA rawClassExpression COLON expression)*
+rawParameterExpression ::= rawParameterSelector expression
+rawParameterSelector ::= RAW_LBR PREPOSITION identifier RAW_RBR
 
+rawDataExpression ::= RAW_LBR DATA DIGITS RAW_RBR
 //>>get<<
 // AppleScript syntax
 //getCommandExpression ::= get expression
@@ -935,7 +947,7 @@ private compareExpressionWrapper ::= coercionExpressionWrapper compareExpression
 left compareExpression ::= (equalityOperator|relational_operator) NLS* coercionExpressionWrapper
 
 private coercionExpressionWrapper ::= concatenationExpressionWrapper coercionExpression*
-left coercionExpression ::= AS NLS* ( concatenationExpressionWrapper | typeSpecifier )
+left coercionExpression ::= AS NLS* ( typeSpecifier | concatenationExpressionWrapper  )
 
 private concatenationExpressionWrapper ::= additiveExpressionWrapper concatenationExpression*
 left concatenationExpression ::= BAND additiveExpressionWrapper
@@ -961,7 +973,7 @@ private possessiveFormAndInterleavedCall ::= (APS|<<isPossessivePpronoun>>) hand
 left objectReferenceExpression ::=  ( possessiveFormAndInterleavedCall | objectPointer /*<<parseObjectReferencePointer>>*/
 THE_KW? prefixExpression)
 private objectPointer ::= of|in|APS|<<isPossessivePpronoun>>//|its
-private valueExpression ::= primaryExpression filterReference?//coercionExpression*
+private valueExpression ::= primaryExpression filterReference? dictionaryCommandHandlerCallExpression?//coercionExpression*
 
 dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
 {mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
@@ -975,9 +987,14 @@ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
 private primaryExpression ::=
      literalExpression
  |   dictionaryCommandHandlerCallExpression
+ |   rawDictionaryCommandHandlerCallExpression
+ |   rawDataExpression
  | ( primaryReferenceExpression
-     ( <<isTreePrevSimpleReference>>
+     (
+     //(
+     <<isTreePrevSimpleReference>>
        (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCallExpression )
+     //)| dictionaryCommandHandlerCallExpression
      )?
    )
  |   parenthesizedExpression

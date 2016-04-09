@@ -57,7 +57,7 @@ BUILT_IN_TYPE_S={BUILT_IN_TYPE}"s"
 
 //built in classes properties
 QUOTED_FORM="quoted"{WHITE_SPACE}+"form"
-BUILT_IN_PROPERTY=("class"|"day"|"weekday"|"month"|"year"|"time"|"date string"|"time string"|"length"|"rest"|"reverse"|"contents"|{QUOTED_FORM})
+BUILT_IN_PROPERTY=("class"|"day"|"weekday"|"month"|"year"|"time"|"date"{WHITE_SPACE}+"string"|"short"{WHITE_SPACE}+"date"{WHITE_SPACE}+"string"|"time"{WHITE_SPACE}+"string"|"length"|"rest"|"reverse"|"contents"|{QUOTED_FORM})
 
 APART_FROM="apart"{WHITE_SPACE}+"from"
 ASIDE_FROM="aside"{WHITE_SPACE}+"from"
@@ -78,7 +78,7 @@ DIGITS=[0-9]+
 DEC_EXPONENT=[Ee][+-]?[0-9]+
 VAR_IDENTIFIER=([_a-zA-Z][a-zA-Z0-9_]*)|(\|(([^\|])|(\\\|))*[^\\]\|)
 COMMENT=(("#".*)|("--".*)|(("(*"[^"*"](([^"*"]*("*"+[^"*"")"])?)*("*"+")")?))|"(*"))
-RAW_CODE=("<<"[^">>"]*">>")
+//RAW_CODE=("«"[^"»"]*"»")
 
 %%
 <YYINITIAL> {
@@ -100,6 +100,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   "'s"                             { return APS; }
   "string"                         { return STRING; }
   "class"                          { return CLASS; }
+  "event"                          { return EVENT; }
   "constant"                       { return CONSTANT; }
   "list"                           { return LIST; }
   "data"                           { return DATA; }
@@ -153,6 +154,8 @@ RAW_CODE=("<<"[^">>"]*">>")
   "hours"                          { return HOURS_CONSTANT; }
   "days"                           { return DAYS_CONSTANT; }
   "weeks"                          { return WEEKS_CONSTANT; }
+  "«"                              { return RAW_LBR; }
+  "»"                              { return RAW_RBR; }
   "(*"                             { return MULTI_LINE_COMMENT_START; }
   "*)"                             { return MULTI_LINE_COMMENT_END; }
   ","                              { return COMMA; }
@@ -315,7 +318,7 @@ RAW_CODE=("<<"[^">>"]*">>")
   {DEC_EXPONENT}                   { return DEC_EXPONENT; }
   {VAR_IDENTIFIER}                 { return VAR_IDENTIFIER; }
   {COMMENT}                        { return COMMENT; }
-  {RAW_CODE}                       { return RAW_CODE; }
+//  {RAW_CODE}                       { return RAW_CODE; }
 
   [^] { return com.intellij.psi.TokenType.BAD_CHARACTER; }
 }
