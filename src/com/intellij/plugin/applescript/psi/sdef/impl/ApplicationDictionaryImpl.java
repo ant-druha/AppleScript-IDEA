@@ -82,7 +82,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
       dictionaryName = this.applicationName;
     LOG.info("Dictionary [" + dictionaryName + "] for application [" + this.applicationName + "] " +
             "initialized In project[" + project.getName() + "] " + " Commands: " + dictionaryCommandMap.size() +
-            ". " + "Classes: " + dictionaryClassMap.size() + "\n");
+            ". " + "Classes: " + dictionaryClassMap.size());
   }
 
   /**

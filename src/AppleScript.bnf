@@ -441,7 +441,7 @@ private Length ::= CENTIMETRES|CENTIMETERS|FEET|INCHES|KILOMETRES|KILOMETERS|MET
 //but declared as properties...
 //private parseBuiltInClassIdentifierPlural ::= <<parseBuiltInClassIdentifierPluralInner>>
 builtInClassIdentifierPlural ::= BUILT_IN_TYPE_S|scripts
-dictionaryClassIdentifierPlural ::= <<parseDictionaryClassName true useStatementsCondition>>
+dictionaryClassIdentifierPlural ::= <<parseDictionaryClassName 'true' useStatementsCondition>>
 {mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
  implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
@@ -551,7 +551,7 @@ left indexReferenceClassForm ::= [index] indexValueExpression
 
 private useStatementsCondition ::= <<parseCheckForUseStatements>>
 
-dictionaryClassName ::= <<parseDictionaryClassName false useStatementsCondition>>
+dictionaryClassName ::= <<parseDictionaryClassName 'false' useStatementsCondition>>
 {mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
  implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
 
