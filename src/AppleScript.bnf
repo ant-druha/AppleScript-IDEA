@@ -677,7 +677,7 @@ argumentSelector ::= identifier COLON
 //An identifier for the direct parameter variable. If it is included, directParamName must be listed immediately
 // after the command name. The word of or in before directParamName is required in user-defined handlers,
 // but is optional in terminology-defined handlers (for example, those defined by applications).
-private userParameterVar ::= THE_KW? targetVariablePattern /// instead of componentName
+private userParameterVar ::= THE_KW? targetVariablePattern | expression //could be: 'on getMacPathWithPOSIXPath:(thePOSIXPath as text)'
 private userLabelReference ::= THE_KW? referenceExpression
 
 //===HANDLERS===
