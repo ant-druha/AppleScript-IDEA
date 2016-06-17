@@ -21,11 +21,14 @@ public class AppleScriptConfigurationProducer extends RunConfigurationProducer<A
     PsiFile file = elem != null ? elem.getContainingFile() : null;
     if (file == null) return false;
     boolean shouldSetUp = file.getFileType() == AppleScriptFileType.INSTANCE;
-    String scriptPath = file.getVirtualFile().getPath();
-    configuration.setScriptPath(scriptPath);
-    String[] parts = scriptPath.split("/");
-    if (parts.length > 0) {
-      configuration.setName(parts[parts.length - 1]);
+    VirtualFile vFile = file.getVirtualFile();
+    String scriptPath = vFile != null ? file.getVirtualFile().getPath() : null;
+    if (scriptPath != null) {
+      configuration.setScriptPath(scriptPath);
+      String[] parts = scriptPath.split("/");
+      if (parts.length > 0) {
+        configuration.setName(parts[parts.length - 1]);
+      }
     }
     return shouldSetUp;
   }
