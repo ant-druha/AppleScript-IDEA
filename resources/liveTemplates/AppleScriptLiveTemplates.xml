@@ -2,21 +2,21 @@
 <templateSet group="AppleScript">
     <template name="tellapp" value="tell application &quot;$APP_NAME$&quot;&#10;$SELECTION$&#10;end tell"
               description="surround with tell statement" toReformat="true" toShortenFQNames="true">
-        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="APP_NAME" expression="complete()" defaultValue="" alwaysStopAt="true"/>
         <context>
             <option name="AppleScript" value="true"/>
         </context>
     </template>
     <template name="app" value="application &quot;$APP_NAME$&quot;" description="reference to application"
               toReformat="true" toShortenFQNames="false">
-        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="APP_NAME" expression="complete()" defaultValue="" alwaysStopAt="true"/>
         <context>
             <option name="AppleScript" value="true"/>
         </context>
     </template>
     <template name="useapp" value="use application &quot;$APP_NAME$&quot;"
               description="using terms from given application" toReformat="true" toShortenFQNames="true">
-        <variable name="APP_NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="APP_NAME" expression="complete()" defaultValue="" alwaysStopAt="true"/>
         <context>
             <option name="AppleScript" value="true"/>
         </context>
