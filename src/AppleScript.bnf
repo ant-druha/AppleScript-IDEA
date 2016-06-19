@@ -211,8 +211,9 @@ referenceExpression ::= identifier
 
 private topLevelStatement ::= applicationHandlerDefinition|userHandlerDefinition | <<parseUseStatement useStatement>>
 private statement ::= controlStatement|propertyDeclarationStatement|varDeclarationList
-                      |scriptObjectDefinition
-                      |scriptObjectUnnamedDefinition
+                      |<<parseExpression '"script"' (scriptObjectDefinition | scriptObjectUnnamedDefinition)>>
+//                      |scriptObjectDefinition
+//                      |scriptObjectUnnamedDefinition
                       |returnStatement|continue_statement
                       |parseAssignmentStatement
 
@@ -397,8 +398,8 @@ private literalExpression ::=
               |numberLiteralExpression
               |dictionaryConstant
               |builtInConstantLiteralExpression
-              |listLiteralExpression
-              |recordLiteralExpression
+              |<<parseLiteralExpression listLiteralExpression>>
+              |<<parseLiteralExpression recordLiteralExpression>>
               |<<parseExpression '"date"' dateLiteralExpression>>
               |aReferenceToLiteralExpression
 
@@ -406,7 +407,7 @@ private literalExpression ::=
 builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|text_constant|itMeProperty
 |currentApplicationConstant| missing_value_constant | scriptingAdditionsFolderConstant
 //|appleScriptPropertiesConstant
-private scriptingAdditionsFolderConstant ::= SCRIPTING_ADDITIONS
+private scriptingAdditionsFolderConstant ::= <<parseExpression '"scripting additions"' SCRIPTING_ADDITIONS>>
 
 dictionaryConstant ::= <<parseDictionaryConstant>>
 {mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier"
@@ -423,7 +424,8 @@ integerLiteralExpression ::= DIGITS
 // A value of class Class is a class identifier. A class identifier is a reserved word that specifies the class
 // to which an object or value belongs. The Class property of an object contains a class identifier value.
 // >>Class class<<
-builtInClassIdentifier ::= builtInClassIdCommon|builtInClassIdNative|script
+builtInClassIdentifier ::= builtInClassIdCommon|builtInClassIdNative|<<parseExpression '"script"' script>>
+|<<parseExpression '"bundle"' bundle>>
 
 //there is no need to define in SDEF these classes:
 private builtInClassIdNative::= ANY|BOOLEAN|DATE|FILE|INTEGER|LOCATION_SPECIFIER|NUMBER|POINT|REAL|RECORD|RECTANGLE|

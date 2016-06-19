@@ -101,6 +101,7 @@ COMMENT=(("#".*)|("--".*)|(("(*"[^"*"](([^"*"]*("*"+[^"*"")"])?)*("*"+")")?))|"(
   "string"                         { return STRING; }
   "class"                          { return CLASS; }
   "event"                          { return EVENT; }
+  "preposition"                    { return PREPOSITION; }
   "constant"                       { return CONSTANT; }
   "list"                           { return LIST; }
   "data"                           { return DATA; }

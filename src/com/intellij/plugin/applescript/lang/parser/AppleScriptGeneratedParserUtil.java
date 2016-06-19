@@ -59,6 +59,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   // to dictionary stack
   private static final Key<Boolean> IS_PARSING_USING_TERMS_FROM_STATEMENT =
           Key.create("applescript.parsing.is.use.statement.used");
+  // to allow parsing of constants inside list, record literals
+  private static final Key<Boolean> PARSING_LITERAL_EXPRESSION =
+          Key.create("applescript.parsing.literal.expression");
 
   /**
    * @param b                        {@link PsiBuilder}
@@ -343,6 +346,15 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     return r;
   }
 
+  public static boolean parseLiteralExpression(PsiBuilder b, int l, Parser literalExpression) {
+    if (!recursion_guard_(b, l, "parseLiteralExpression")) return false;
+    boolean r;
+    b.putUserData(PARSING_LITERAL_EXPRESSION, true);
+    r = literalExpression.parse(b, l + 1);
+    b.putUserData(PARSING_LITERAL_EXPRESSION, false);
+    return r;
+  }
+
   public static boolean parseTellSimpleStatementInner(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "tellSimpleStatement")) return false;
     if (!nextTokenIs(b, TELL)) return false;
@@ -461,8 +473,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    */
   public static boolean parseExpression(PsiBuilder b, int l, String dictionaryTermToken, Parser expression) {
     if (!recursion_guard_(b, l, "parseExpression")) return false;
-    boolean r;
     if (!nextTokenIsFast(b, dictionaryTermToken)) return false;
+    boolean r;
 
     //check application terms first
     if (b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) {
@@ -473,6 +485,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
         r = parseCommandNameForApplication(b, l + 1, parsedName, toldAppName, true);
         exit_section_(b, l, mComName, null, r, false, null);
         if (r) return false;
+        if (ParsableScriptSuiteRegistryHelper.isPropertyWithPrefixExist(toldAppName, dictionaryTermToken)) {
+          return false;
+//          PsiBuilder.Marker m = enter_section_(b, l, _AND_, null, "<dictionary constant>");
+//          r = parseDictionaryConstant(b, l + 1);
+//          exit_section_(b, l, m, r, false, null);
+//          if (r) return false;
+        }
       }
     }
     return expression.parse(b, l + 1);
@@ -664,7 +683,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   // (given? commandParameterSelector parameterValue)
   // | ( (with|without) commandParameterSelector )
   private static boolean parseParameterForCommand(PsiBuilder b, int l, AppleScriptCommand command,
-                                                  StringHolder parsedParameterSelector, boolean givenForm, boolean first) {
+                                                  StringHolder parsedParameterSelector, boolean givenForm, boolean
+                                                          first) {
     if (!recursion_guard_(b, l, "parseParameterForCommand")) return false;
     boolean r;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Parameter For Command>");//todo check here if it works
@@ -1153,7 +1173,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     // dictionary constant could appear only if we are inside dictionary command call
     if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)//only inside tell statements?
             && (b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE
-            && b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE))
+            && b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE)
+            && b.getUserData(PARSING_LITERAL_EXPRESSION) != Boolean.TRUE)
       return false;
 
     final StringHolder currentTokenText = new StringHolder();

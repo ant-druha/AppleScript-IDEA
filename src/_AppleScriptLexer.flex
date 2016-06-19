@@ -202,6 +202,7 @@ COMMENT=(("#".*)|("--".*)|(("(*"[^"*"](([^"*"]*("*"+[^"*"")"])?)*("*"+")")?))|"(
   "terms"                          { return TERMS; }
   "then"                           { return THEN; }
   "else"                           { return ELSE; }
+  "bundle"                         { return BUNDLE; }
   "scripts"                        { return SCRIPTS; }
   "true"                           { return TRUE; }
   "machine"                        { return MACHINE; }
