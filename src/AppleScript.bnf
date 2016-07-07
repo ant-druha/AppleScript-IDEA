@@ -219,7 +219,7 @@ private statement ::= controlStatement|propertyDeclarationStatement|varDeclarati
 
 
 private userHandlerDefinition ::= handlerLabeledParametersDefinition|handlerPositionalParametersDefinition
-                      |handlerRunDefinition|handlerOpenDefinition//|handlerIdleDefinition|handlerQuitDefinition
+                      //|handlerRunDefinition|handlerOpenDefinition//|handlerIdleDefinition|handlerQuitDefinition
                       |handlerInterleavedParametersDefinition
 returnStatement ::= return [expression]
 
@@ -685,13 +685,13 @@ private userLabelReference ::= THE_KW? referenceExpression
 //===HANDLERS===
 // handler is a collection of statements which can be invoked by name
 //todo consider add all in handlerLabeledParametersDefinition and handledLabeledParametersName
-handlerRunDefinition ::= on run directParameterDeclaration? sep
-                            blockBody?
-                          end run {pin=2}
+//handlerRunDefinition ::= on run directParameterDeclaration? sep
+//                            blockBody?
+//                          end run {pin=2}
 
-handlerOpenDefinition ::= on open directParameterDeclaration? sep
-                            blockBody?
-                          end open {pin=2}
+//handlerOpenDefinition ::= on open directParameterDeclaration? sep
+//                            blockBody?
+//                          end open {pin=2}
 
 //handlerIdleDefinition ::= on idle nls
 //                            blockBody? nls
