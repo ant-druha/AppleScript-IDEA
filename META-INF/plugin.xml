@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
-    <name>AppleScript IDEA</name>
-    <version>0.111</version>
+    <name>AppleScript Support</name>
+    <version>0.112</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -11,7 +11,7 @@
             <a href="https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptLangGuide/introduction/ASLR_intro.html">AppleScript</a>.<br>
             For applications with legacy dictionary formats <b>requires installed Xcode</b> for dictionary file
             generation.<br><br></p>
-        <b>Wiki:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">How to AppleScript in IDEA</a>
+        <b>Wiki:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">How to AppleScript</a>
         <br>
         <b>Plugin page:</b> <a href="https://plugins.jetbrains.com/plugin/8149">https://plugins.jetbrains.com/plugin/8149</a>
         ]]></description>
@@ -19,8 +19,9 @@
     <change-notes><![CDATA[
         <html>
         <dl>
-            <dt>0.111</dt>
-            <dd>&#183; Parser tuning;</dd>
+            <dt>0.112</dt>
+            <dd>&#183; Parser fixes;</dd>
+            <dd>&#183; Minor bug fixes and enhancements;</dd>
 
             <dt>0.106</dt>
             <dd>&#183; Flatten PSI;</dd>
