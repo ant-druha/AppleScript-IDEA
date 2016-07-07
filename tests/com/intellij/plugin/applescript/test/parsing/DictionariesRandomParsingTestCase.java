@@ -33,6 +33,9 @@ public class DictionariesRandomParsingTestCase extends AbstractParsingFixtureTes
     doParseScriptInPackageTest("dictionary_commands");
   }
 
+//  public void testScriptDebugger() throws IOException {
+//    doParseScriptInPackageTest("script_debugger");
+//  }
 
 
 //  public void testDictionariesRandomPackage() throws IOException {
