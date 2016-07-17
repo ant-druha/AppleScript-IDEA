@@ -1164,17 +1164,18 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   public static boolean parseDictionaryConstant(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "parseDeclaredNameInner")) return false;
+    if (!recursion_guard_(b, l, "parseDictionaryConstant")) return false;
     boolean r, propertyOrClassExists = false;
     String toldApplicationName = getTargetApplicationName(b);
     //TODO: to think how to better handle such situations?
     // (if there are too many constants defined -> lead to many incorrect parsing errors like
     // 'end' tell/repeat etc is not detected
     // dictionary constant could appear only if we are inside dictionary command call
-    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName)//only inside tell statements?
-            && (b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) != Boolean.TRUE
-            && b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) != Boolean.TRUE)
-            && b.getUserData(PARSING_LITERAL_EXPRESSION) != Boolean.TRUE)
+    boolean insideExpression = (b.getUserData(PARSING_COMMAND_HANDLER_CALL_PARAMETERS) == Boolean.TRUE
+            || b.getUserData(PARSING_COMMAND_ASSIGNMENT_STATEMENT) == Boolean.TRUE)
+            || b.getUserData(PARSING_LITERAL_EXPRESSION) == Boolean.TRUE;
+    if (!ApplicationDictionary.COCOA_STANDARD_LIBRARY.equals(toldApplicationName) && !insideExpression)//only inside 
+      // tell statements?
       return false;
 
     final StringHolder currentTokenText = new StringHolder();
@@ -1186,7 +1187,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     }
     r = tryToParseApplicationConstant(b, l + 1, toldApplicationName);
     if (r) return true;
-    if (areThereUseStatements) {
+    if (areThereUseStatements && insideExpression) {
       if (applicationsToImportFrom != null && !applicationsToImportFrom.isEmpty()) {
         for (String appName : applicationsToImportFrom) {
           r = tryToParseApplicationConstant(b, l + 1, appName);

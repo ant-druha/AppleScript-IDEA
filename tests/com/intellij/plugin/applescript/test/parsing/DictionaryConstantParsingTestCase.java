@@ -13,4 +13,8 @@ public class DictionaryConstantParsingTestCase extends AbstractParsingFixtureTes
     doParseScriptInPackageTest("tell_finder");
   }
 
+  public void testTellApplication() throws IOException {
+    doParseScriptInPackageTest("tell_application");
+  }
+
 }
