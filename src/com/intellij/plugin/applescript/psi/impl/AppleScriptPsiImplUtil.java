@@ -118,10 +118,22 @@ public class AppleScriptPsiImplUtil {
     AppleScriptLabeledParameterDeclarationList parameterList = handler.getLabeledParameterDeclarationList();
     List<AppleScriptObjectTargetPropertyDeclaration> givenProperties = handler.getObjectTargetPropertyDeclarationList();
     AppleScriptDirectParameterDeclaration directParameter = parameterList.getDirectParameterDeclaration();
+    AppleScriptTargetListLiteral targetList = parameterList.getTargetListLiteral();
+    AppleScriptTargetVariable targetVariable = parameterList.getTargetVariable();
+    AppleScriptTargetRecordLiteral targetRecord = parameterList.getTargetRecordLiteral();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parameterList
             .getLabeledParameterDeclarationPartList();
     if (directParameter != null) {
       result.add(directParameter);
+    }
+    if (targetList != null) {
+      result.addAll(targetList.getTargets());
+    }
+    if (targetVariable != null) {
+      result.add(targetVariable);
+    }
+    if (targetRecord != null) {
+      result.addAll(targetRecord.getTargets());
     }
     for (AppleScriptLabeledParameterDeclarationPart labeledParameter : labeledParameters) {
       result.add(labeledParameter);
@@ -139,6 +151,21 @@ public class AppleScriptPsiImplUtil {
     AppleScriptDirectParameterDeclaration directParameter = parametersDeclaration.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parametersDeclaration
             .getLabeledParameterDeclarationPartList();
+    AppleScriptTargetListLiteral targetList = parametersDeclaration.getTargetListLiteral();
+    AppleScriptTargetVariable targetVariable = parametersDeclaration.getTargetVariable();
+    AppleScriptTargetRecordLiteral targetRecord = parametersDeclaration.getTargetRecordLiteral();
+    if (directParameter != null) {
+      result.add(directParameter);
+    }
+    if (targetList != null) {
+      result.addAll(targetList.getTargets());
+    }
+    if (targetVariable != null) {
+      result.add(targetVariable);
+    }
+    if (targetRecord != null) {
+      result.addAll(targetRecord.getTargets());
+    }
     if (directParameter != null) {
       result.add(directParameter);
     }

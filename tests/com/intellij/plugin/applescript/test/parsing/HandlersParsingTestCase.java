@@ -33,6 +33,10 @@ public class HandlersParsingTestCase extends AbstractParsingFixtureTestCase {
     doParseScriptInPackageTest("handler_interleved");
   }
 
+  public void testDirectParameters() throws IOException {
+    doParseScriptInPackageTest("direct_parameters");
+  }
+
   public void testAllInPackage() throws IOException {
     doParseAllInPackageTest();
   }

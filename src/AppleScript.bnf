@@ -717,11 +717,12 @@ handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParamet
 {mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
 implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"
 methods=[getParameterComponentList]}
-
-labeledParameterDeclarationList ::= ((of|in) directParameterDeclaration)? labeledParameterDeclarationPart*
+//The word of or in before directParamName is required in user-defined handlers, but is optional in 
+// terminology-defined handlers (for example, those defined by applications).
+labeledParameterDeclarationList ::= ((of|in)? directParameterDeclaration | targetVariablePattern )? labeledParameterDeclarationPart*
 {methods=[getComponentList]}
 
-directParameterDeclaration ::= THE_KW? identifier//todo change to simpleFormalParameter
+directParameterDeclaration ::= THE_KW? identifier //todo change to simpleFormalParameter
 {mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
 implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
 
