@@ -2,6 +2,7 @@ package com.intellij.plugin.applescript.lang.ide.sdef;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.intellij.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
@@ -91,13 +92,16 @@ public class AppleScriptProjectDictionaryService {
       return null;
     }
     String applicationName = dInfo.getApplicationName();
-    PsiFile psiFile = PsiManager.getInstance(project).findFile(dInfo.getDictionaryFile());
-    XmlFile xmlFile = (XmlFile) psiFile;
-    if (xmlFile != null) {
-      ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, xmlFile, applicationName,
-              dInfo.getApplicationFile());
-      dictionaryMap.put(applicationName, dictionary);
-      return dictionary;
+    VirtualFile vFile = LocalFileSystem.getInstance().findFileByIoFile(dInfo.getDictionaryFile());
+    if (vFile != null && vFile.isValid()) {
+      PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
+      XmlFile xmlFile = (XmlFile) psiFile;
+      if (xmlFile != null) {
+        ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, xmlFile, applicationName,
+                dInfo.getApplicationFile());
+        dictionaryMap.put(applicationName, dictionary);
+        return dictionary;
+      }
     }
     LOG.warn("Failed to create dictionary from info for application: " + applicationName + ". Reason: file is null");
     return null;

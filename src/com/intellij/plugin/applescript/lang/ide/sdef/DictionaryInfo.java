@@ -1,6 +1,5 @@
 package com.intellij.plugin.applescript.lang.ide.sdef;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xml.Required;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.OptionTag;
@@ -15,13 +14,12 @@ import java.io.File;
  */
 public class DictionaryInfo {
   @NotNull private final String applicationName;
-  @NotNull private VirtualFile dictionaryFile;
+  @NotNull private File dictionaryFile;
   @Nullable private File applicationFile;
   @NotNull private State state;
   private boolean initialized;
 
-  public DictionaryInfo(@NotNull String applicationName, @NotNull VirtualFile dictionaryFile,
-                        @Nullable File applicationIoFile) {
+  public DictionaryInfo(@NotNull String applicationName, @NotNull File dictionaryFile, @Nullable File applicationIoFile) {
     this.applicationName = applicationName;
     this.dictionaryFile = dictionaryFile;
     this.applicationFile = applicationIoFile;
@@ -35,7 +33,7 @@ public class DictionaryInfo {
   }
 
   @NotNull
-  public VirtualFile getDictionaryFile() {
+  public File getDictionaryFile() {
     return dictionaryFile;
   }
 

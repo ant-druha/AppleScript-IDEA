@@ -99,8 +99,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return scriptingAdditions;
   }
 
-  public AppleScriptSystemDictionaryRegistryService(@NotNull AppleScriptSystemDictionaryRegistryComponent
-                                                            systemDictionaryRegistry) {
+  public AppleScriptSystemDictionaryRegistryService(@NotNull AppleScriptSystemDictionaryRegistryComponent systemDictionaryRegistry) {
     try {
       initDictionariesInfoFromCache(systemDictionaryRegistry);
       initStandardSuite();
@@ -118,23 +117,16 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
    *
    * @param systemDictionaryRegistry application component, which saves/loads the data
    */
-  private void initDictionariesInfoFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent
-                                                     systemDictionaryRegistry) {
+  private void initDictionariesInfoFromCache(@NotNull AppleScriptSystemDictionaryRegistryComponent systemDictionaryRegistry) {
     notScriptableApplicationList.addAll(systemDictionaryRegistry.getNotScriptableApplications());
-    final boolean asyncRefresh = !ApplicationManager.getApplication().isDispatchThread();
-    LocalFileSystem.getInstance().refresh(asyncRefresh);
     for (DictionaryInfo.State dInfoState : systemDictionaryRegistry.getDictionariesPersistedInfo()) {
       String appName = dInfoState.applicationName;
       String dictionaryUrl = dInfoState.dictionaryUrl;
       String applicationUrl = dInfoState.applicationUrl;
       if (!StringUtil.isEmptyOrSpaces(appName) && !StringUtil.isEmptyOrSpaces(dictionaryUrl)) {
-        VirtualFile dictionaryFile = !StringUtil.isEmpty(dictionaryUrl) ?
-                LocalFileSystem.getInstance().findFileByPath(dictionaryUrl) : null;
-        File applicationFile = !StringUtil.isEmpty(applicationUrl) ?
-                new File(applicationUrl) : null;
-        if (dictionaryFile != null) {
-          dictionaryFile.refresh(asyncRefresh, false);
-          if (!dictionaryFile.exists()) continue;
+        File dictionaryFile = !StringUtil.isEmpty(dictionaryUrl) ? new File(dictionaryUrl) : null;
+        File applicationFile = !StringUtil.isEmpty(applicationUrl) ? new File(applicationUrl) : null;
+        if (dictionaryFile != null && dictionaryFile.exists()) {
           DictionaryInfo dInfo = new DictionaryInfo(appName, dictionaryFile, applicationFile);
           addDictionaryInfo(dInfo);
         }
@@ -234,8 +226,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     return isNameWithPrefixExist(pluralClassNamePrefix, applicationNameToClassNamePluralSetMap.get(applicationName));
   }
 
-  private boolean isNameWithPrefixExist(@NotNull String namePrefix,
-                                        Set<String> nameSet) {
+  private boolean isNameWithPrefixExist(@NotNull String namePrefix, Set<String> nameSet) {
     if (nameSet == null) return false;
     for (String objectName : nameSet) {
       if (startsWithWord(objectName, namePrefix)) return true;
@@ -364,9 +355,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
    */
   @Nullable
   public DictionaryInfo getInitializedInfo(@NotNull final String applicationName) {
-    if (StringUtil.isEmptyOrSpaces(applicationName) || isNotScriptable(applicationName)
-            || isInUnknownList(applicationName))
-      return null;
+    if (StringUtil.isEmptyOrSpaces(applicationName) || isNotScriptable(applicationName) || isInUnknownList(applicationName)) return null;
+    
     final DictionaryInfo savedDictionaryInfo = getDictionaryInfo(applicationName);
     if (savedDictionaryInfo != null) {
       if (savedDictionaryInfo.isInitialized() || initializeDictionaryFromInfo(savedDictionaryInfo)) {
@@ -705,15 +695,13 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       }
     }
     if (fileGenerated && targetFile.exists()) {
-      final VirtualFile generatedFile = LocalFileSystem.getInstance().findFileByIoFile(targetFile);
-      if (generatedFile != null) {
-        File applicationBundle = ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS
-                .contains(appExtension) ? applicationIoFile : null;
-        dInfo = new DictionaryInfo(applicationName, generatedFile, applicationBundle);
-        addDictionaryInfo(dInfo);
-        LOG.debug("Dictionary file generated for application [" + applicationName + "]" + generatedFile);
-        return dInfo;
-      }
+      File applicationBundle = ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(appExtension) ? applicationIoFile : null;
+
+      dInfo = new DictionaryInfo(applicationName, targetFile, applicationBundle);
+      addDictionaryInfo(dInfo);
+
+      LOG.debug("Dictionary file generated for application [" + applicationName + "]" + targetFile);
+      return dInfo;
     }
     return null;
   }
@@ -873,7 +861,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   @Nullable
-  public VirtualFile getDictionaryFile(@Nullable String applicationName) {
+  public File getDictionaryFile(@Nullable String applicationName) {
     DictionaryInfo dInfo = dictionaryInfoMap.get(applicationName);
     return dInfo != null ? dInfo.getDictionaryFile() : null;
   }

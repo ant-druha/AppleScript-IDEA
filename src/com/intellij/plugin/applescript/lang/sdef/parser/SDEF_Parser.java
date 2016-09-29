@@ -123,14 +123,18 @@ public class SDEF_Parser {
     PsiFile origPsiFile = origXmlElement != null ? origXmlElement.getContainingFile() : null;
     if (origPsiFile instanceof XmlFile) {
       xmlFile = (XmlFile) origPsiFile;
-      AppleScriptSystemDictionaryRegistryService dictionaryService = ServiceManager
-              .getService(AppleScriptSystemDictionaryRegistryService.class);
+      AppleScriptSystemDictionaryRegistryService dictionaryService = ServiceManager.getService(AppleScriptSystemDictionaryRegistryService.class);
       VirtualFile vFile = origPsiFile.getVirtualFile();
       DictionaryInfo dInfo = dictionaryService.getDictionaryInfoByApplicationPath(vFile.getPath());
       if (dInfo != null) {
-        vFile = dInfo.getDictionaryFile();
-        PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
-        xmlFile = (XmlFile) psiFile;
+        File ioFile = dInfo.getDictionaryFile();
+        if (ioFile.exists()) {
+          vFile = LocalFileSystem.getInstance().findFileByIoFile(ioFile);
+          if (vFile == null || !vFile.isValid()) return null;
+
+          PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
+          xmlFile = (XmlFile) psiFile;
+        }
       }
     }
     return xmlFile;
@@ -153,18 +157,22 @@ public class SDEF_Parser {
         // we are trying to find if the dictionary file for this included dictionary was already generated
         AppleScriptSystemDictionaryRegistryService dictionarySystemRegistry = ServiceManager
                 .getService(AppleScriptSystemDictionaryRegistryService.class);
-        VirtualFile vFile = null;
+        VirtualFile vFile;
+        File ioFile = null;
         DictionaryInfo dInfo = dictionarySystemRegistry.getDictionaryInfoByApplicationPath(includedFile.getPath());
         if (dInfo != null) {
-          vFile = dInfo.getDictionaryFile();
+          ioFile = dInfo.getDictionaryFile();
         } else if (includedFile.isFile()) {
           String fName = includedFile.getName();
           int index = fName.lastIndexOf('.');
           fName = index < 0 ? fName : fName.substring(0, index);
-          vFile = dictionarySystemRegistry.getDictionaryFile(fName);
+          ioFile = dictionarySystemRegistry.getDictionaryFile(fName);
         }
-        if (vFile == null || !vFile.isValid()) vFile = LocalFileSystem.getInstance().findFileByIoFile(includedFile);
-        if (vFile != null && vFile.isValid()) {
+        if (ioFile == null || !ioFile.exists()) ioFile = includedFile;
+        if (ioFile.exists()) {
+          vFile = LocalFileSystem.getInstance().findFileByIoFile(ioFile);
+          if (vFile == null || !vFile.isValid()) continue;
+          
           PsiFile psiFile = PsiManager.getInstance(parsedDictionary.getProject()).findFile(vFile);
           XmlFile xmlFile = (XmlFile) psiFile;
           if (xmlFile != null) {
