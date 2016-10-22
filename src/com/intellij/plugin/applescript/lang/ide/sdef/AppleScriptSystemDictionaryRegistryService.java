@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class AppleScriptSystemDictionaryRegistryService implements ParsableScriptHelper {
 
@@ -759,19 +760,19 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
               "> " + serializePath};
       LOG.debug("executing command: " + Arrays.toString(shellCommand));
-      final Integer exitCode;
+      boolean exitStatus;
+      final long timeout = 5;
       long execStart = System.currentTimeMillis();
-      exitCode = Runtime.getRuntime().exec(shellCommand).waitFor();
+      exitStatus = Runtime.getRuntime().exec(shellCommand).waitFor(timeout, TimeUnit.SECONDS);
       long execEnd = System.currentTimeMillis();
-      if (exitCode != 0) {
+      if (!exitStatus) {
         if (isXcodeInstalled()) {
-          throw new NotScriptableApplicationException(applicationName,
-                  "Command " + Arrays.toString(shellCommand) + " failed with code=" + exitCode + ". Seems that " +
-                          "application \"" + applicationName + "\" is not scriptable.");
+          throw new NotScriptableApplicationException(applicationName, "Waiting time elapsed for command " + Arrays.toString(shellCommand) +
+                  ". Seems that application \"" + applicationName + "\" is not scriptable.");
         } else throw new DeveloperToolsNotInstalledException();
       }
 
-      LOG.debug("Exit code = " + exitCode + " Execution time: " + (execEnd - execStart) + " ms.");
+      LOG.debug("Waiting time elapsed. Execution time: " + (execEnd - execStart) + " ms.");
       return true;
     } catch (InterruptedException e) {
       LOG.error("Failed to create dictionary file for application [" + applicationName + "] Command:" + cmdName +
