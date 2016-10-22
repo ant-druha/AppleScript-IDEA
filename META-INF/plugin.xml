@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript Support</name>
-    <version>0.113</version>
+    <version>0.114</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -19,13 +19,12 @@
     <change-notes><![CDATA[
         <html>
         <dl>
+            <dt>0.114</dt>
+            <dd>&#183; Better error annotation and performance.</dd>
+
             <dt>0.112</dt>
             <dd>&#183; Parser fixes;</dd>
             <dd>&#183; Minor bug fixes and enhancements;</dd>
-
-            <dt>0.106</dt>
-            <dd>&#183; Flatten PSI;</dd>
-            <dd>&#183; Stability fixes.</dd>
 
             <dt>0.105</dt>
             <dd>&#183; Parameters and options in Run Configuration.</dd>
@@ -42,7 +41,7 @@
         ]]>
     </change-notes>
 
-    <idea-version since-build="143"/>
+    <idea-version since-build="144"/>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
