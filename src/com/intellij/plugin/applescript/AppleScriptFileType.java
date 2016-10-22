@@ -26,7 +26,7 @@ public class AppleScriptFileType extends LanguageFileType {
   @NotNull
   @Override
   public String getDescription() {
-    return "AppleScript language file";
+    return "AppleScript file";
   }
 
   @NotNull
