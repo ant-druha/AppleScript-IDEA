@@ -13,11 +13,8 @@ import com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptProjectDictionar
 import com.intellij.plugin.applescript.lang.sdef.ApplicationDictionary;
 import com.intellij.plugin.applescript.psi.sdef.impl.ApplicationDictionaryImpl;
 import com.intellij.psi.PsiDirectory;
-import com.intellij.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class LoadDictionaryAction extends AnAction {
   public void actionPerformed(final AnActionEvent e) {
@@ -42,30 +39,27 @@ public class LoadDictionaryAction extends AnAction {
                                              @Nullable final String appName) {
     final boolean chooseMultiply = StringUtil.isEmpty(appName);
     FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, chooseMultiply);
-    FileChooser.chooseFiles(descriptor, project, directoryFile, new Consumer<List<VirtualFile>>() {
-      @Override
-      public void consume(final List<VirtualFile> files) {
-        AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager
-                .getService(project, AppleScriptProjectDictionaryService.class);
-        if (projectDictionaryRegistry == null) return;
+    FileChooser.chooseFiles(descriptor, project, directoryFile, files -> {
+      AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager
+              .getService(project, AppleScriptProjectDictionaryService.class);
+      if (projectDictionaryRegistry == null) return;
 
-        for (VirtualFile file : files) {
-          if (!ApplicationDictionaryImpl.extensionSupported(file.getExtension())) continue;
+      for (VirtualFile file : files) {
+        if (!ApplicationDictionaryImpl.extensionSupported(file.getExtension())) continue;
 
-          if (chooseMultiply) {
-            String applicationName;
-            if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
-              applicationName = file.getNameWithoutExtension();
-            } else {
-              applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
-                      + file.getName(), "Enter Application Name", null, file.getNameWithoutExtension(), null);
-            }
-            if (StringUtil.isEmpty(applicationName)) continue;
-            projectDictionaryRegistry.createDictionaryFromFile(applicationName, file);
+        if (chooseMultiply) {
+          String applicationName;
+          if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
+            applicationName = file.getNameWithoutExtension();
           } else {
-            projectDictionaryRegistry.createDictionaryFromFile(appName, file);
-            return;
+            applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
+                    + file.getName(), "Enter Application Name", null, file.getNameWithoutExtension(), null);
           }
+          if (StringUtil.isEmpty(applicationName)) continue;
+          projectDictionaryRegistry.createDictionaryFromFile(applicationName, file);
+        } else {
+          projectDictionaryRegistry.createDictionaryFromFile(appName, file);
+          return;
         }
       }
     });

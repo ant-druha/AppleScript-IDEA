@@ -49,24 +49,22 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull private final VirtualFile dictionaryFile;
   @Nullable private File applicationBundleFile;
   @Nullable private Icon applicationIcon;
-  @NotNull private final List<PsiFile> includedFiles = new ArrayList<PsiFile>();
+  @NotNull private final List<PsiFile> includedFiles = new ArrayList<>();
   @NotNull private String applicationName;
   @NotNull private String dictionaryName;
   @Nullable private String documentation;
 
   private XmlTag myRootTag;
-  private final List<Suite> mySuites = new ArrayList<Suite>();
-  private final Map<String, AppleScriptPropertyDefinition> dictionaryPropertyMap = new HashMap<String,
-          AppleScriptPropertyDefinition>();
-  private final Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<String, DictionaryRecord>();
-  private final Map<String, DictionaryEnumerator> dictionaryEnumeratorMap = new HashMap<String, DictionaryEnumerator>();
-  private final Map<String, DictionaryEnumeration> dictionaryEnumerationMap = new HashMap<String,
-          DictionaryEnumeration>();
-  private final Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
-  private final Set<AppleScriptCommand> dictionaryCommands = new LinkedHashSet<AppleScriptCommand>();
-  private final Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<String, AppleScriptClass>();
-  private final Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<String, AppleScriptClass>();
-  private final Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<String, AppleScriptClass>();
+  private final List<Suite> mySuites = new ArrayList<>();
+  private final Map<String, AppleScriptPropertyDefinition> dictionaryPropertyMap = new HashMap<>();
+  private final Map<String, DictionaryRecord> dictionaryRecordMap = new HashMap<>();
+  private final Map<String, DictionaryEnumerator> dictionaryEnumeratorMap = new HashMap<>();
+  private final Map<String, DictionaryEnumeration> dictionaryEnumerationMap = new HashMap<>();
+  private final Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<>();
+  private final Set<AppleScriptCommand> dictionaryCommands = new LinkedHashSet<>();
+  private final Map<String, AppleScriptClass> dictionaryClassMap = new HashMap<>();
+  private final Map<String, AppleScriptClass> dictionaryClassToPluralNameMap = new HashMap<>();
+  private final Map<String, AppleScriptClass> dictionaryClassByCodeMap = new HashMap<>();
 
   public ApplicationDictionaryImpl(@NotNull Project project, @NotNull XmlFile dictionaryXmlFile,
                                    @NotNull String applicationName, @Nullable File applicationBundleFile) {
@@ -227,7 +225,7 @@ public class ApplicationDictionaryImpl extends FakePsiElement implements Applica
   @NotNull
   @Override
   public List<AppleScriptCommand> findAllCommandsWithName(String name) {
-    List<AppleScriptCommand> result = new ArrayList<AppleScriptCommand>(1);
+    List<AppleScriptCommand> result = new ArrayList<>(1);
     AppleScriptCommand command = dictionaryCommandMap.get(name);
     if (command != null) result.add(dictionaryCommandMap.get(name));
 //    dictionaryCommands

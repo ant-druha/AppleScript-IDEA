@@ -27,13 +27,13 @@ public class AppleScriptComponentScopeResolver implements ResolveCache.AbstractR
 
   @Override
   public List<? extends PsiElement> resolve(@NotNull AppleScriptReferenceElement scopeElement, boolean incompleteCode) {
-    final Set<AppleScriptComponent> resultSet = new HashSet<AppleScriptComponent>();
+    final Set<AppleScriptComponent> resultSet = new HashSet<>();
 
     // local
     PsiElement maxScope = getMaxScope(scopeElement);
     final AppleScriptComponentScopeProcessor resolveProcessor = new AppleScriptComponentScopeProcessor(resultSet);
     PsiTreeUtil.treeWalkUp(resolveProcessor, scopeElement, maxScope, ResolveState.initial());
-    return new ArrayList<AppleScriptComponent>(resultSet);
+    return new ArrayList<>(resultSet);
   }
 
   /**

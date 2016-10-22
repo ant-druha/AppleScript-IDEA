@@ -31,7 +31,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
       return true;
     }
     final PsiElement[] children = context.getChildren();
-    final Set<AppleScriptPsiElement> result = new THashSet<AppleScriptPsiElement>();
+    final Set<AppleScriptPsiElement> result = new THashSet<>();
     for (PsiElement child : children) {
       if (child == lastParent && child instanceof AppleScriptBlockBody)//todo extract condition=>"stop at last parent"
         continue;

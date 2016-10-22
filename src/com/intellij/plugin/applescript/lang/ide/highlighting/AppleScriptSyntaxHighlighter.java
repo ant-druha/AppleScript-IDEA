@@ -20,7 +20,7 @@ import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
 
 public class AppleScriptSyntaxHighlighter extends SyntaxHighlighterBase {
 
-  private static final Map<IElementType, TextAttributesKey> ATTRIBUTES = new HashMap<IElementType, TextAttributesKey>();
+  private static final Map<IElementType, TextAttributesKey> ATTRIBUTES = new HashMap<>();
 
   static {
     fillMap(ATTRIBUTES, OPERATORS, AppleScriptSyntaxHighlighterColors.OPERATION_SIGN);

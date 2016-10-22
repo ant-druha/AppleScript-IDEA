@@ -13,7 +13,6 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
@@ -69,17 +68,14 @@ public class CommandCompletionContributor extends CompletionContributor {
                   if (target instanceof AppleScriptCommand) {
                     AppleScriptCommand command = (AppleScriptCommand) target;
                     List<CommandParameter> sortedParams = command.getParameters();
-                    Collections.sort(sortedParams, new Comparator<CommandParameter>() {
-                      @Override
-                      public int compare(CommandParameter par1, CommandParameter par2) {
-                        int res = 0;
-                        boolean o1 = par1.isOptional();
-                        boolean o2 = par2.isOptional();
-                        if (o1 && o2 || !o1 && !o2) res = 0;
-                        if (!o1 && o2) res = -1;
-                        if (o1 && !o2) res = 1;
-                        return res;
-                      }
+                    Collections.sort(sortedParams, (par1, par2) -> {
+                      int res = 0;
+                      boolean o1 = par1.isOptional();
+                      boolean o2 = par2.isOptional();
+                      if (o1 && o2 || !o1 && !o2) res = 0;
+                      if (!o1 && o2) res = -1;
+                      if (o1 && !o2) res = 1;
+                      return res;
                     });
                     for (CommandParameter par : sortedParams) {
                       result.addElement(LookupElementBuilder.create(par).withBoldness(!par.isOptional())

@@ -24,7 +24,7 @@ public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantC
   @NotNull
   @Override
   public List<TextRange> getRanges() {
-    List<TextRange> result = new ArrayList<TextRange>();
+    List<TextRange> result = new ArrayList<>();
     final int parentOffset = -getElement().getTextRange().getStartOffset();
     for (PsiElement id : getElement().getCompositeNameElement().getIdentifiers()) {
       TextRange argumentRange = id.getTextRange();
@@ -42,7 +42,7 @@ public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantC
             new AppleScriptDictionaryResolveProcessor(getElement(), getCanonicalText());
     List<PsiElement> maxScope = AppleScriptResolveUtil.getTellStatementResolveScope(getElement());
     PsiElement maxTellScope = null;
-    final List<PsiElement> res = new ArrayList<PsiElement>();
+    final List<PsiElement> res = new ArrayList<>();
     DictionaryComponent resolveResult;
     if (!maxScope.isEmpty()) {
       for (PsiElement el : maxScope) {

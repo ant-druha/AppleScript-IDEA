@@ -20,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,14 +39,8 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
   private final @NotNull Project myProject;
   private final @Nullable DictionaryCompositeElement myElement;
   private final @NotNull String myElementName;
-  @NotNull private final SortedList<AppleScriptUseStatement> mySortedUseStatements =
-          new SortedList<AppleScriptUseStatement>(new Comparator<AppleScriptUseStatement>() {
-            @Override
-            public int compare(AppleScriptUseStatement o1, AppleScriptUseStatement o2) {
-              return -(o1.getTextOffset() - o2.getTextOffset());
-            }
-          });
-  @NotNull private final List<ApplicationDictionary> collectedDictionaries = new ArrayList<ApplicationDictionary>();
+  @NotNull private final SortedList<AppleScriptUseStatement> mySortedUseStatements = new SortedList<>((o1, o2) -> -(o1.getTextOffset() - o2.getTextOffset()));
+  @NotNull private final List<ApplicationDictionary> collectedDictionaries = new ArrayList<>();
   private DictionaryComponent myResult;
   private boolean foundInUseStatementFlag = false;
 
@@ -204,7 +197,7 @@ public class AppleScriptDictionaryResolveProcessor extends AppleScriptPsiScopePr
 
   @NotNull
   public List<DictionaryComponent> getFilteredResult() {
-    List<DictionaryComponent> result = new ArrayList<DictionaryComponent>();
+    List<DictionaryComponent> result = new ArrayList<>();
     boolean filterStdCocoaTerminologyFlag = false; //if there was at least one dictionary from a real app imported
     AppleScriptProjectDictionaryService dictionaryRegistry = ServiceManager
             .getService(myProject, AppleScriptProjectDictionaryService.class);

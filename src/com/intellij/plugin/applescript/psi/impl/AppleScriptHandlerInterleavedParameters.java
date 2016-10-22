@@ -120,7 +120,7 @@ public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScript
   @NotNull
   @Override
   public List<AppleScriptIdentifier> getSelectors() {
-    List<AppleScriptIdentifier> selectors = new ArrayList<AppleScriptIdentifier>();
+    List<AppleScriptIdentifier> selectors = new ArrayList<>();
     for (AppleScriptHandlerSelectorPart part : getParameters()) {
       if (part.getSelectorNameIdentifier() != null)
         selectors.add(part.getSelectorNameIdentifier());

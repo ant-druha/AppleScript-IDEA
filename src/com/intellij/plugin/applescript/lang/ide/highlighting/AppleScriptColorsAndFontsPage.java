@@ -21,7 +21,7 @@ public class AppleScriptColorsAndFontsPage implements ColorSettingsPage {
   private static final AttributesDescriptor[] ATTRS;
 
   @NonNls
-  private static final Map<String, TextAttributesKey> ourTags = new HashMap<String, TextAttributesKey>();
+  private static final Map<String, TextAttributesKey> ourTags = new HashMap<>();
 
   static {
     ATTRS = new AttributesDescriptor[]{

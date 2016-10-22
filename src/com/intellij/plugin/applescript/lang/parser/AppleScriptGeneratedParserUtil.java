@@ -191,7 +191,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
                                                                  final String toldApplicationName,
                                                                  boolean areThereUseStatements,
                                                                  Set<String> applicationsToImport) {
-    List<AppleScriptCommand> allCommandsWithName = new ArrayList<AppleScriptCommand>();
+    List<AppleScriptCommand> allCommandsWithName = new ArrayList<>();
     allCommandsWithName.addAll(ParsableScriptSuiteRegistryHelper
             .findApplicationCommands(b.getProject(), toldApplicationName, parsedCommandName));
     // Scripting Additions StandardAdditions fake application does not contain CocoaStandard terms. Adding them here
@@ -429,7 +429,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (doTermsImport && !StringUtil.isEmpty(appName)) {
       Set<String> usedAppNames = b.getUserData(USED_APPLICATION_NAMES);
       if (usedAppNames == null) {
-        usedAppNames = new HashSet<String>();
+        usedAppNames = new HashSet<>();
         b.putUserData(USED_APPLICATION_NAMES, usedAppNames);
       }
       usedAppNames.add(appName);
@@ -624,7 +624,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static Stack<String> pushTargetApplicationName(PsiBuilder b, @NotNull String applicationNameString) {
     Stack<String> dictionaryNameStack = b.getUserData(TOLD_APPLICATION_NAME_STACK);
     if (dictionaryNameStack == null) {
-      dictionaryNameStack = new Stack<String>();
+      dictionaryNameStack = new Stack<>();
       b.putUserData(TOLD_APPLICATION_NAME_STACK, dictionaryNameStack);
     }
     dictionaryNameStack.push(applicationNameString);

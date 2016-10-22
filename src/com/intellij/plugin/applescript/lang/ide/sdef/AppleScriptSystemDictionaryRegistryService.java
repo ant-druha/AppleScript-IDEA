@@ -29,7 +29,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class AppleScriptSystemDictionaryRegistryService implements ParsableScriptHelper {
@@ -38,42 +41,32 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
           AppleScriptSystemDictionaryRegistryService.class.getName());
 
   //persisted data
-  private final Map<String, DictionaryInfo> dictionaryInfoMap = new HashMap<String, DictionaryInfo>();
-  private final HashSet<String> notScriptableApplicationList = new HashSet<String>();
+  private final Map<String, DictionaryInfo> dictionaryInfoMap = new HashMap<>();
+  private final HashSet<String> notScriptableApplicationList = new HashSet<>();
   //scripting additions, installed in the system
-  private final HashSet<String> scriptingAdditions = new HashSet<String>();
-  private final HashSet<String> notFoundApplicationList = new HashSet<String>();
-  private final HashSet<String> discoveredApplicationNames = new HashSet<String>();
+  private final HashSet<String> scriptingAdditions = new HashSet<>();
+  private final HashSet<String> notFoundApplicationList = new HashSet<>();
+  private final HashSet<String> discoveredApplicationNames = new HashSet<>();
 
   private File xCodeApplicationFile;
 
   public static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
   private static final int APP_DEPTH_SEARCH = 3;
 
-  private final Map<String, HashSet<String>> applicationNameToClassNameSetMap = new HashMap<String, HashSet<String>>();
-  private final Map<String, HashSet<String>> applicationNameToClassNamePluralSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> applicationNameToCommandNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> applicationNameToRecordNameSetMap = new HashMap<String, HashSet<String>>();
-  private final Map<String, HashSet<String>> applicationNameToPropertySetMap = new HashMap<String, HashSet<String>>();
-  private final Map<String, HashSet<String>> applicationNameToEnumerationNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> applicationNameToEnumeratorConstantNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> stdClassNameToApplicationNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> stdClassNamePluralToApplicationNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> stdCommandNameToApplicationNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> stdRecordNameToApplicationNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> stdPropertyNameToDictionarySetMap = new HashMap<String, HashSet<String>>();
-  private final Map<String, HashSet<String>> stdEnumerationNameToApplicationNameSetMap = new HashMap<String,
-          HashSet<String>>();
-  private final Map<String, HashSet<String>> stdEnumeratorConstantNameToApplicationNameListMap = new HashMap<String,
-          HashSet<String>>();
+  private final Map<String, HashSet<String>> applicationNameToClassNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> applicationNameToClassNamePluralSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> applicationNameToCommandNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> applicationNameToRecordNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> applicationNameToPropertySetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> applicationNameToEnumerationNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> applicationNameToEnumeratorConstantNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdClassNameToApplicationNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdClassNamePluralToApplicationNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdCommandNameToApplicationNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdRecordNameToApplicationNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdPropertyNameToDictionarySetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdEnumerationNameToApplicationNameSetMap = new HashMap<>();
+  private final Map<String, HashSet<String>> stdEnumeratorConstantNameToApplicationNameListMap = new HashMap<>();
 
   private void removeDictionaryInfo(@NotNull String applicationName) {
     dictionaryInfoMap.remove(applicationName);
@@ -259,9 +252,9 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   @Override
   public Collection<AppleScriptCommand> findStdCommands(@NotNull Project project, @NotNull String commandName) {
     HashSet<String> appNameList = stdCommandNameToApplicationNameSetMap.get(commandName);
-    if (appNameList == null) return new HashSet<AppleScriptCommand>(0);
+    if (appNameList == null) return new HashSet<>(0);
 
-    HashSet<AppleScriptCommand> result = new HashSet<AppleScriptCommand>();
+    HashSet<AppleScriptCommand> result = new HashSet<>();
     for (String applicationName : appNameList) {
       result.addAll(findApplicationCommands(project, applicationName, commandName));
     }
@@ -284,7 +277,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     if (dictionary != null) {
       return dictionary.findAllCommandsWithName(commandName);
     }
-    return new ArrayList<AppleScriptCommand>(0);// TODO: 29/11/15 use predefined empty list here
+    return new ArrayList<>(0);// TODO: 29/11/15 use predefined empty list here
   }
 
   @Override
@@ -579,7 +572,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   @Nullable
   private DictionaryInfo mergeScriptingAdditions() {
     try {
-      List<File> dictionaryFiles = new ArrayList<File>();
+      List<File> dictionaryFiles = new ArrayList<>();
       final String libName = ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY;
       final File mergedFile = File.createTempFile(libName, ".sdef");
       for (String scriptingAddition : scriptingAdditions) {
@@ -709,12 +702,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   @Nullable
   private File findSdefForApplication(@NotNull File applicationIoFile) {
     File appResources = new File(applicationIoFile, "/Contents/Resources");
-    File[] files = appResources.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File file, String s) {
-        return s.endsWith("sdef");
-      }
-    });
+    File[] files = appResources.listFiles((file, s) -> s.endsWith("sdef"));
     if (files != null && files.length > 0) {
       return files[0];
     }
@@ -810,18 +798,15 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
                                                final boolean rewrite) {
     if (!targetFile.getParentFile().exists()) return false;
     if (ApplicationManager.getApplication().isDispatchThread() && (!targetFile.exists() || rewrite)) {
-      ApplicationManager.getApplication().runWriteAction(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            if (targetFile.exists() && targetFile.delete()) {
-              LOG.debug("Existing target file deleted: " + targetFile);
-            }
-            Files.copy(applicationDictionaryFile, targetFile);
-          } catch (IOException e) {
-            LOG.error("Failed to move file " + applicationDictionaryFile + " to cache directory: " + targetFile);
-            e.printStackTrace();
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        try {
+          if (targetFile.exists() && targetFile.delete()) {
+            LOG.debug("Existing target file deleted: " + targetFile);
           }
+          Files.copy(applicationDictionaryFile, targetFile);
+        } catch (IOException e) {
+          LOG.error("Failed to move file " + applicationDictionaryFile + " to cache directory: " + targetFile);
+          e.printStackTrace();
         }
       });
     } else {
@@ -1084,7 +1069,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
                                                    @NotNull Map<String, HashSet<String>> objectNameToNameSetMap,
                                                    @Nullable HashSet<String> nameSetForObject) {
     if (nameSetForObject == null) {
-      nameSetForObject = new HashSet<String>();
+      nameSetForObject = new HashSet<>();
       if (!StringUtil.isEmpty(objectName)) {
         objectNameToNameSetMap.put(objectName, nameSetForObject);
       }

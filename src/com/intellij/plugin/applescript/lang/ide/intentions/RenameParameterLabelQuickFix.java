@@ -38,26 +38,14 @@ public class RenameParameterLabelQuickFix extends BaseIntentionAction {
   @Override
   public void invoke(@NotNull final Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
 
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-          @Override
-          public void run() {
-            CommandProcessor.getInstance().executeCommand(project, new Runnable() {
-              @Override
-              public void run() {
-                AppleScriptHandlerParameterLabel newLabel = AppleScriptPsiElementFactory.createHandlerParameterLabel
-                        (project, myNewLabelName);
-                if (newLabel != null) {
-                  myHandlerParameterLabel.replace(newLabel);
-                }
-              }
-            }, getText(), null);
-          }
-        });
+    ApplicationManager.getApplication().invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> CommandProcessor.getInstance()
+            .executeCommand(project, () -> {
+      AppleScriptHandlerParameterLabel newLabel = AppleScriptPsiElementFactory.createHandlerParameterLabel
+              (project, myNewLabelName);
+      if (newLabel != null) {
+        myHandlerParameterLabel.replace(newLabel);
       }
-    });
+    }, getText(), null)));
   }
 
   @NotNull

@@ -42,7 +42,7 @@ public class AppleScriptBlock extends AbstractBlock implements BlockWithParent {
     if (isLeaf()) {
       return EMPTY;
     }
-    final ArrayList<Block> tlChildren = new ArrayList<Block>();
+    final ArrayList<Block> tlChildren = new ArrayList<>();
     for (ASTNode childNode = getNode().getFirstChildNode(); childNode != null; childNode = childNode.getTreeNext()) {
 //          if (FormatterUtil.containsWhiteSpacesOnly(childNode)) continue; //check for whitespaces only is not enought
       if (childNode.getText().trim().isEmpty()) continue;

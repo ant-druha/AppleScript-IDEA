@@ -27,9 +27,9 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
           AppleScriptSystemDictionaryRegistryComponent.class.getName());
   public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistryComponent";
   // information about dictionaries for the application which is saved in settings
-  private final List<DictionaryInfo.State> dictionariesPersistedInfo = new ArrayList<DictionaryInfo.State>();
+  private final List<DictionaryInfo.State> dictionariesPersistedInfo = new ArrayList<>();
   // application names which do not support AppleScript commands
-  private final SmartList<String> notScriptableApplications = new SmartList<String>();
+  private final SmartList<String> notScriptableApplications = new SmartList<>();
   @Nullable
   private AppleScriptSystemDictionaryRegistryService dictionaryService;
 
@@ -39,7 +39,7 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
     @AbstractCollection(surroundWithTag = false)
     public DictionaryInfo.State[] dictionariesInfo = new DictionaryInfo.State[0];
     @CollectionBean
-    public final List<String> notScriptableApplications = new SmartList<String>();
+    public final List<String> notScriptableApplications = new SmartList<>();
   }
 
   public void setDictionaryService(@NotNull AppleScriptSystemDictionaryRegistryService dictionaryService) {
@@ -89,11 +89,9 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
   }
 
   private void registerSdefExtension() {
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-      public void run() {
-        FileType ft = FileTypeManager.getInstance().getFileTypeByExtension("xml");
-        FileTypeManager.getInstance().associateExtension(ft, "sdef");
-      }
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      FileType ft = FileTypeManager.getInstance().getFileTypeByExtension("xml");
+      FileTypeManager.getInstance().associateExtension(ft, "sdef");
     });
   }
 

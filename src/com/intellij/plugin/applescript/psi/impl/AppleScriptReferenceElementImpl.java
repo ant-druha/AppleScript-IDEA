@@ -144,7 +144,7 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
     PsiTreeUtil.treeWalkUp(resolveProcessor, getElement(), null, myCollectAllState);
     List<DictionaryComponent> dictionaryComponents = resolveProcessor.getFilteredResult();
 
-    List<LookupElement> lookupElements = new ArrayList<LookupElement>();
+    List<LookupElement> lookupElements = new ArrayList<>();
     if (elements != null && !elements.isEmpty()) {
       for (PsiElement el : elements) {
         addLookupElement(lookupElements, el);

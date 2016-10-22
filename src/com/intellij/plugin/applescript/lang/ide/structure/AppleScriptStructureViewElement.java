@@ -15,7 +15,10 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Andrey 03.05.2015
@@ -39,8 +42,8 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
   @Override
   public Collection<StructureViewTreeElement> getChildrenBase() {
     final NavigatablePsiElement element = getElement();
-    final List<StructureViewTreeElement> result = new ArrayList<StructureViewTreeElement>();
-    THashSet<AppleScriptComponent> myComponents = new THashSet<AppleScriptComponent>();
+    final List<StructureViewTreeElement> result = new ArrayList<>();
+    THashSet<AppleScriptComponent> myComponents = new THashSet<>();
     if (element != null && element instanceof AppleScriptFile) {
       if (!isRoot) {
         result.add(new AppleScriptStructureViewElement(element, true));
@@ -74,20 +77,17 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
       }
     }
 
-    Collections.sort(result, new Comparator<StructureViewTreeElement>() {
-      @Override
-      public int compare(StructureViewTreeElement o1, StructureViewTreeElement o2) {
-        PsiElement element1, element2;
-        if (o1 instanceof AppleScriptStructureViewElement
-                && o2 instanceof AppleScriptStructureViewElement) {
-          element1 = ((AppleScriptStructureViewElement) o1).getElement();
-          element2 = ((AppleScriptStructureViewElement) o2).getElement();
-          if (element1 != null && element2 != null) {
-            return element1.getTextOffset() - element2.getTextOffset();
-          }
+    Collections.sort(result, (o1, o2) -> {
+      PsiElement element1, element2;
+      if (o1 instanceof AppleScriptStructureViewElement
+              && o2 instanceof AppleScriptStructureViewElement) {
+        element1 = ((AppleScriptStructureViewElement) o1).getElement();
+        element2 = ((AppleScriptStructureViewElement) o2).getElement();
+        if (element1 != null && element2 != null) {
+          return element1.getTextOffset() - element2.getTextOffset();
         }
-        return 0;
       }
+      return 0;
     });
 
     return result;

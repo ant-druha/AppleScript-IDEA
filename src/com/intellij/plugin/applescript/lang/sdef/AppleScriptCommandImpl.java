@@ -15,11 +15,11 @@ import java.util.Map;
  */
 public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> implements AppleScriptCommand {
 
-  @NotNull private List<CommandParameter> parameters = new ArrayList<CommandParameter>();
-  @NotNull private List<CommandParameter> mandatoryParameters = new ArrayList<CommandParameter>();
+  @NotNull private List<CommandParameter> parameters = new ArrayList<>();
+  @NotNull private List<CommandParameter> mandatoryParameters = new ArrayList<>();
   @Nullable private CommandDirectParameter directParameter;
-  @NotNull private List<String> parameterNames = new ArrayList<String>();
-  @NotNull private Map<String, CommandParameter> parametersMap = new HashMap<String, CommandParameter>();
+  @NotNull private List<String> parameterNames = new ArrayList<>();
+  @NotNull private Map<String, CommandParameter> parametersMap = new HashMap<>();
   @Nullable private CommandResult result;
   @Nullable String cocoaClassName; //todo reference to the real Psi CocoaClass could be implemented
 

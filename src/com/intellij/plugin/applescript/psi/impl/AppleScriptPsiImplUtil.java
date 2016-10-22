@@ -26,7 +26,7 @@ public class AppleScriptPsiImplUtil {
   @NotNull
   public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptTargetListLiteral
                                                                    targetList) {
-    final List<AppleScriptTargetVariable> components = new ArrayList<AppleScriptTargetVariable>();
+    final List<AppleScriptTargetVariable> components = new ArrayList<>();
     for (AppleScriptTargetVariable targetComponent : targetList.getTargetVariableList()) {
       components.add(targetComponent);
     }
@@ -36,7 +36,7 @@ public class AppleScriptPsiImplUtil {
   @NotNull
   public static List<AppleScriptSimpleFormalParameter> getParameters(@NotNull AppleScriptListFormalParameter
                                                                              listFormalParameter) {
-    final List<AppleScriptSimpleFormalParameter> params = new ArrayList<AppleScriptSimpleFormalParameter>();
+    final List<AppleScriptSimpleFormalParameter> params = new ArrayList<>();
     for (AppleScriptSimpleFormalParameter param : listFormalParameter.getSimpleFormalParameterList()) {
       params.add(param);
     }
@@ -48,7 +48,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptComponent> getFormalParameters(@NotNull
                                                                AppleScriptFormalParameterList
                                                                        parameterList) {
-    final List<AppleScriptComponent> parameters = new ArrayList<AppleScriptComponent>();
+    final List<AppleScriptComponent> parameters = new ArrayList<>();
     List<AppleScriptSimpleFormalParameter> singleParams = parameterList.getSimpleFormalParameterList();
     List<AppleScriptListFormalParameter> listsOfParams = parameterList.getListFormalParameterList();
     List<AppleScriptRecordFormalParameter> recordsOfParams = parameterList.getRecordFormalParameterList();
@@ -114,7 +114,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptComponent> getParameterComponentList(@NotNull
                                                                      AppleScriptHandlerLabeledParametersDefinition
                                                                              handler) {
-    final List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    final List<AppleScriptComponent> result = new ArrayList<>();
     AppleScriptLabeledParameterDeclarationList parameterList = handler.getLabeledParameterDeclarationList();
     List<AppleScriptObjectTargetPropertyDeclaration> givenProperties = handler.getObjectTargetPropertyDeclarationList();
     AppleScriptDirectParameterDeclaration directParameter = parameterList.getDirectParameterDeclaration();
@@ -147,7 +147,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptComponent> getComponentList(@NotNull
                                                             AppleScriptLabeledParameterDeclarationList
                                                                     parametersDeclaration) {
-    final List<AppleScriptComponent> result = new ArrayList<AppleScriptComponent>();
+    final List<AppleScriptComponent> result = new ArrayList<>();
     AppleScriptDirectParameterDeclaration directParameter = parametersDeclaration.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parametersDeclaration
             .getLabeledParameterDeclarationPartList();
@@ -179,7 +179,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptTargetVariable> getTargets(@NotNull
                                                            AppleScriptTargetRecordLiteral
                                                                    targetRecord) {
-    final List<AppleScriptTargetVariable> targetVariables = new ArrayList<AppleScriptTargetVariable>();
+    final List<AppleScriptTargetVariable> targetVariables = new ArrayList<>();
     addRecordTargetVariablesRecursive(targetRecord, targetVariables);
     return targetVariables;
   }
@@ -188,7 +188,7 @@ public class AppleScriptPsiImplUtil {
   public static List<AppleScriptSimpleFormalParameter> getParameters(@NotNull
                                                                      AppleScriptRecordFormalParameter
                                                                              recordParameter) {
-    final List<AppleScriptSimpleFormalParameter> parameters = new ArrayList<AppleScriptSimpleFormalParameter>();
+    final List<AppleScriptSimpleFormalParameter> parameters = new ArrayList<>();
     addRecordFormalParameterRecursive(recordParameter, parameters);
     return parameters;
   }
@@ -206,8 +206,7 @@ public class AppleScriptPsiImplUtil {
   @NotNull
   public static List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping(@NotNull
                                                                                                    AppleScriptAssignmentStatement assignmentStatement) {
-    final List<Pair<AppleScriptPsiElement, AppleScriptExpression>> result = new SmartList<Pair<AppleScriptPsiElement,
-            AppleScriptExpression>>();
+    final List<Pair<AppleScriptPsiElement, AppleScriptExpression>> result = new SmartList<>();
 
     return result;
   }
@@ -215,7 +214,7 @@ public class AppleScriptPsiImplUtil {
   @NotNull
   public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptAssignmentStatement
                                                                    assignmentStatement) {
-    final List<AppleScriptTargetVariable> result = new ArrayList<AppleScriptTargetVariable>();
+    final List<AppleScriptTargetVariable> result = new ArrayList<>();
     AppleScriptTargetVariable targetComponent = assignmentStatement.getTargetVariable();
     if (targetComponent != null) {
       result.add(targetComponent);
@@ -265,7 +264,7 @@ public class AppleScriptPsiImplUtil {
 
   public static List<String> getApplicationNameForElementInsideTellStatement(PsiElement element) {
     SortedList<PsiElement> resolveScope = AppleScriptResolveUtil.getTellStatementResolveScope(element);
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
     for (PsiElement tellStatement : resolveScope) {
       String appRef = findApplicationNameFromTellStatement(tellStatement);
       if (!StringUtil.isEmpty(appRef)) {
@@ -277,8 +276,7 @@ public class AppleScriptPsiImplUtil {
 
   public static String findApplicationNameFromTellStatement(PsiElement tellStatement) {
     //todo: could be not only application but any class of the application (process "Mail", etc)
-    AppleScriptApplicationReference appRef = PsiTreeUtil.findChildOfType(tellStatement,
-            AppleScriptApplicationReference.class);
+    AppleScriptApplicationReference appRef = PsiTreeUtil.findChildOfType(tellStatement, AppleScriptApplicationReference.class);
     return getNameFromApplicationReference(appRef);
   }
 

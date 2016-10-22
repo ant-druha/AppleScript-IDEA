@@ -11,15 +11,15 @@ import java.util.List;
 
 public class DictionaryClass extends AbstractDictionaryComponent<Suite> implements AppleScriptClass {
 
-  private List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
+  private List<AppleScriptPropertyDefinition> properties = new ArrayList<>();
   @Nullable private String parentClassName;
   @NotNull private String pluralClassName;
   //Application classes have attributes, to-one relationships, and to-many relationships. AppleScript classes
   // in the object model have properties and elements—properties are synonymous with attributes and to-one
   // relationships, while elements are synonymous with to-many relationships. For more information on these and
   // related terms, see the Glossary.
-  @NotNull private List<AppleScriptClass> elements = new ArrayList<AppleScriptClass>();
-  @NotNull private List<AppleScriptCommand> respondingCommands = new ArrayList<AppleScriptCommand>();
+  @NotNull private List<AppleScriptClass> elements = new ArrayList<>();
+  @NotNull private List<AppleScriptCommand> respondingCommands = new ArrayList<>();
   @NotNull private List<String> elementNames;
   @NotNull private List<String> respondingCommandNames;
   private boolean initialized;
@@ -38,12 +38,12 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     if (elementNames != null) {
       this.elementNames = elementNames;
     } else {
-      this.elementNames = new ArrayList<String>();
+      this.elementNames = new ArrayList<>();
     }
     if (respondingCommandNames != null) {
       this.respondingCommandNames = respondingCommandNames;
     } else {
-      this.respondingCommandNames = new ArrayList<String>();
+      this.respondingCommandNames = new ArrayList<>();
     }
   }
 
@@ -53,8 +53,8 @@ public class DictionaryClass extends AbstractDictionaryComponent<Suite> implemen
     super(suite, name, code, xmlTagClass, description);
     this.properties = properties;
     this.parentClassName = parentClassName;
-    this.elementNames = new ArrayList<String>();
-    this.respondingCommandNames = new ArrayList<String>();
+    this.elementNames = new ArrayList<>();
+    this.respondingCommandNames = new ArrayList<>();
   }
 
   @Override

@@ -28,7 +28,7 @@ public class AppleScriptProjectDictionaryService {
   @NotNull private final Project project;
   @NotNull private final AppleScriptSystemDictionaryRegistryService dictionaryRegistryService;
   // Dictionaries, which were created for this project in current session
-  private final Map<String, ApplicationDictionary> dictionaryMap = new HashMap<String, ApplicationDictionary>();
+  private final Map<String, ApplicationDictionary> dictionaryMap = new HashMap<>();
 
   public AppleScriptProjectDictionaryService(@NotNull Project project,
                                              @NotNull AppleScriptSystemDictionaryRegistryService

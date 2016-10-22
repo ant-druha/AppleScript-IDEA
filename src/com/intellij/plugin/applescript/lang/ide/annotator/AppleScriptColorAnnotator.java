@@ -112,7 +112,7 @@ public class AppleScriptColorAnnotator implements Annotator {
     if (elementType == HANDLER_LABELED_PARAMETERS_DEFINITION ||
             elementType == HANDLER_LABELED_PARAMETERS_CALL_EXPRESSION) {
       PsiElement[] childElements = element.getChildren();
-      ArrayList<String> labelNames = new ArrayList<String>();
+      ArrayList<String> labelNames = new ArrayList<>();
       for (PsiElement childElement : childElements) {
         if (childElement.getNode().getElementType() == HANDLER_PARAMETER_LABEL) {
           String labelName = childElement.getText();

@@ -6,7 +6,6 @@ import com.intellij.testFramework.ParsingTestCase;
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
   private static final Logger LOG = Logger.getInstance("#" + AbstractParsingFixtureTestCase.class.getName());
 
   String myTargetTestDataDir = getMyTestDataDir() + "/" + getMyTargetDirectoryPath();
-  private List<PsiFile> myPsiFiles = new ArrayList<PsiFile>();
+  private List<PsiFile> myPsiFiles = new ArrayList<>();
 
   protected abstract String getMyTargetDirectoryPath();
 
@@ -30,12 +29,7 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
     File myTargetDir = new File(myTargetTestDataDir);
     if (!myTargetDir.isDirectory()) throw new Exception(myTargetDir + " is not a directory");
 
-    File[] myFiles = myTargetDir.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return pathname.getName().endsWith("scpt");
-      }
-    });
+    File[] myFiles = myTargetDir.listFiles(pathname -> pathname.getName().endsWith("scpt"));
     for (File file : myFiles) {
       myPsiFiles.add(myFixture.configureByFile(file.getCanonicalPath()));
     }

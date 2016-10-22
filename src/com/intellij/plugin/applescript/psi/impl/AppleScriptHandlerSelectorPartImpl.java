@@ -25,7 +25,7 @@ public class AppleScriptHandlerSelectorPartImpl extends AppleScriptNamedElementI
   @NotNull
   @Override
   public List<AppleScriptComponent> findParameters() {
-    final List<AppleScriptComponent> components = new ArrayList<AppleScriptComponent>();
+    final List<AppleScriptComponent> components = new ArrayList<>();
     PsiElement parameter = getParameter();
     if (parameter instanceof AppleScriptTargetVariable) {
       components.add((AppleScriptTargetVariable) parameter);

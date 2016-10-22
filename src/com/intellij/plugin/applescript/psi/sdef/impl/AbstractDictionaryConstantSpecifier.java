@@ -37,7 +37,7 @@ public class AbstractDictionaryConstantSpecifier extends AppleScriptPsiElementIm
 
   @Override
   public List<PsiElement> getIdentifiers() {
-    final List<PsiElement> result = new ArrayList<PsiElement>();
+    final List<PsiElement> result = new ArrayList<>();
     PsiElement psiChild = getFirstChild();
     if (psiChild == null) {
       result.add(this);

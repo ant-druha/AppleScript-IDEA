@@ -12,16 +12,16 @@ import java.util.Map;
 public class SuiteImpl extends AbstractDictionaryComponent<ApplicationDictionary> implements Suite {
 
   private boolean hidden;
-  private List<AppleScriptCommand> commandDefinitions = new ArrayList<AppleScriptCommand>();
-  private List<AppleScriptClass> classDefinitions = new ArrayList<AppleScriptClass>();
-  private Map<String, AppleScriptClass> classDefinitionsMap = new HashMap<String, AppleScriptClass>();
-  private Map<String, AppleScriptClass> classDefinitionToCodeMap = new HashMap<String, AppleScriptClass>();
-  private Map<String, AppleScriptCommand> commandDefinitionToCodeMap = new HashMap<String, AppleScriptCommand>();
-  private List<AppleScriptPropertyDefinition> propertyDefinitions = new ArrayList<AppleScriptPropertyDefinition>();
+  private List<AppleScriptCommand> commandDefinitions = new ArrayList<>();
+  private List<AppleScriptClass> classDefinitions = new ArrayList<>();
+  private Map<String, AppleScriptClass> classDefinitionsMap = new HashMap<>();
+  private Map<String, AppleScriptClass> classDefinitionToCodeMap = new HashMap<>();
+  private Map<String, AppleScriptCommand> commandDefinitionToCodeMap = new HashMap<>();
+  private List<AppleScriptPropertyDefinition> propertyDefinitions = new ArrayList<>();
 
-  private List<DictionaryRecord> dictionaryRecordList = new ArrayList<DictionaryRecord>();
-  private List<DictionaryEnumeration> dictionaryEnumerationList = new ArrayList<DictionaryEnumeration>();
-  private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<String, AppleScriptCommand>();
+  private List<DictionaryRecord> dictionaryRecordList = new ArrayList<>();
+  private List<DictionaryEnumeration> dictionaryEnumerationList = new ArrayList<>();
+  private Map<String, AppleScriptCommand> dictionaryCommandMap = new HashMap<>();
   //(class | class-extension | command | enumeration | event | record-type | value-type | documentation)+
 
   public SuiteImpl(@NotNull String code, @NotNull String name, @NotNull ApplicationDictionary dictionary,

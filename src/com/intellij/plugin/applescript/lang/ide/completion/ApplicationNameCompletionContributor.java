@@ -50,7 +50,7 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
                 AppleScriptSystemDictionaryRegistryService systemDictionaryRegistry = ServiceManager.getService
                         (AppleScriptSystemDictionaryRegistryService.class);
                 if (systemDictionaryRegistry != null) {
-                  List<String> appNameList = new ArrayList<String>();
+                  List<String> appNameList = new ArrayList<>();
                   if (SystemInfo.isMac) {
                     appNameList.addAll(systemDictionaryRegistry.getDiscoveredApplicationNames());
                     appNameList.removeAll(systemDictionaryRegistry.getNotScriptableApplicationList());

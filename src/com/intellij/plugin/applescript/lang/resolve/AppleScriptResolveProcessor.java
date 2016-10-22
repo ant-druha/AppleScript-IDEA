@@ -10,8 +10,6 @@ import com.intellij.util.containers.SortedList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Comparator;
-
 /**
  * Andrey 15.04.2015
  */
@@ -20,12 +18,7 @@ public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
   private AppleScriptComponent myResult;
   @NotNull private final String myName;
   @NotNull private final SortedList<AppleScriptTargetVariable> myTargets =
-          new SortedList<AppleScriptTargetVariable>(new Comparator<AppleScriptTargetVariable>() {
-            @Override
-            public int compare(AppleScriptTargetVariable o1, AppleScriptTargetVariable o2) {
-              return -(o1.getTextOffset() - o2.getTextOffset());
-            }
-          });
+          new SortedList<>((o1, o2) -> -(o1.getTextOffset() - o2.getTextOffset()));
 
 
   public PsiElement getResult() {

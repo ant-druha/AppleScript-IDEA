@@ -19,7 +19,7 @@ public class AppleScriptResolver implements ResolveCache.AbstractResolver<AppleS
 
   protected List<? extends PsiElement> resolveSimpleReference(@NotNull final PsiElement scopeElement,
                                                               @NotNull final String name) {
-    final List<PsiElement> result = new ArrayList<PsiElement>();
+    final List<PsiElement> result = new ArrayList<>();
 
     final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(name);
     PsiTreeUtil.treeWalkUp(resolveProcessor, scopeElement, null, ResolveState.initial());

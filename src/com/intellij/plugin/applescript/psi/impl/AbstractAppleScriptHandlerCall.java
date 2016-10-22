@@ -54,7 +54,7 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
     @NotNull
     @Override
     public List<TextRange> getRanges() {
-      List<TextRange> result = new ArrayList<TextRange>();
+      List<TextRange> result = new ArrayList<>();
       final int parentOffset = -getElement().getTextRange().getStartOffset();
       List<AppleScriptHandlerArgument> arguments = getArguments();
       for (AppleScriptHandlerArgument argument : arguments) {
@@ -74,7 +74,7 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
     protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
       final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(getHandlerSelector());
       PsiTreeUtil.treeWalkUp(resolveProcessor, AbstractAppleScriptHandlerCall.this, null, ResolveState.initial());
-      final List<PsiElement> results = new ArrayList<PsiElement>();
+      final List<PsiElement> results = new ArrayList<>();
       results.add(resolveProcessor.getResult());
       return AppleScriptResolveUtil.toCandidateInfoArray(results);
     }

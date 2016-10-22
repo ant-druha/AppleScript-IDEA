@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DictionaryEnumerationImpl extends AbstractDictionaryComponent<Suite> implements DictionaryEnumeration {
 
-  List<DictionaryEnumerator> enumerators = new ArrayList<DictionaryEnumerator>();
+  List<DictionaryEnumerator> enumerators = new ArrayList<>();
 
   public DictionaryEnumerationImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
                                    List<DictionaryEnumerator> enumerators, @Nullable String description,

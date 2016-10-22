@@ -20,7 +20,7 @@ public class AppleScriptComponentScopeProcessor extends AppleScriptPsiScopeProce
 
   private final @NotNull Set<AppleScriptComponent> myResult;
   private final Map<String, AppleScriptTargetVariable> myCollectedTargets =
-          new HashMap<String, AppleScriptTargetVariable>();
+          new HashMap<>();
 
   public AppleScriptComponentScopeProcessor(@NotNull Set<AppleScriptComponent> myResult) {
     this.myResult = myResult;

@@ -31,7 +31,7 @@ public class DictionaryIdentifierImpl extends DictionaryComponentBase<Dictionary
 //    assert varIdentifierText.split(" ").length == 1; //ensure that only atomic text values are created..(or does it
 // matter??)
     this.varIdentifierText = varIdentifierText;
-    varIdentifierTextList = new ArrayList<String>(Arrays.asList(varIdentifierText.split(" ")));
+    varIdentifierTextList = new ArrayList<>(Arrays.asList(varIdentifierText.split(" ")));
     myVarIdentifier = new DictionaryIdentifierImpl(myParent, varIdentifierTextList.get(0), myXmlElement);
   }
 

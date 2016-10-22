@@ -35,7 +35,7 @@ public class AppleScriptScriptCommandLineState extends CommandLineState implemen
     String scriptOptions = runConfiguration.getScriptOptions();
 
     scriptPath = scriptPath == null ? "" : scriptPath;//todo change this (and add validator to run config)
-    final List<String> commandString = new ArrayList<String>();
+    final List<String> commandString = new ArrayList<>();
     commandString.add("/usr/bin/osascript");
     if (!StringUtil.isEmpty(scriptOptions)) {
       String[] options = scriptOptions.split(" ");
@@ -44,7 +44,7 @@ public class AppleScriptScriptCommandLineState extends CommandLineState implemen
     commandString.add(scriptPath);
     if (!StringUtil.isEmpty(scriptParameters)) {
       Pattern regex = Pattern.compile("\"([^\"]*)\"|(\\w+)");
-      final ArrayList<String> matchedParams = new ArrayList<String>();
+      final ArrayList<String> matchedParams = new ArrayList<>();
       Matcher matcher = regex.matcher(scriptParameters);
       while (matcher.find()) {
         for (int i = 1; i <= matcher.groupCount(); i++) {

@@ -227,9 +227,9 @@ public class SDEF_Parser {
   private static List<AppleScriptPropertyDefinition> getPropertiesFromTags(@NotNull DictionaryComponent classOrRecord,
                                                                            @NotNull XmlTag[] propertyTags) {
     if (!(classOrRecord instanceof AppleScriptClass) && !(classOrRecord instanceof DictionaryRecord))
-      return new ArrayList<AppleScriptPropertyDefinition>(0);
+      return new ArrayList<>(0);
 
-    List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>(propertyTags.length);
+    List<AppleScriptPropertyDefinition> properties = new ArrayList<>(propertyTags.length);
     for (XmlTag propTag : propertyTags) {
       AppleScriptPropertyDefinition property;
       String pName = propTag.getAttributeValue("name");
@@ -256,7 +256,7 @@ public class SDEF_Parser {
     if (name == null || code == null) return null;
 
     String description = enumerationTag.getAttributeValue("description");
-    final List<DictionaryEnumerator> enumConstants = new ArrayList<DictionaryEnumerator>();
+    final List<DictionaryEnumerator> enumConstants = new ArrayList<>();
     XmlTag[] enumTags = enumerationTag.findSubTags("enumerator");
     final DictionaryEnumeration enumeration = new DictionaryEnumerationImpl(suite, name, code, description,
             enumerationTag);
@@ -304,7 +304,7 @@ public class SDEF_Parser {
     String description = classTag.getAttributeValue("description");
     aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
-    final List<AppleScriptPropertyDefinition> properties = new ArrayList<AppleScriptPropertyDefinition>();
+    final List<AppleScriptPropertyDefinition> properties = new ArrayList<>();
     for (XmlTag propTag : propertyTags) {
       String pName = propTag.getAttributeValue("name");
       String pCode = propTag.getAttributeValue("code");
@@ -328,7 +328,7 @@ public class SDEF_Parser {
 
   private static List<String> initClassRespondingMessages(XmlTag classTag) {
     XmlTag[] elementNameTags = classTag.findSubTags("responds-to");
-    List<String> commandNames = new ArrayList<String>();
+    List<String> commandNames = new ArrayList<>();
     for (XmlTag elemTag : elementNameTags) {
       String val = elemTag.getAttributeValue("command");
       if (val != null) {
@@ -340,7 +340,7 @@ public class SDEF_Parser {
 
   private static List<String> initClassElements(XmlTag classTag) {
     XmlTag[] elementNameTags = classTag.findSubTags("element");
-    List<String> elementNames = new ArrayList<String>();
+    List<String> elementNames = new ArrayList<>();
     for (XmlTag elemTag : elementNameTags) {
       String val = elemTag.getAttributeValue("type");
       if (val != null) {
@@ -404,7 +404,7 @@ public class SDEF_Parser {
       }
     }
     XmlTag[] parameters = commandTag.findSubTags("parameter");
-    List<CommandParameter> commandParameters = new ArrayList<CommandParameter>();
+    List<CommandParameter> commandParameters = new ArrayList<>();
     CommandParameter commandParameter = null;
     for (XmlTag paramTag : parameters) {
       String pName = paramTag.getAttributeValue("name");
