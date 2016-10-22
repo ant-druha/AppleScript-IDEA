@@ -1,8 +1,10 @@
 package com.intellij.plugin.applescript.lang.ide.annotator;
 
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.editor.colors.CodeInsightColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterColors;
@@ -68,44 +70,15 @@ public class AppleScriptColorAnnotator implements Annotator {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_PROPERTY_ATTR);
     } else if (element instanceof AppleScriptDictionaryConstant) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_CONSTANT_ATTR);
-    } else if (element instanceof AppleScriptTellSimpleStatement
-            || element instanceof AppleScriptTellCompoundStatement
-            || element instanceof AppleScriptUseStatement) {
-      String appName = AppleScriptPsiImplUtil.findApplicationNameFromTellStatement(element);
-      AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService
-              (AppleScriptSystemDictionaryRegistryService.class);
-      if (dictionaryRegistryService != null) {
-        if (!StringUtil.isEmptyOrSpaces(appName)) {
-          if (!dictionaryRegistryService.isDictionaryInitialized(appName)) {
-//          if(dictionaryRegistryService.isDictionaryInitialized() && )
-            String warningReason = checkWarningReason(appName, dictionaryRegistryService);
-            if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
-              System.out.println("Re-checking warning reason for " + appName);
-              warningReason = checkWarningReason(appName, dictionaryRegistryService);
-            }
-            AppleScriptApplicationReference appRef = PsiTreeUtil
-                    .findChildOfType(element, AppleScriptApplicationReference.class);
-            if (!StringUtil.isEmpty(warningReason)) {
-              holder.createWarningAnnotation(appRef != null ? appRef : element, warningReason)
-                      .registerFix(new AddApplicationDictionaryQuickFix(appName));
-            } else {
-              AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
-                      (element.getProject(), AppleScriptProjectDictionaryService.class);
-              ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
-              if (dictionary == null) dictionary = dictionaryProjectService.createDictionary(appName);
-              if (dictionary == null) {
-                holder.createWarningAnnotation(appRef != null ? appRef : element, "Unknown app \"" + appName + "\"?");
-              }
-            }
-          } else {
-            AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService
-                    (element.getProject(), AppleScriptProjectDictionaryService.class);
-            ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
-            if (dictionary == null) dictionaryProjectService.createDictionary(appName);
-          }
-        }
-      }
+    } else if (element instanceof AppleScriptApplicationReference) {
+      AppleScriptApplicationReference appRef = (AppleScriptApplicationReference) element;
+      annotateApplicationReference(holder, appRef, false);
     } else if (element instanceof AppleScriptIncompleteExpression) {
+      AppleScriptExpression expression = PsiTreeUtil.findChildOfType(element, AppleScriptExpression.class);
+      AppleScriptApplicationReference appRef = PsiTreeUtil.findChildOfType(expression, AppleScriptApplicationReference.class);
+      if (appRef != null) {
+        annotateApplicationReference(holder, appRef, true);
+      }
       holder.createErrorAnnotation(element, "Incomplete expression");
     }
     // duplicated labels
@@ -124,14 +97,57 @@ public class AppleScriptColorAnnotator implements Annotator {
               }
             }
             holder.createErrorAnnotation(childElement, "Duplicated parameter label '" + labelName + "'")
-                    .registerFix(new RenameParameterLabelQuickFix((AppleScriptHandlerParameterLabel) childElement,
-                            newLabelName));
+                    .registerFix(new RenameParameterLabelQuickFix((AppleScriptHandlerParameterLabel) childElement, newLabelName));
           }
           labelNames.add(labelName);
         }
       }
     }
 
+  }
+
+  private void annotateApplicationReference(@NotNull AnnotationHolder holder, @NotNull AppleScriptApplicationReference appRef, boolean error) {
+    String appName = AppleScriptPsiImplUtil.getNameFromApplicationReference(appRef);
+    AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService(AppleScriptSystemDictionaryRegistryService.class);
+    if (dictionaryRegistryService != null) {
+      if (!StringUtil.isEmptyOrSpaces(appName)) {
+        if (!dictionaryRegistryService.isDictionaryInitialized(appName)) {
+          String warningReason = checkWarningReason(appName, dictionaryRegistryService);
+          if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
+            System.out.println("Re-checking warning reason for " + appName);
+            warningReason = checkWarningReason(appName, dictionaryRegistryService);
+          }
+          if (!StringUtil.isEmpty(warningReason)) {
+            if (error) {
+              Annotation appAnnotation = holder.createErrorAnnotation(appRef, warningReason);
+              appAnnotation.setTextAttributes(CodeInsightColors.WARNINGS_ATTRIBUTES);
+              appAnnotation.registerFix(new AddApplicationDictionaryQuickFix(appName));
+            } else {
+              holder.createWarningAnnotation(appRef, warningReason).registerFix(new AddApplicationDictionaryQuickFix(appName));
+            }
+          } else {
+            AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService(appRef.getProject(), AppleScriptProjectDictionaryService
+                    .class);
+            ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
+            if (dictionary == null) dictionary = dictionaryProjectService.createDictionary(appName);
+            if (dictionary == null) {
+              if (error) {
+                Annotation appAnnotation = holder.createErrorAnnotation(appRef, "Unknown app \"" + appName + "\"?");
+                appAnnotation.setTextAttributes(CodeInsightColors.WARNINGS_ATTRIBUTES);
+                appAnnotation.registerFix(new AddApplicationDictionaryQuickFix(appName));
+              } else {
+                holder.createWarningAnnotation(appRef, "Unknown app \"" + appName + "\"?");
+              }
+            }
+          }
+        } else {
+          AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService(appRef.getProject(), AppleScriptProjectDictionaryService
+                  .class);
+          ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
+          if (dictionary == null) dictionaryProjectService.createDictionary(appName);
+        }
+      }
+    }
   }
 
   @Nullable

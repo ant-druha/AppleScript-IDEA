@@ -280,7 +280,7 @@ public class AppleScriptPsiImplUtil {
     return getNameFromApplicationReference(appRef);
   }
 
-  private static String getNameFromApplicationReference(@Nullable AppleScriptApplicationReference appRef) {
+  public static String getNameFromApplicationReference(@Nullable AppleScriptApplicationReference appRef) {
     if (appRef == null) return null;
     String text = appRef.getText();
     int from = text.indexOf('"') + 1;
