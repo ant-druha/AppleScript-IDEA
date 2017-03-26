@@ -1,7 +1,7 @@
 package com.intellij.plugin.applescript.lang.util;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 public class MyStopVisitingException extends RuntimeException {
   @NotNull private VirtualFile myResult;

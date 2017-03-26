@@ -198,9 +198,7 @@ public class AppleScriptPsiImplUtil {
     AppleScriptTargetVariable targetVariable = assignmentStatement.getTargetVariable();
     AppleScriptTargetListLiteral targetListLiteral = assignmentStatement.getTargetListLiteral();
     AppleScriptTargetRecordLiteral recordLiteral = assignmentStatement.getTargetRecordLiteral();
-    return targetVariable != null ? targetVariable : targetListLiteral != null ? targetListLiteral : recordLiteral !=
-            null ? recordLiteral
-            : null;
+    return targetVariable != null ? targetVariable : targetListLiteral != null ? targetListLiteral : recordLiteral;
   }
 
   @NotNull

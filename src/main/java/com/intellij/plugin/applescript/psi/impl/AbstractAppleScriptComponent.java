@@ -47,7 +47,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
     PsiReference myReference = getReference();
     if (myReference != null) {
       PsiElement myTarget = myReference.resolve();
-      return myTarget != null ? myTarget : null;
+      return myTarget;
     }
     return null;
   }
