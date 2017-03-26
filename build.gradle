@@ -29,7 +29,7 @@ intellij {
 sourceSets {
     main {
         java {
-            srcDirs 'gen'
+            srcDirs 'src/main/gen'
         }
     }
 }

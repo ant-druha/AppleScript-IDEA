@@ -1,0 +1,19 @@
+// This is a generated file. Not intended for manual editing.
+package com.intellij.plugin.applescript.psi;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiElement;
+
+public interface AppleScriptApplicationHandlerDefinition extends AppleScriptPsiElement {
+
+  @Nullable
+  AppleScriptBlockBody getBlockBody();
+
+  @NotNull
+  List<AppleScriptObjectTargetPropertyDeclaration> getObjectTargetPropertyDeclarationList();
+
+  @Nullable
+  AppleScriptVarDeclarationList getVarDeclarationList();
+
+}

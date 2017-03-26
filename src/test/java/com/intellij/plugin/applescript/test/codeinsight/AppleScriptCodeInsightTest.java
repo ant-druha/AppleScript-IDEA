@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class AppleScriptCodeInsightTest extends LightCodeInsightFixtureTestCase {
 
-  private final String myTestDataDir = "/Users/andrey/Dropbox/IDEA_Projects/IdeaPluginDev/AppleScript/src/test/resources/testData/";
+  private final String myTestDataDir = "src/test/resources/testData/";
 
   @Override
   protected String getTestDataPath() {
