@@ -906,7 +906,7 @@ rawDataExpression ::= RAW_LBR DATA DIGITS RAW_RBR
 getCommandExpression ::= get <<parseCommandParametersExpression>>
 
 //>>Run<< / Run Script
-runCommandExpression ::= (run [script] [script_object_variable])|(run [referenceToApplicationVar]) // application command syntax
+runCommandExpression ::= ("run" [script] [script_object_variable])|("run" [referenceToApplicationVar]) // application command syntax
 private referenceToApplicationVar ::= applicationReference
 private script_object_variable ::= referenceExpression
 // log - is a built into Script Editor command http://stackoverflow.com/a/21341372/2000323
