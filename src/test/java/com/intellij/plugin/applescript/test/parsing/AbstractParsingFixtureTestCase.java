@@ -20,7 +20,7 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
   protected abstract String getMyTargetDirectoryPath();
 
   protected String getMyTestDataDir() {
-    return "testData/parse";
+    return "src/test/resources/testData/parse";
   }
 
   @Override
