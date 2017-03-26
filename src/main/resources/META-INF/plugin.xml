@@ -11,7 +11,7 @@
             <a href="https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptLangGuide/introduction/ASLR_intro.html">AppleScript</a>.<br>
             For applications with legacy dictionary formats <b>requires installed Xcode</b> for dictionary file
             generation.<br><br></p>
-        <b>Wiki:</b> <a href="https://bitbucket.org/adernov/applescript-idea/wiki/Home">How to AppleScript</a>
+        <b>Wiki:</b> <a href="https://github.com/human87/AppleScript-IDEA">How to AppleScript</a>
         <br>
         <b>Plugin page:</b> <a href="https://plugins.jetbrains.com/plugin/8149">https://plugins.jetbrains.com/plugin/8149</a>
         ]]></description>
