@@ -44,8 +44,6 @@ public interface AppleScriptComponent extends AppleScriptNamedElement, PsiNameId
   boolean isVariable();
 
   /**
-   * todo to check com.jetbrains.python.psi.PyAssignmentStatement#getTargetsToValuesMapping
-   * todo and com.jetbrains.python.psi.impl.PyTargetExpressionImpl#findAssignedValue
    *
    * @return value expression (if any) this component holds
    */
