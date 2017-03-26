@@ -1,0 +1,925 @@
+{
+  parserClass="com.intellij.plugin.applescript.lang.parser.AppleScriptParser"
+  psiImplUtilClass="com.intellij.plugin.applescript.psi.impl.AppleScriptPsiImplUtil"
+
+  parserUtilClass="com.intellij.plugin.applescript.lang.parser.AppleScriptGeneratedParserUtil" //for external grammar
+
+    extends="com.intellij.plugin.applescript.psi.impl.AppleScriptPsiElementImpl"
+    implements="com.intellij.plugin.applescript.psi.AppleScriptPsiElement"
+
+    psiClassPrefix="AppleScript"
+    psiImplClassSuffix="Impl"
+    psiPackage="com.intellij.plugin.applescript.psi"
+    psiImplPackage="com.intellij.plugin.applescript.psi.impl"
+
+    elementTypeHolderClass="com.intellij.plugin.applescript.psi.AppleScriptTypes"
+    elementTypeClass="com.intellij.plugin.applescript.lang.parser.AppleScriptElementType"
+    tokenTypeClass="com.intellij.plugin.applescript.lang.lexer.AppleScriptTokenType"
+    tokens = [
+
+  // NewLines and spaces //
+    NLS ='regexp:(\r|\n|\r\n)( (\r|\n|\r\n)|([\ \t\f]) )*'
+    mONE_NL = 'regexp:(\r|\n|\r\n)'                                   // NewLines
+
+    LPAREN='('
+    RPAREN=')'
+
+  // containment
+  //list,string
+    STARTS_BEGINS_WITH='regexp:(starts? with)|(begins? with)'
+    ENDS_WITH='regexp:ends? with'
+    //list,record,string
+    DOES_NOT_CONTAIN="regexp:(does not contain)|(doesn't contain)"
+    IS_IN="regexp:(is in)|(is contained by)"
+    IS_NOT_IN="regexp:(is not in)|(is not contained by)|(isn't contained by)"
+    IS_CONTAIN="regexp:(contain|contains)"
+
+    // comparison operators
+    GT="regexp:(>|((is)? greater than)|(comes after)|(is not less than or equal (to)?)|(isn't less than or equal (to)?))"
+    LE="regexp:(≤|<=|((is)? less than or equal (to)?)|(is not greater than)|(isn't greater than)|(does not come after)|(doesn't come after))"
+    GE="regexp:(≥|>=|((is)? greater than or equal (to)?)|(is not less than)|(isn't less than)|(does not come before)|(doesn't come before))"
+    LT="regexp:(<|((is)? less than)|(comes before)|(is not greater than or equal (to)?)|(isn't greater than or equal (to)?))"
+    NE="regexp:(≠|(isn't equal (to)?)|(is not equal (to)?)|(doesn't equal)|(does not equal)|(is not)|(isn't))"
+    EQ="regexp:(=|((is)? equal to)|is|equal|equals)"
+    REF_OP="regexp:(a reference to|a ref to|a ref|reference to|ref)"
+
+    CC='¬'
+    PLUS='+'
+    MINUS='-'
+    STAR='*'
+    DIV='regexp:(/|÷)'
+    INT_DIV='div'
+    MOD='mod'
+    POW='^'
+    LOR='or'
+    LAND='and'
+    BAND='&'
+    LNOT='not'
+    AS='as'
+    APS="'s"
+
+    //built in types
+    //==> builtInClassIdCommon ==>
+    STRING='string'
+    CLASS='class'
+    EVENT='event'
+    PREPOSITION='preposition'
+    CONSTANT='constant'
+    LIST='list'
+    DATA='data'
+    REFERENCE='reference'
+    STYLED_TEXT='regexp:styled[\ \t\f]+text'
+    TEXT_ITEM='regexp:text[\ \t\f]+item'
+    ITEM='item'
+    FILE_SPECIFICATION='regexp:file[\ \t\f]+specification'
+    INTERNATIONAL_TEXT='regexp:[Ii]nternational[\ \t\f]+[Tt]ext'
+    UNICODE_TEXT='regexp:[Uu]nicode[\ \t\f]+[Tt]ext'
+    RGB_COLOR='regexp:rgb[\ \t\f]+color'
+    STYLED_CLIPBOARD_TEXT='regexp:styled[\ \t\f]+clipboard[\ \t\f]+text'
+    //elements of text object class
+    CHARACTER='character'
+    PARAGRAPH='paragraph'
+    WORD='word'
+    //==> statement tokens
+    REPEAT='repeat'
+    //==> builtInClassIdNative ==>
+    ANY='any'
+    BOOLEAN='boolean'
+    DATE='date'
+    FILE='file'
+    ALIAS='alias'
+    INTEGER='integer'
+    LOCATION_SPECIFIER='regexp:location[\ \t\f]+specifier'
+    NUMBER='number'
+    POINT='point'
+    REAL='real'
+    RECORD='record'
+    RECTANGLE='rectangle'
+    SPECIFIER='specifier'
+    TEXT='text'
+    TYPE='type'
+    //==> UNIT_TYPE_VALUE_CLASSES ==>
+    GALLONS='gallons'
+    LITRES='litres'
+    LITERS='liters'
+    QUARTS='quarts'
+
+    GRAMS='grams'
+    KILOGRAMS='kilograms'
+    OUNCES='ounces'
+    POUNDS='pounds'
+
+    TEMPERATURE='regexp:degrees[\ \t\f]+(Celsius|Fahrenheit|Kelvin)'
+    CUBIC_VOL='regexp:cubic[\ \t\f]+(centimetres|centimeters|feet|inches|metres|meters|yards)'
+    SQUARE_AREA='regexp:square[\ \t\f]+(feet|kilometres|kilometers|metres|meters|miles|yards)'
+
+    CENTIMETRES='centimetres'
+    CENTIMETERS='centimeters'
+    FEET='feet'
+    INCHES='inches'
+    KILOMETRES='kilometres'
+    KILOMETERS='kilometers'
+    METRES='metres'
+    METERS='meters'
+    MILES='miles'
+    YARDS='yards'
+
+    BUILT_IN_TYPE_S='regexp:(string|integer|real|boolean|class|constant|list|record|data|date|number|reference|[Ss]tyled [Tt]ext|text item|text|item|character|paragraph|word)s'
+    //todo not only for literals
+    //==>built in properties==>
+    BUILT_IN_PROPERTY='regexp:("class"|day|weekday|month|year|time|date string|short date string|time string|(quoted[\ \t\f]+form)|length|rest|reverse|contents)'
+    //properties of standard classes
+    //string
+    QUOTED_FORM='regexp:quoted[\ \t\f]+form'
+
+    //some keywords here which do not appear in rules distinctively
+    THE_KW='the'
+    DOES='does'
+    APART_FROM='regexp:apart[\ \t\f]+from'
+    ASIDE_FROM='regexp:aside[\ \t\f]+from'
+    OUT_OF='regexp:out[\ \t\f]+of'
+    INSTEAD_OF='regexp:instead[\ \t\f]+of'
+    THAT='that'
+    REFERENCE='reference'
+    ITS='its'
+    C_WHITE_SPACE='regexp:(white[\ \t\f]+space)'
+    APP_RESPONSES='regexp:((application[\ \t\f]+responses)|(app[\ \t\f]+responses))'
+    SCRIPTING_ADDITIONS='regexp:scripting[\ \t\f]+additions'
+    CURRENT_APPLICATION='regexp:current[\ \t\f]+application'
+    CURRENT_APP='regexp:current[\ \t\f]+app'
+    CURRENT='current'
+    APPLICATION='application'
+    APP='app'
+    TEXT_ITEM_DELIMETERS='regexp:text[\ \t\f]+item[\ \t\f]+delimiters'
+    MISSING_VALUE='regexp:missing[\ \t\f]+value'
+
+    //considerIgnoreAttributes
+    CONSIDER_IGNORE_ATTRIBUTE='regexp:(case|diacriticals|hyphens|numeric[\ \t\f]+strings|punctuation)'
+
+    //constants
+    PI_CONSTANT='pi'              // ===3.1412926
+    MINUTES_CONSTANT='minutes'    // ===60seconds
+    HOURS_CONSTANT='hours'        // ===60*60
+    DAYS_CONSTANT='days'          // ===60*60*24
+    WEEKS_CONSTANT='weeks'
+
+    STRING_LITERAL='regexp:"([^"\\]|\\.)*"'
+    DIGITS='regexp:[0-9]+'
+
+    DEC_EXPONENT='regexp:[Ee][+-]?[0-9]+'
+    var_identifier='regexp:([_a-zA-Z][a-zA-Z0-9_]*)|(\|(([^\|])|(\\\|))*[^\\]\|)'
+  //todo nested comments (lexer states...)
+    COMMENT='regexp:((#.*)|(--.*)|((\(\*[^\*](([^\*]*(\*+[^\*\)])?)*(\*+\))?))|\(\*))'
+    RAW_LBR='«'
+    RAW_RBR='»'
+    MULTI_LINE_COMMENT_START='(*'
+    MULTI_LINE_COMMENT_END='*)'
+    WHITE_SPACE='regexp:[\ \t\f]'
+    COMMA=','
+    LCURLY='{'
+    RCURLY='}'
+    COLON=':'
+
+
+  ]
+    extends(".*Expression")="expression"
+    consumeTokenMethod(".*(Expression|Recover|Condition)")="consumeTokenFast"
+}
+
+appleScriptFile ::= compilation_unit_*
+
+private compilation_unit_ ::= topBlockBodyPart|sep
+
+private topBlockBodyPart ::= topLevelStatement | statement | expression | incompleteExpression
+{recoverWhile=topBodyPartRecover}
+private topBodyPartRecover ::= !sep
+
+private sep ::= (COMMENT? NLS COMMENT?)+ // one or more new lines and spaces
+
+scriptBody ::= topBlockBodyPart (sep topBlockBodyPart)* sep?
+{pin=1}
+
+incompleteExpression ::= tell expression | set objectReferenceWrapper | copy expression | if expression
+
+identifier ::= var_identifier
+
+referenceExpression ::= identifier
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
+ implements="com.intellij.plugin.applescript.psi.AppleScriptReferenceElement"}
+
+private topLevelStatement ::= applicationHandlerDefinition | userHandlerDefinition | <<parseUseStatement useStatement>>
+private statement ::= controlStatement|scriptPropertyDeclaration|varDeclarationList
+                      |<<parseExpression '"script"' (scriptObjectDefinition | scriptObjectUnnamedDefinition)>>
+                      |returnStatement|continue_statement
+                      |parseAssignmentStatement
+
+
+private userHandlerDefinition ::= handlerLabeledParametersDefinition | handlerPositionalParametersDefinition | handlerInterleavedParametersDefinition
+returnStatement ::= return [expression]
+
+private controlStatement ::= ifStatement | tryStatement | tellStatement | <<parseExpression '"repeat"' repeatStatement>>
+| exitStatement | consideringStatement | ignoringStatement | withTimeoutStatement | withTransactionStatement | <<parseUsingTermsFromStatement>>
+
+exitStatement ::= exit [REPEAT]
+private repeatStatement ::= repeatNumTimesStatement | repeatWhileStatement | repeatUntilStatement
+| repeatWithRangeStatement | repeatWithListStatement | repeatForeverStatement
+
+topBlockBody ::= topBlockBodyPart sep (topBlockBodyPart sep)*
+{pin=1}
+blockBody ::= blockBodyPart sep ( blockBodyPart sep)*
+{pin=1}
+
+private blockBodyPart ::= statement|expression/*|RAW_CODE*/
+{recoverWhile=bodyPartRecover}
+private bodyPartRecover ::= !(sep)
+
+repeatForeverStatement ::= REPEAT sep
+                            blockBody?
+                           end [REPEAT]
+
+repeatNumTimesStatement ::= REPEAT numTimes [times] sep
+                            blockBody?
+                            end [REPEAT]
+
+private numTimes ::= expression
+
+repeatWhileStatement ::= REPEAT while expression sep
+                            blockBody?
+                         end [REPEAT] {pin=2}
+
+repeatUntilStatement ::= REPEAT until expression sep
+                         blockBody?
+                         end [REPEAT] {pin=2}
+
+repeatWithRangeStatement ::= REPEAT with loopVariable from startValue to stopValue [by stepValue] sep
+                             blockBody?
+                             end [REPEAT] {pin=4}
+
+private stepValue ::= expression
+//expression does not always work.. (because of 'to' )
+private stopValue ::= (referenceExpression &by) | expression
+private startValue ::= (referenceExpression &to) | expression
+private loopVariable ::= directParameterDeclaration
+
+repeatWithListStatement ::= REPEAT with loopVariable in listOrReferenceExpression sep
+                         blockBody?
+                         end [REPEAT] {pin=4}
+private listOrReferenceExpression ::= expression
+
+errorCommandExpression ::= error [errorMessage] [number errorNumber]
+                                 [from offendingObject]
+                                 [to expectedType]
+                                 [partial result resultList]
+private resultList ::= expression
+private offendingObject ::= (referenceExpression &to) | expression
+private expectedType ::= expression
+private errorNumber ::= expression
+private errorMessage ::= expression
+
+tryStatement ::= try sep
+                     blockBody?
+                     (on error [errorMessageVar] [number errorNumberVar] [from offendingObjectVar]
+                     [to expectedTypeVar] [partial result resultListVar] sep
+                     [varDeclarationList sep]
+                     blockBody?)?
+                 end [error|try] {pin=1}
+
+varDeclarationListPart ::= identifier
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+ implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+varDeclarationList ::= varAccessDeclaration (COMMA varDeclarationListPart)*
+
+private errorMessageVar ::= directParameterDeclaration|expression
+private errorNumberVar ::= directParameterDeclaration|expression
+private offendingObjectVar ::= directParameterDeclaration|expression
+private resultListVar ::= directParameterDeclaration|expression
+private expectedTypeVar ::= directParameterDeclaration|expression
+
+private tellStatement ::= parseTellSimpleStatement|<<parseTellCompoundStatement>>
+
+//see <<parseTellCompoundStatement>>
+tellCompoundStatement ::= tell objectReferenceWrapper sep
+                                        blockBody?
+                          end [tell] //{pin=6}
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName]}
+//                      {recoverWhile="tellRecover"}
+//tellRecover ::= !(sep)
+
+consideringStatement ::= considering considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)?
+                           [but ignoring considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)? ] sep
+                           blockBody?
+                         end considering {pin=2}
+
+ignoringStatement ::= ignoring considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)?
+                        [but considering considerOrIgnoreAttr ((COMMA considerOrIgnoreAttr)* (LAND considerOrIgnoreAttr)?)? ] sep
+                           blockBody?
+                      end ignoring {pin=2}
+private considerOrIgnoreAttr ::= CONSIDER_IGNORE_ATTRIBUTE|C_WHITE_SPACE|expression
+
+withTimeoutStatement ::= with timeout [of] timeoutIntegerExpression (seconds|second) sep
+                           blockBody?
+                         end [timeout] {pin=2}
+private timeoutIntegerExpression ::= expression
+
+withTransactionStatement ::= with transaction [sessionSpecificator] sep
+                               blockBody?
+                             end [transaction] {pin=2}
+private sessionSpecificator ::= expression
+
+useStatement ::= useAppleScriptStatement|useApplicationOrScriptStatement|useFrameworkStatement
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName useStandardAdditions withImporting]}
+
+private useAppleScriptStatement ::= use 'AppleScript' [version expression] {pin=2}
+
+private useScriptingAdditionsStatement ::= use SCRIPTING_ADDITIONS
+                                   [((with importing)|(without importing)|importing) expression ] {pin=2}
+
+//todo handle application id "stringWithId"
+//use application "com.microsoft.Word" i.e. should not find application with such name -> create new map for app id
+//see <<parseUseApplicationOrScriptStatementInner>>
+private useApplicationOrScriptStatement ::= use [directParameterDeclaration COLON]
+                    (
+                     (  <<parseUsedApplicationNameExternal withImportCondition>>//application "string" &(importing)
+                      | dataSpecifier
+                      | (script dataSpecifier)
+                     )
+                        [versionSpecifier] [(with importing)|(without importing)|(importing expression)]
+                    )
+
+private withImportCondition ::= &([versionSpecifier] !((without importing)|(importing false)))
+private dataSpecifier ::= expression
+private versionSpecifier ::= version stringLiteralExpression
+
+private useFrameworkStatement ::= use framework dataSpecifier {pin=2}
+
+//see <<parseUsingTermsFromStatement>>
+usingTermsFromStatement ::= using terms from (applicationReference|(script dataSpecifier)|<<pushStdLibrary>>) sep
+                             topBlockBody?
+                            end [using terms from] //{pin=3}
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName withImportingStdLibrary]}
+
+targetVariable ::= identifier
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+private ifStatement ::= ifCompoundStatement|ifSimpleStatement
+
+ifSimpleStatement ::= if expression then (statement|expression)
+
+ifCompoundStatement ::= if expression [then] sep
+                                       blockBody?
+                                   (else if expression [then] sep
+                                       blockBody?  )*
+                                   (else sep
+                                        blockBody? )?
+                        end [if] {pin=8}
+
+// value class types
+private literalExpression ::=
+              stringLiteralExpression
+              |styledTextLiteralExpression
+              |numberLiteralExpression
+              |dictionaryConstant
+              |builtInConstantLiteralExpression
+              |<<parseLiteralExpression listLiteralExpression>>
+              |<<parseLiteralExpression recordLiteralExpression>>
+              |<<parseExpression '"date"' dateLiteralExpression>>
+              |aReferenceToLiteralExpression
+
+/** Numeric, string, regexp, boolean, date, string(space,tab,return) constant*/
+builtInConstantLiteralExpression ::= boolean_constant|date_time_constants|text_constant|itMeProperty
+|currentApplicationConstant| missing_value_constant | scriptingAdditionsFolderConstant
+//|appleScriptPropertiesConstant
+private scriptingAdditionsFolderConstant ::= <<parseExpression '"scripting additions"' SCRIPTING_ADDITIONS>>
+
+dictionaryConstant ::= <<parseDictionaryConstant>>
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryConstantSpecifier"
+ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+
+// SIMPLE literals
+
+// Number class<<
+numberLiteralExpression ::= realLiteralExpression|integerLiteralExpression|numericConstant
+
+// >>Integer class<<
+integerLiteralExpression ::= DIGITS
+
+// A value of class Class is a class identifier. A class identifier is a reserved word that specifies the class
+// to which an object or value belongs. The Class property of an object contains a class identifier value.
+// >>Class class<<
+builtInClassIdentifier ::= builtInClassIdCommon|builtInClassIdNative|<<parseExpression '"script"' script>>
+|<<parseExpression '"bundle"' bundle>>
+
+//there is no need to define in SDEF these classes:
+private builtInClassIdNative::= ANY|BOOLEAN|DATE|FILE|INTEGER|LOCATION_SPECIFIER|NUMBER|POINT|REAL|RECORD|RECTANGLE|SPECIFIER|TEXT|TYPE|ALIAS
+
+private builtInClassIdCommon::= STRING|CLASS|CONSTANT|LIST|DATA|REFERENCE|STYLED_TEXT|TEXT_ITEM|ITEM|FILE_SPECIFICATION|
+INTERNATIONAL_TEXT|RGB_COLOR|STYLED_CLIPBOARD_TEXT|UNICODE_TEXT|unitTypeValueClasses|CHARACTER|PARAGRAPH|WORD
+
+private unitTypeValueClasses ::= Length|SQUARE_AREA|CUBIC_VOL|LiquidVolume|Weight|TEMPERATURE
+private Weight ::= GRAMS|KILOGRAMS|OUNCES|POUNDS
+private LiquidVolume ::= GALLONS|LITRES|LITERS|QUARTS
+private Length ::= CENTIMETRES|CENTIMETERS|FEET|INCHES|KILOMETRES|KILOMETERS|METRES|METERS|MILES|YARDS
+
+//these classes are not found in standard additions:
+//but declared as properties...
+builtInClassIdentifierPlural ::= BUILT_IN_TYPE_S|scripts
+dictionaryClassIdentifierPlural ::= <<parseDictionaryClassName 'true' useStatementsCondition>>
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
+ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+
+//>>Real class<<
+realLiteralExpression ::= ('.'(DIGITS)(DEC_EXPONENT))|(dec_significand DEC_EXPONENT?)
+private dec_significand ::= ('.'DIGITS)|(DIGITS'.'DIGITS*)
+
+// >>Date class<<
+dateLiteralExpression ::= date (stringLiteralExpression|expression)
+
+textItemDelimitersProperty ::= TEXT_ITEM_DELIMETERS
+
+//>>Record class<<
+recordLiteralExpression ::= LCURLY[objectPropertyDeclaration] (COMMA objectPropertyDeclaration)* RCURLY//(BAND nls primaryExpression)*
+
+targetRecordLiteral ::= LCURLY[objectTargetPropertyDeclaration] (COMMA objectTargetPropertyDeclaration)* RCURLY
+{ methods=[getTargets] }
+//todo inspection for only unique property label names
+
+//>>String class<<
+stringLiteralExpression ::= STRING_LITERAL
+
+//>>List class<<
+listLiteralExpression ::= LCURLY [expression] (COMMA expression)* RCURLY
+
+targetListLiteral ::= LCURLY [targetVariablePattern|expression] (COMMA targetVariablePattern|expression)* RCURLY //{pin=4}
+{methods = [getTargets] }
+
+//The class identifier Styled Text is a synonym for a string that includes style and font information.
+//>>Styled Text class<<
+private styledTextLiteralExpression ::= STRING_LITERAL
+
+// >>Boolean class<<
+private boolean_constant ::= true|false
+
+applicationReference ::= applicationName [of THE_KW? machine machineName (of THE_KW? zone appleTalkZoneName)?] | THE_KW? currentApplicationConstant
+{methods=[getApplicationName]}
+private applicationName ::= <<parseApplicationName tellStatementStartCondition>> //id? STRING_LITERAL
+
+private machineName ::= STRING_LITERAL
+private appleTalkZoneName ::= STRING_LITERAL
+private tellStatementStartCondition ::= <<isTellStatementStart>>
+
+private handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier ::= handlerInterleavedParametersCall |
+propertyReference | (referenceExpression handlerPositionalParametersCallExpression?)
+
+//text itemS of item => could be plural class names here also
+propertyReference ::=  dictionaryPropertyName|literalExpression|appleScriptProperty|builtInClassProperty
+
+//todo do not check here for application classes! do it (if necessary) where the rule is used
+dictionaryPropertyName ::=  (<<parseDictionaryPropertyName>> &(of|in|COLON)) | (!dictionaryClassName <<parseDictionaryPropertyName>>)
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryPropertySpecifier"
+implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+
+private builtInClassProperty ::= stringProperty | BUILT_IN_PROPERTY |
+(&(builtInClassIdentifier of) builtInClassIdentifier) //this way or manually write all possible properties
+
+private stringProperty ::= QUOTED_FORM
+
+private propertyLabelIdentifier ::= propertyReference|identifier
+
+arbitraryReference ::= some typeSpecifier {pin=1}
+
+everyElemReference ::= every typeSpecifier | pluralClassName//{pin=1}
+
+left filterReference ::=  (whose|where) expression
+
+//The ID reference form specifies an object by the value of its ID property
+left idReference ::= id expression
+
+//todo change to expression
+private indexValueExpression ::= referenceExpression|integerLiteralExpression|parenthesizedExpression
+
+indexReference ::=  (integerLiteralExpression('st'|'rd'|'th') (typeSpecifier|userClassName))
+                   |((first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) (typeSpecifier|userClassName) )
+                   |((last|front|back) (typeSpecifier|userClassName))
+//first need to check that this is not a property name
+//things like: "message id of message" and "item i of EmailAddresses" _property_(1st) vs _index_(2nd) forms
+// mailbox "Name string" detected as a 'mailbox' propertyReference
+//todo: custom parsing. To think how more efficient handle propertyName vs className detection
+//add predicate check to all dictionary terms parsing rules:
+//if toldApplicationName is not empty - check all terms from there first(property,class,constant,command)
+private classNamePrimaryExpression ::= typeSpecifier
+
+left indexReferenceClassForm ::= [index] indexValueExpression
+
+private useStatementsCondition ::= <<parseCheckForUseStatements>>
+
+dictionaryClassName ::= <<parseDictionaryClassName 'false' useStatementsCondition>>
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractDictionaryClassSpecifier"
+ implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement"}
+
+userClassName ::= identifier
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptReferenceElementImpl"
+implements="com.intellij.plugin.applescript.psi.AppleScriptReferenceElement"}
+
+middleElemReference ::= middle typeSpecifier {pin=1}
+
+left nameReference ::= nameReferenceString //could be any expression (clashed with indexReference)
+
+private nameReferenceString ::= [named] nameStringExpression
+private nameStringExpression ::= stringLiteralExpression//|parenthesized_expression //(smth as string) or get the string from some val
+
+//rangeReference ::= everyRangeReference | rangeReferenceFormWithClassPrefix
+private rangeReferenceFormWithClassPrefix ::= rangeFromReference | rangeIndexReference
+rangeFromReference ::= from [THE_KW] (beginning|expression) to [THE_KW](end|expression)
+rangeIndexReference ::= startIndex (thru|through) stopIndex
+everyRangeReference ::= every (singularClassName|userClassName) from (beginning|expression) to (end|expression)
+
+private stopIndex::= integerLiteralExpression | expression
+private startIndex ::= integerLiteralExpression | expression
+
+relativeReference ::=  relativeBeforeReference | relativeAfterReference
+
+private relativeBeforeReference ::= (before|([in] ( front | beginning ) of) )primaryReferenceExpression
+private relativeAfterReference ::= (after|([in]( back | end ) of)|behind )primaryReferenceExpression
+// >>Reference class<<
+//private aRefTo ::= 'a reference to'|'a ref to'|'a ref'|'reference to'|'ref'
+aReferenceToLiteralExpression ::= REF_OP objectReferenceWrapper //referenceExpression
+
+varAccessDeclaration ::= variableGlobalDeclaration|variableLocalDeclaration
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+//AppleScript propertyDeclaration
+scriptPropertyDeclaration ::= (property|prop) propertyLabelIdentifier COLON propertyInitializerExpression
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+//Object (AppleScript record or application object) propertyDeclaration
+//todo implement getIdentifier() method
+objectPropertyDeclaration ::= propertyLabelIdentifier COLON propertyInitializerExpression
+
+//identifier could consist from several identifiers (in case of dictionary property)
+objectTargetPropertyDeclaration ::= propertyLabelIdentifier COLON (targetVariablePattern|propertyInitializerExpression)
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+private variableGlobalDeclaration ::= global identifier
+private variableLocalDeclaration ::= local identifier
+
+private propertyInitializerExpression ::= expression
+
+expression ::= logicalOrExpressionWrapper
+
+parenthesizedExpression ::= LPAREN expressionInParentheses RPAREN
+
+private expressionInParentheses ::= ( statement | expression )
+
+// ===CONSTANTS===
+// some of the constants (which are not expressions and are not evaluated at runtime should be written as lexer tokens
+// constant expressions (like 'current application' constant whoch is an object specifier)
+
+numericConstant ::= PI_CONSTANT|seconds_constants
+private seconds_constants ::= MINUTES_CONSTANT|HOURS_CONSTANT|DAYS_CONSTANT|WEEKS_CONSTANT
+private date_time_constants ::= weekday_constant|month_constant//seconds_constants to number_constants
+private weekday_constant ::= 'Monday'|'Tuesday'|'Wednesday'|'Thursday'|'Friday'|'Saturday'
+                            |'Sunday'|'Mon'|'Tue'|'Wed'|'Thu'|'Fri'|'Sat'|'Sun'
+private month_constant ::= 'January'|'February'|'March'|'April'|'May'|'June'|'July'|'August'|'September'|'October'
+                    |'November'|'December' |'Jan'|'Feb'|'Mar'|'Apr'|'Jun'|'Jul'|'Aug'|'Sep'|'Oct'|'Nov'|'Dec'
+
+private currentApplicationConstant ::= CURRENT_APPLICATION|CURRENT_APP|(CURRENT APPLICATION) //'current application'|'current app'//current applicationClass
+private missing_value_constant ::= MISSING_VALUE
+//private save_opt_constant ::= yes|no|ask
+private text_constant ::=  return|space|tab|linefeed|quote
+private anythingProperty ::= anything
+private resultProperty ::= result
+private parentProperty ::= parent
+private versionProperty ::= version
+
+//todo redefine necessary methods (is property, getName etc.)
+appleScriptProperty ::= BUILT_IN_PROPERTY|resultProperty|versionProperty|anythingProperty
+|textItemDelimitersProperty|parentProperty//|itMeProperty//|text_constant /*?? */
+
+private itMeProperty ::= it|me|ITS //see https://bitbucket.org/adernov/applescript-internal/issues/16/parsing-its-possessive-form-of-it
+//todo add via regexp (spaces)
+handlerParameterLabel ::= about|above|against|'apart from'|around|'aside from'|at|below|beneath|beside|between|by|for
+|from|'instead of'|into|on|onto|'out of'|over|since|thru|through|under|to //there is no 'to' label in documentation but it works!
+
+argumentSelector ::= identifier COLON
+{methods=[getSelectorIdentifier getSelectorName]}
+
+//An identifier for the direct parameter variable. If it is included, directParamName must be listed immediately
+// after the command name. The word of or in before directParamName is required in user-defined handlers,
+// but is optional in terminology-defined handlers (for example, those defined by applications).
+private userParameterVar ::= THE_KW? targetVariablePattern | expression //could be: 'on getMacPathWithPOSIXPath:(thePOSIXPath as text)'
+private userLabelReference ::= THE_KW? referenceExpression
+
+//===HANDLERS===
+// handler is a collection of statements which can be invoked by name
+//application handled definition in script only makes sense inside <using terms of> statement
+applicationHandlerDefinition ::= (on|to) applicationHandlerDefinitionSignature
+                                         [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*] //nls //should be sep here
+                                         [varDeclarationList] sep
+                                           blockBody?
+                                  end [applicationHandlerDefinitionSignature]
+private applicationHandlerDefinitionSignature ::= <<parseApplicationHandlerDefinitionSignature>>
+
+handlerLabeledParametersDefinition ::= (on|to) identifier !LPAREN labeledParameterDeclarationList
+                                         [given THE_KW? objectTargetPropertyDeclaration (COMMA THE_KW? objectTargetPropertyDeclaration)*]
+                                         [varDeclarationList] sep
+                                           blockBody?
+                                        end [referenceExpression]
+//                                        {pin=2}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"
+methods=[getParameterComponentList]}
+//The word of or in before directParamName is required in user-defined handlers, but is optional in 
+// terminology-defined handlers (for example, those defined by applications).
+labeledParameterDeclarationList ::= ((of|in)? directParameterDeclaration | targetVariablePattern )? labeledParameterDeclarationPart*
+{methods=[getComponentList]}
+
+directParameterDeclaration ::= THE_KW? identifier //todo change to simpleFormalParameter
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+labeledParameterDeclarationPart ::= handlerParameterLabel THE_KW? identifier //userParameterVar //todo implement targetVariablePattern here !!!
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+left handlerLabeledParametersCallExpression ::=
+   (
+   (of|in) directParameterVal// on|of is mandatory if parsing user handler call
+   (
+     (    (handlerParameterLabel parameterVal)+
+           ( (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
+           | (without labelForFalseParam (COMMA labelForFalseParam)* [(LAND|LOR|COMMA) labelForFalseParam])
+           | (given userLabelReference COLON userParameterVal (COMMA userLabelReference COLON userParameterVal)*)
+           )*
+     )
+     |
+       ( (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
+       | (without labelForFalseParam (COMMA labelForFalseParam)* [(LAND|LOR|COMMA) labelForFalseParam])
+       | (given userLabelReference COLON userParameterVal (COMMA userLabelReference COLON userParameterVal)*)
+       )+
+   )
+   )|
+   (
+   (handlerParameterLabel parameterVal)+ //&(with|without|given)
+       ( (with labelForTrueParam (COMMA labelForTrueParam)* [(LAND|LOR|COMMA) labelForTrueParam])
+       | (without labelForFalseParam (COMMA labelForFalseParam)* [(LAND|LOR|COMMA) labelForFalseParam])
+       | (given userLabelReference COLON userParameterVal (COMMA userLabelReference COLON userParameterVal)*)
+       )*
+   )
+
+private parameterValue ::= expression
+commandParameterSelector ::= <<parseCommandParameterSelector>>
+//see
+commandParameter ::= given? commandParameterSelector parameterValue
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandParameter"
+implements="com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter"}
+
+private labelForTrueParam ::= expression
+private labelForFalseParam ::= expression
+
+parameterVal ::= referenceIdBeforeParamLabel | expression
+
+//sayHello to name -> only if referenceIdentifier followed by 'to'
+private referenceIdBeforeParamLabel ::= referenceExpression &handlerParameterLabel
+
+private userParameterVal ::= expression
+
+//todo replace to just expression, add custom parsing ?
+directParameterVal ::=  referenceIdBeforeParamLabel | expression
+
+private parseTellSimpleStatement ::= <<parseTellSimpleStatementInner>>
+//see <<parseTellSimpleStatementInner>>
+tellSimpleStatement ::= tell <<parseTellSimpleObjectReference>> to (statement | handlerInterleavedParametersCall | expression )
+{implements="com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator"
+ methods=[getApplicationName]}
+
+handlerPositionalParametersDefinition ::= (on|to) identifier LPAREN [formalParameterList] RPAREN
+                                            [varDeclarationList] sep
+                                               blockBody?
+                                            end [referenceExpression]
+//                                            {pin=3}  //or Grammar kit will also make formalParameterList as Component
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+left handlerPositionalParametersCallExpression ::= LPAREN argumentList? RPAREN
+
+formalParameterList ::= formalParameterListPart (COMMA formalParameterListPart)* //{recoverWhile="argument_list_recover"}
+{ methods = [getFormalParameters] }
+
+private formalParameterListPart ::= formalParameterListPartPattern {recoverWhile="argListPartRecover"}
+private argumentList ::= argumentListPart (COMMA argumentListPart)* {recoverWhile="argListRecover"}
+private argListRecover ::= !(RPAREN)
+private argumentListPart ::= statement | expression {recoverWhile="argListPartRecover"}
+private argListPartRecover ::= !(RPAREN|COMMA)
+
+private formalParameterListPartPattern ::= simpleFormalParameter|listFormalParameter|recordFormalParameter|expression
+listFormalParameter ::= LCURLY [formalParameterListPartPattern|expression] (COMMA formalParameterListPartPattern|expression)* RCURLY //{pin=4}
+{methods = [getParameters] }
+
+recordFormalParameter ::= LCURLY[objectNamedPropertyDeclaration] (COMMA objectNamedPropertyDeclaration)* RCURLY
+{methods = [getParameters] }
+
+objectNamedPropertyDeclaration ::= propertyLabelIdentifier COLON (formalParameterListPartPattern|propertyInitializerExpression)
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+simpleFormalParameter ::= THE_KW? identifier
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptComponent"
+implements="com.intellij.plugin.applescript.psi.AppleScriptComponent"}
+
+handlerInterleavedParametersDefinition ::= (on|to) handlerInterleavedParametersSelectorPart+ sep
+                                               blockBody?
+                                             end [handlerNamePartRef COLON (handlerNamePartRef COLON)*]
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptHandlerInterleavedParameters"
+implements="com.intellij.plugin.applescript.psi.AppleScriptHandler"}
+
+private handlerNamePartRef ::= referenceExpression
+
+handlerInterleavedParametersSelectorPart ::= selectorId COLON userParameterVar
+{mixin="com.intellij.plugin.applescript.psi.impl.AppleScriptHandlerSelectorPartImpl"
+implements="com.intellij.plugin.applescript.psi.AppleScriptHandlerSelectorPart"}
+selectorId ::= identifier
+
+
+handlerInterleavedParametersCall ::= handlerArgument+
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptHandlerCall"
+implements="com.intellij.plugin.applescript.psi.AppleScriptHandlerCall"}
+
+handlerArgument ::= argumentSelector userParameterVal
+
+scriptObjectDefinition ::= script scriptObjectName sep
+                                  scriptBody?
+                           end [script] //{pin=2}
+{mixin="com.intellij.plugin.applescript.psi.impl.AbstractAppleScriptScriptObject"
+implements="com.intellij.plugin.applescript.psi.AppleScriptScriptObject"}
+
+scriptObjectUnnamedDefinition ::= script sep
+                                  scriptBody?
+                                 end [script] {pin=4}
+
+private scriptObjectName ::= identifier
+
+// http://hints.macworld.com/article.php?story=20050523140439734
+continue_statement ::= continue expression
+
+
+//===COMMANDS===
+//An AppleScript command is one that is built into the AppleScript language. There currently are five such commands: 
+// get , set, count, copy, and run. Except for copy , each of these commands can also be implemented by applications.
+private appleScriptCommandExpression ::= getCommandExpression|runCommandExpression|countCommandExpression|
+errorCommandExpression|logCommandExpression|activateCommandExpression|launchCommandExpression
+activateCommandExpression ::= activate expression?
+launchCommandExpression ::= launch expression?
+
+//>>copy<<
+private copyCommandStatement ::= (copy|put) expression (to|into) (targetVariablePattern|objectReferenceWrapper)
+
+//>>count<<
+countCommandExpression ::= (count [[each|every] typeSpecifier (in|of)] composite_value) | (number of [typeSpecifier (in|of)] composite_value)
+
+private typeSpecifier ::= pluralClassName | singularClassName
+private pluralClassName ::= builtInClassIdentifierPlural | dictionaryClassIdentifierPlural | rawClassExpression //items?
+private singularClassName ::= (dictionaryClassName | builtInClassIdentifier | rawClassExpression) ITEM?
+private composite_value ::= expression
+rawClassExpression ::= RAW_LBR CLASS identifier RAW_RBR
+//todo add parsing of raw parameters (and in usual handler call also)
+rawDictionaryCommandHandlerCallExpression ::= RAW_LBR EVENT identifier RAW_RBR commandRawParameters?
+private commandRawParameters ::= expression? (rawParameterExpression | givenRawParameterExpression)*
+givenRawParameterExpression ::= given rawClassExpression COLON expression (COMMA rawClassExpression COLON expression)*
+rawParameterExpression ::= rawParameterSelector expression
+rawParameterSelector ::= RAW_LBR PREPOSITION identifier RAW_RBR
+
+rawDataExpression ::= RAW_LBR DATA DIGITS RAW_RBR
+
+//>>get<<
+getCommandExpression ::= get <<parseCommandParametersExpression>>
+
+//>>Run<< / Run Script
+runCommandExpression ::= ("run" [script] [script_object_variable])|("run" [referenceToApplicationVar]) // application command syntax
+private referenceToApplicationVar ::= applicationReference
+private script_object_variable ::= referenceExpression
+// log - is a built into Script Editor command http://stackoverflow.com/a/21341372/2000323
+logCommandExpression ::= log expression
+
+private parseAssignmentStatement ::= <<parseAssignmentStatementInner>>
+assignmentStatement ::= setCommandAppleScript|copyCommandStatement
+{methods=[getAssignmentTarget getTargets getTargetsToValuesMapping]}
+
+//set AppleScript command
+private setCommandAppleScript ::= setCommandAppleScriptSetSyntax|setCommandAppleScriptReturningSyntax
+private setCommandAppleScriptSetSyntax ::= set THE_KW? (targetVariablePattern to|objectReferenceWrapper to) THE_KW? expression
+private setCommandAppleScriptReturningSyntax ::= expression returning targetVariablePattern
+private targetVariablePattern ::= targetVariable|targetListLiteral|targetRecordLiteral
+
+// OPERATORS & EXPRESSIONS
+private logicalOrExpressionWrapper ::= logicalAndExpressionWrapper logicalOrExpression*
+left logicalOrExpression ::= LOR NLS* logicalAndExpressionWrapper
+
+private logicalAndExpressionWrapper ::= negationExpressionWrapper logicalAndExpression*
+left logicalAndExpression ::= LAND NLS* negationExpressionWrapper
+
+private negationExpressionWrapper ::= negationExpression | compareExpressionWrapper
+negationExpression ::= (LNOT NLS* negationExpressionWrapper)
+
+private compareExpressionWrapper ::= coercionExpressionWrapper compareExpression*
+left compareExpression ::= (equalityOperator|relational_operator) NLS* coercionExpressionWrapper
+
+private coercionExpressionWrapper ::= concatenationExpressionWrapper coercionExpression*
+left coercionExpression ::= AS NLS* ( typeSpecifier | concatenationExpressionWrapper  )
+
+private concatenationExpressionWrapper ::= additiveExpressionWrapper concatenationExpression*
+left concatenationExpression ::= BAND additiveExpressionWrapper
+
+private additiveExpressionWrapper ::= multiplicativeExpressionWrapper additiveExpression*
+left additiveExpression ::= (PLUS|MINUS) multiplicativeExpressionWrapper
+
+private multiplicativeExpressionWrapper ::= powerExpressionWrapper multiplicativeExpression*
+left multiplicativeExpression ::= multiplicativeOperator NLS* powerExpressionWrapper
+
+private powerExpressionWrapper ::= objectReferenceWrapper powerExpression*
+left powerExpression ::= POW objectReferenceWrapper
+
+private objectReferenceWrapper ::= THE_KW? prefixExpression objectReferenceExpression*
+
+// custom parsing is needed not to parse as a labeled handler call: TELL referenceIdentifier's referenceIdentifier TO expression
+// see <<parseObjectReference>>
+left objectReferenceExpression ::=  ( possessiveFormAndInterleavedCall | objectPointer THE_KW? prefixExpression )
+
+private possessiveFormAndInterleavedCall ::= (APS|<<isPossessivePpronoun>>) handlerInterleavedParametersCall
+private objectPointer ::= of|in|APS|<<isPossessivePpronoun>>
+
+private prefixExpression ::= (prefixOperator prefixExpression) | valueExpression
+private prefixOperator ::= PLUS|MINUS
+
+private valueExpression ::= primaryExpression filterReference? dictionaryCommandHandlerCallExpression?//coercionExpression*
+
+dictionaryCommandHandlerCallExpression ::= <<parseCommandHandlerCallExpression>>
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.AbstractAppleScriptCommandHandlerCall"
+ implements="com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall"}
+
+//see parseCommandHandlerCallExpression
+dictionaryCommandName ::= <<parseDictionaryCommandName>>
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
+implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
+
+private primaryExpression ::=
+     literalExpression
+ |   dictionaryCommandHandlerCallExpression
+ |   rawDictionaryCommandHandlerCallExpression
+ |   rawDataExpression
+ | ( primaryReferenceExpression
+     (
+     <<isTreePrevSimpleReference>>
+       (  handlerPositionalParametersCallExpression | <<isHandlerLabeledParametersCallAllowed>>  handlerLabeledParametersCallExpression )
+     )?
+   )
+ |   parenthesizedExpression
+ |   appleScriptCommandExpression
+
+incompleteCommandHandlerCall ::= <<parseIncompleteCommandCall>>
+{mixin="com.intellij.plugin.applescript.psi.sdef.impl.DictionaryCompositeNameImpl"
+implements="com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName"}
+
+// todo: left associate to class name (range, name, relative, index) ! checking that this is not a property first.. !
+private primaryReferenceExpression ::= applicationReference | referenceForm | referenceExpression
+
+private referenceForm ::=
+      (my handlerInterleavedCallOrPropertyReferenceOrReferenceIdentifier )
+    | (my?
+    // it looks like only range reference can be compiled using referenceIdentifier. For other forms valid
+    // class name is a must
+       (classNamePrimaryExpression
+        (  rangeReferenceFormWithClassPrefix
+         | nameReference
+         | relativeReference
+         | indexReferenceClassForm
+         | idReference
+        )? //can not remove '?' from here.. as script compiles with just className as a primary expression...
+       )
+       |
+       (  arbitraryReference
+        | everyElemReference
+        | everyRangeReference
+        | middleElemReference
+        | relativeReference
+        | indexReference
+        | propertyReference
+       )
+      )
+
+private equalityOperator ::= NE|EQ
+private relational_operator ::= LT|GT|LE|GE|containment_start_end_operator|containment_any_part_operator
+
+// List and String
+private containment_start_end_operator ::= STARTS_BEGINS_WITH|ENDS_WITH
+//List, Record, String
+private containment_any_part_operator ::= IS_CONTAIN|DOES_NOT_CONTAIN|IS_IN|IS_NOT_IN
+
+private multiplicativeOperator ::= STAR|DIV|INT_DIV|MOD
