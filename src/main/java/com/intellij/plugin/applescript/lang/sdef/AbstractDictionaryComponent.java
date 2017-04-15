@@ -24,12 +24,16 @@ import java.util.List;
  * Andrey 09.07.2015
  */
 public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
-        extends DictionaryComponentBase<P, XmlTag> implements DictionaryComponent {
+    extends DictionaryComponentBase<P, XmlTag> implements DictionaryComponent {
 
-  @NotNull private final String code;
-  @NotNull private final String name;
-  @Nullable private String description;
-  @Nullable protected String dictionaryDoc;
+  @NotNull
+  private final String code;
+  @NotNull
+  private final String name;
+  @Nullable
+  private String description;
+  @Nullable
+  protected String dictionaryDoc;
 
   protected AbstractDictionaryComponent(@NotNull P parent, @NotNull String name, @NotNull String code,
                                         @NotNull XmlTag myXmlTag, @Nullable String description) {
@@ -145,8 +149,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
     StringBuilder sb = new StringBuilder();
     sb.append("<p>");
     String type = StringUtil.capitalizeWords(getType(), true);
-    sb.append(type.toLowerCase().contains("dictionary") ? type.substring(10) : type).append(" <b>").append(name)
-            .append("</b>");
+    sb.append(type.toLowerCase().contains("dictionary") ? type.substring(10) : type).append(" <b>").append(name).append("</b>");
     if (this instanceof AppleScriptClass) {
       AppleScriptClass parentClass = ((AppleScriptClass) this).getParentClass();
       if (parentClass != null) {
@@ -174,11 +177,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
   @NotNull
   @Override
   public String getDocumentation() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(getDocHeader());
-    sb.append(getTypeDescription());
-    sb.append(getDocFooter());
-    return sb.toString();
+    return getDocHeader() + getTypeDescription() + getDocFooter();
   }
 
   protected String getDocFooter() {
@@ -233,8 +232,7 @@ public abstract class AbstractDictionaryComponent<P extends DictionaryComponent>
         myIdentifier = new DictionaryIdentifierImpl(this, getName(), anyAttr);
       }
     }
-    return myIdentifier != null ? myIdentifier :
-            new DictionaryIdentifierImpl(this, getName(), myXmlElement.getAttributes()[0]);
+    return myIdentifier != null ? myIdentifier : new DictionaryIdentifierImpl(this, getName(), myXmlElement.getAttributes()[0]);
   }
 
   @Nullable

@@ -8,7 +8,8 @@ import org.jetbrains.annotations.Nullable;
  * Andrey 03.07.2015
  */
 public class CommandParameterImpl extends AbstractDictionaryComponent<AppleScriptCommand> implements CommandParameter {
-  @NotNull private String typeSpecifier;
+  @NotNull
+  private String typeSpecifier;
   private boolean optional;
 
   public CommandParameterImpl(@NotNull AppleScriptCommand myCommand, @NotNull String name, @NotNull String code,

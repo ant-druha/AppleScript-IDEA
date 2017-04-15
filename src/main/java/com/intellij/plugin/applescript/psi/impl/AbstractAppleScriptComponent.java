@@ -37,7 +37,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   @Override
   public boolean isObjectProperty() {
     return getContext() instanceof AppleScriptRecordLiteralExpression
-            || getContext() instanceof AppleScriptTargetRecordLiteral;
+        || getContext() instanceof AppleScriptTargetRecordLiteral;
   }
 
   @Nullable
@@ -46,8 +46,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
     //todo (re)move this to targetReference
     PsiReference myReference = getReference();
     if (myReference != null) {
-      PsiElement myTarget = myReference.resolve();
-      return myTarget;
+      return myReference.resolve();
     }
     return null;
   }
@@ -55,22 +54,22 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   @Override
   public boolean isHandler() {
     return this instanceof AppleScriptHandlerPositionalParametersDefinition
-            || this instanceof AppleScriptHandlerLabeledParametersDefinition
-            || this instanceof AppleScriptHandlerInterleavedParametersDefinition;
+        || this instanceof AppleScriptHandlerLabeledParametersDefinition
+        || this instanceof AppleScriptHandlerInterleavedParametersDefinition;
   }
 
   @Override
   public boolean isScriptProperty() {
     return findChildByType(AppleScriptTypes.PROP) != null || findChildByType(AppleScriptTypes.PROPERTY) != null ||
-            getOriginalDeclaration() instanceof AppleScriptScriptPropertyDeclaration;
+        getOriginalDeclaration() instanceof AppleScriptScriptPropertyDeclaration;
   }
 
   @Override
   public boolean isVariable() {
     return (findChildByType(AppleScriptTypes.LOCAL) != null || findChildByType(AppleScriptTypes.GLOBAL) != null) ||
-            (this instanceof AppleScriptTargetVariable && getFirstChild() instanceof AppleScriptIdentifier) ||
-            this instanceof AppleScriptVarDeclarationListPart ||
-            getContext() instanceof AppleScriptLabeledParameterDeclarationList;
+        (this instanceof AppleScriptTargetVariable && getFirstChild() instanceof AppleScriptIdentifier) ||
+        this instanceof AppleScriptVarDeclarationListPart ||
+        getContext() instanceof AppleScriptLabeledParameterDeclarationList;
   }
 
   @Nullable
@@ -95,8 +94,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   @Override
   public PsiElement setName(@NonNls @NotNull String newElementName) throws IncorrectOperationException {
     final AppleScriptIdentifier identifier = getIdentifier();
-    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
-            newElementName);
+    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(), newElementName);
     if (identifierNew != null && identifier != null) {
       getNode().replaceChild(identifier.getNode(), identifierNew.getNode());
     }
@@ -156,7 +154,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
   public ItemPresentation getPresentation() {
 
     return new AppleScriptElementPresentation(AbstractAppleScriptComponent.this) {
-      @Nullable
+      @NotNull
       @Override
       public String getPresentableText() {
         final StringBuilder result = new StringBuilder();
@@ -172,7 +170,7 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
           result.append(getName());
           if (thisComponent instanceof AppleScriptHandlerPositionalParametersDefinition) {
             AppleScriptHandlerPositionalParametersDefinition handler =
-                    (AppleScriptHandlerPositionalParametersDefinition) thisComponent;
+                (AppleScriptHandlerPositionalParametersDefinition) thisComponent;
             AppleScriptFormalParameterList parameterList = handler.getFormalParameterList();
             if (parameterList != null) {
               List<AppleScriptComponent> myParameters = parameterList.getFormalParameters();
@@ -187,23 +185,20 @@ public abstract class AbstractAppleScriptComponent extends AppleScriptPsiElement
             }
           } else if (thisComponent instanceof AppleScriptHandlerLabeledParametersDefinition) {
             //todo getTextAttribute (bold for label names, underlined for param.names etc)
-            AppleScriptHandlerLabeledParametersDefinition handler = (AppleScriptHandlerLabeledParametersDefinition)
-                    thisComponent;
+            AppleScriptHandlerLabeledParametersDefinition handler = (AppleScriptHandlerLabeledParametersDefinition)thisComponent;
             AppleScriptLabeledParameterDeclarationList parameters = handler.getLabeledParameterDeclarationList();
             AppleScriptDirectParameterDeclaration directParameter = parameters.getDirectParameterDeclaration();
-            List<AppleScriptLabeledParameterDeclarationPart> labeledParams = parameters
-                    .getLabeledParameterDeclarationPartList();
+            List<AppleScriptLabeledParameterDeclarationPart> labeledParams = parameters.getLabeledParameterDeclarationPartList();
             String sep = " : ";
             result.append(sep);
             if (directParameter != null) {
               PsiElement prevElement = directParameter.getPrevSibling();
-              while (prevElement != null &&
-                      AppleScriptTokenTypesSets.WHITE_SPACES_SET.contains(prevElement.getNode().getElementType())) {
+              while (prevElement != null && AppleScriptTokenTypesSets.WHITE_SPACES_SET.contains(prevElement.getNode().getElementType())) {
                 prevElement = prevElement.getPrevSibling();
               }
               if (prevElement != null &&
-                      (AppleScriptTypes.ON.equals(prevElement.getNode().getElementType())
-                              || prevElement.getNode().getElementType().equals(AppleScriptTypes.OF))) {
+                  (AppleScriptTypes.ON.equals(prevElement.getNode().getElementType()) 
+                      || prevElement.getNode().getElementType().equals(AppleScriptTypes.OF))) {
                 result.append(' ').append(prevElement.getText());
               }
               result.append(' ').append(directParameter.getName());

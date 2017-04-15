@@ -13,12 +13,10 @@ import java.util.List;
 /**
  * Andrey 15.04.2015
  */
-public class AppleScriptResolver implements ResolveCache.AbstractResolver<AppleScriptReferenceElement,
-        List<? extends PsiElement>> {
+public class AppleScriptResolver implements ResolveCache.AbstractResolver<AppleScriptReferenceElement, List<? extends PsiElement>> {
   public static final AppleScriptResolver INSTANCE = new AppleScriptResolver();
 
-  protected List<? extends PsiElement> resolveSimpleReference(@NotNull final PsiElement scopeElement,
-                                                              @NotNull final String name) {
+  private List<? extends PsiElement> resolveSimpleReference(@NotNull final PsiElement scopeElement, @NotNull final String name) {
     final List<PsiElement> result = new ArrayList<>();
 
     final AppleScriptResolveProcessor resolveProcessor = new AppleScriptResolveProcessor(name);

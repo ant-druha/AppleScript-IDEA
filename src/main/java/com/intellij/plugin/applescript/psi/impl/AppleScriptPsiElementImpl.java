@@ -55,8 +55,8 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
         AppleScriptLabeledParameterDeclarationList params = (AppleScriptLabeledParameterDeclarationList) child;
         result.addAll(params.getComponentList());
       } else if (child instanceof AppleScriptObjectTargetPropertyDeclaration
-              && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition//+ why not in handlers??
-              || child.getContext() instanceof AppleScriptHandler)) {
+          && (child.getContext() instanceof AppleScriptHandlerLabeledParametersDefinition//+ why not in handlers??
+          || child.getContext() instanceof AppleScriptHandler)) {
         //this is in target list/record literals
         AppleScriptObjectTargetPropertyDeclaration prop = (AppleScriptObjectTargetPropertyDeclaration) child;
         AppleScriptTargetVariable var = prop.getTargetVariable();
@@ -77,8 +77,7 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     }
     //because of a scope of tell statements
     if (referencingElement != null) {
-      if (context instanceof ApplicationDictionaryDeclarator
-              && !(context instanceof AppleScriptUseStatement)) {
+      if (context instanceof ApplicationDictionaryDeclarator && !(context instanceof AppleScriptUseStatement)) {
         result.add((ApplicationDictionaryDeclarator) context);
       }
     }
@@ -98,22 +97,22 @@ public class AppleScriptPsiElementImpl extends ASTWrapperPsiElement implements A
     //todo handle other declarations besides simple reference elements (inside object references etc)
 
     boolean dictionaryElementMatches = component instanceof ApplicationDictionaryDeclarator
-            && referencingElement instanceof AppleScriptPsiElement
-            && AppleScriptPsiImplUtil.isBefore(component, referencingElement, true);//for getVariants()
+        && referencingElement instanceof AppleScriptPsiElement
+        && AppleScriptPsiImplUtil.isBefore(component, referencingElement, true);//for getVariants()
 
     return referencingElement instanceof AppleScriptObjectPropertyDeclaration
-            || referencingElement instanceof AppleScriptHandlerCall
-            || referencingElement.getParent() instanceof AppleScriptHandlerPositionalParametersCallExpression
-            || AppleScriptPsiImplUtil.isBefore(component, referencingElement, true)
-            || dictionaryElementMatches;
+        || referencingElement instanceof AppleScriptHandlerCall
+        || referencingElement.getParent() instanceof AppleScriptHandlerPositionalParametersCallExpression
+        || AppleScriptPsiImplUtil.isBefore(component, referencingElement, true)
+        || dictionaryElementMatches;
   }
 
   @Override
   public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement
-          lastParent, @NotNull PsiElement place) {
+      lastParent, @NotNull PsiElement place) {
 
     return processDeclarationsImpl(this, processor, state, lastParent, place)
-            && super.processDeclarations(processor, state, lastParent, place);
+        && super.processDeclarations(processor, state, lastParent, place);
   }
 
   @Override

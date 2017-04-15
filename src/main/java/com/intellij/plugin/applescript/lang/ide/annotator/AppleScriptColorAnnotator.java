@@ -42,8 +42,7 @@ public class AppleScriptColorAnnotator implements Annotator {
   @Override
   public void annotate(final @NotNull PsiElement element, final @NotNull AnnotationHolder holder) {
     IElementType elementType = element.getNode().getElementType();
-    if (element instanceof PsiReference
-            || element instanceof AppleScriptHandlerCall) {
+    if (element instanceof PsiReference || element instanceof AppleScriptHandlerCall) {
       PsiElement resolveResult = null;
       PsiReference ref = element.getReference();
       if (ref != null) {
@@ -53,8 +52,7 @@ public class AppleScriptColorAnnotator implements Annotator {
         if (element instanceof AppleScriptHandlerCall) {
           AppleScriptHandlerCall handlerCall = (AppleScriptHandlerCall) element;
           for (AppleScriptHandlerArgument argument : handlerCall.getArguments()) {
-            createInfoAnnotation(holder, argument.getArgumentSelector(),
-                    AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
+            createInfoAnnotation(holder, argument.getArgumentSelector(), AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
           }
         } else createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.UNRESOLVED_REFERENCE);
       }
@@ -63,8 +61,7 @@ public class AppleScriptColorAnnotator implements Annotator {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_ATTR);
     } else if (element instanceof AppleScriptCommandParameterSelector) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_COMMAND_SELECTOR_ATTR);
-    } else if (element instanceof AppleScriptDictionaryClassName
-            || element instanceof AppleScriptDictionaryClassIdentifierPlural) {
+    } else if (element instanceof AppleScriptDictionaryClassName || element instanceof AppleScriptDictionaryClassIdentifierPlural) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_CLASS_ATTR);
     } else if (element instanceof AppleScriptDictionaryPropertyName) {
       createInfoAnnotation(holder, element, AppleScriptSyntaxHighlighterColors.DICTIONARY_PROPERTY_ATTR);
@@ -83,7 +80,7 @@ public class AppleScriptColorAnnotator implements Annotator {
     }
     // duplicated labels
     if (elementType == HANDLER_LABELED_PARAMETERS_DEFINITION ||
-            elementType == HANDLER_LABELED_PARAMETERS_CALL_EXPRESSION) {
+        elementType == HANDLER_LABELED_PARAMETERS_CALL_EXPRESSION) {
       PsiElement[] childElements = element.getChildren();
       ArrayList<String> labelNames = new ArrayList<>();
       for (PsiElement childElement : childElements) {
@@ -97,7 +94,7 @@ public class AppleScriptColorAnnotator implements Annotator {
               }
             }
             holder.createErrorAnnotation(childElement, "Duplicated parameter label '" + labelName + "'")
-                    .registerFix(new RenameParameterLabelQuickFix((AppleScriptHandlerParameterLabel) childElement, newLabelName));
+                .registerFix(new RenameParameterLabelQuickFix((AppleScriptHandlerParameterLabel) childElement, newLabelName));
           }
           labelNames.add(labelName);
         }
@@ -108,51 +105,50 @@ public class AppleScriptColorAnnotator implements Annotator {
 
   private void annotateApplicationReference(@NotNull AnnotationHolder holder, @NotNull AppleScriptApplicationReference appRef, boolean error) {
     String appName = AppleScriptPsiImplUtil.getNameFromApplicationReference(appRef);
-    AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService(AppleScriptSystemDictionaryRegistryService.class);
-    if (dictionaryRegistryService != null) {
-      if (!StringUtil.isEmptyOrSpaces(appName)) {
-        if (!dictionaryRegistryService.isDictionaryInitialized(appName)) {
-          String warningReason = checkWarningReason(appName, dictionaryRegistryService);
-          if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
-            System.out.println("Re-checking warning reason for " + appName);
-            warningReason = checkWarningReason(appName, dictionaryRegistryService);
-          }
-          if (!StringUtil.isEmpty(warningReason)) {
-            if (error) {
-              Annotation appAnnotation = holder.createErrorAnnotation(appRef, warningReason);
-              appAnnotation.setTextAttributes(CodeInsightColors.WARNINGS_ATTRIBUTES);
-              appAnnotation.registerFix(new AddApplicationDictionaryQuickFix(appName));
-            } else {
-              holder.createWarningAnnotation(appRef, warningReason).registerFix(new AddApplicationDictionaryQuickFix(appName));
-            }
-          } else {
-            AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService(appRef.getProject(), AppleScriptProjectDictionaryService
-                    .class);
-            ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
-            if (dictionary == null) dictionary = dictionaryProjectService.createDictionary(appName);
-            if (dictionary == null) {
-              if (error) {
-                Annotation appAnnotation = holder.createErrorAnnotation(appRef, "Unknown app \"" + appName + "\"?");
-                appAnnotation.setTextAttributes(CodeInsightColors.WARNINGS_ATTRIBUTES);
-                appAnnotation.registerFix(new AddApplicationDictionaryQuickFix(appName));
-              } else {
-                holder.createWarningAnnotation(appRef, "Unknown app \"" + appName + "\"?");
-              }
-            }
-          }
+    AppleScriptSystemDictionaryRegistryService dictionaryRegistryService = ServiceManager.getService
+        (AppleScriptSystemDictionaryRegistryService.class);
+
+    if (dictionaryRegistryService == null || StringUtil.isEmptyOrSpaces(appName)) return;
+
+    if (!dictionaryRegistryService.isDictionaryInitialized(appName)) {
+      String warningReason = checkWarningReason(appName, dictionaryRegistryService);
+      if (warningReason == null && !dictionaryRegistryService.ensureDictionaryInitialized(appName)) {
+        System.out.println("Re-checking warning reason for " + appName);
+        warningReason = checkWarningReason(appName, dictionaryRegistryService);
+      }
+      if (!StringUtil.isEmpty(warningReason)) {
+        if (error) {
+          Annotation appAnnotation = holder.createErrorAnnotation(appRef, warningReason);
+          appAnnotation.setTextAttributes(CodeInsightColors.WARNINGS_ATTRIBUTES);
+          appAnnotation.registerFix(new AddApplicationDictionaryQuickFix(appName));
         } else {
-          AppleScriptProjectDictionaryService dictionaryProjectService = ServiceManager.getService(appRef.getProject(), AppleScriptProjectDictionaryService
-                  .class);
-          ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
-          if (dictionary == null) dictionaryProjectService.createDictionary(appName);
+          holder.createWarningAnnotation(appRef, warningReason).registerFix(new AddApplicationDictionaryQuickFix(appName));
+        }
+      } else {
+        AppleScriptProjectDictionaryService dictionaryProjectService =
+            ServiceManager.getService(appRef.getProject(), AppleScriptProjectDictionaryService.class);
+        ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
+        if (dictionary == null) dictionary = dictionaryProjectService.createDictionary(appName);
+        if (dictionary == null) {
+          if (error) {
+            Annotation appAnnotation = holder.createErrorAnnotation(appRef, "Unknown app \"" + appName + "\"?");
+            appAnnotation.setTextAttributes(CodeInsightColors.WARNINGS_ATTRIBUTES);
+            appAnnotation.registerFix(new AddApplicationDictionaryQuickFix(appName));
+          } else {
+            holder.createWarningAnnotation(appRef, "Unknown app \"" + appName + "\"?");
+          }
         }
       }
+    } else {
+      AppleScriptProjectDictionaryService dictionaryProjectService = 
+          ServiceManager.getService(appRef.getProject(), AppleScriptProjectDictionaryService.class);
+      ApplicationDictionary dictionary = dictionaryProjectService.getDictionary(appName);
+      if (dictionary == null) dictionaryProjectService.createDictionary(appName);
     }
   }
 
   @Nullable
-  private String checkWarningReason(@NotNull String appName,
-                                    @NotNull AppleScriptSystemDictionaryRegistryService dictionaryRegistryService) {
+  private String checkWarningReason(@NotNull String appName, @NotNull AppleScriptSystemDictionaryRegistryService dictionaryRegistryService) {
     String warningReason = null;
     if (dictionaryRegistryService.isNotScriptable(appName) && dictionaryRegistryService.isXcodeInstalled()) {
       warningReason = "Application \"" + appName + "\" is not scriptable";

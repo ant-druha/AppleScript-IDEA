@@ -22,8 +22,8 @@ import org.jetbrains.annotations.NotNull;
  * Andrey 22.02.2015
  */
 public class AppleScriptParserDefinition implements ParserDefinition {
-  public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
-  public static final TokenSet COMMENTS = TokenSet.create(AppleScriptTypes.COMMENT);
+  private static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
+  private static final TokenSet COMMENTS = TokenSet.create(AppleScriptTypes.COMMENT);
 
   public static final IFileElementType FILE = new IFileElementType(AppleScriptLanguage.INSTANCE);
 

@@ -119,9 +119,8 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
       sb.append("<p><b>Parameters:</b></p>");
     }
     if (p != null)
-      sb.append(indent).append(indent).append(p.getTypeSpecifier()).append(" : ").append(StringUtil.notNullize(p
-              .getDescription())).
-              append("<br>");
+      sb.append(indent).append(indent).append(p.getTypeSpecifier()).append(" : ")
+          .append(StringUtil.notNullize(p.getDescription())).append("<br>");
 
     for (CommandParameter par : parameters) {
       String op = "";
@@ -132,13 +131,12 @@ public class AppleScriptCommandImpl extends AbstractDictionaryComponent<Suite> i
       }
       String pType = StringUtil.notNullize(par.getTypeSpecifier());
       sb.append(indent).append(indent).append(op).append("<b>").append(par.getName()).append("</b> ").append(pType)
-              .append(cl).append(" : ").
-              append(par.getDescription()).append("<br>");
+          .append(cl).append(" : ").append(par.getDescription()).append("<br>");
     }
     CommandResult res = getResult();
     if (res != null) {
       sb.append("<p>").append("<b>Returns:</b></p>").append(indent).append(indent).
-              append(res.getType()).append(" : ").append(StringUtil.notNullize(res.getDescription()));
+          append(res.getType()).append(" : ").append(StringUtil.notNullize(res.getDescription()));
     }
 //    if (!StringUtil.isEmpty(documentation)) {
 //      sb.append("<p>").append(documentation).append("</p>");

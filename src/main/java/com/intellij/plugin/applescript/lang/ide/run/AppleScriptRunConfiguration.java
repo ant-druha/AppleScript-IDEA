@@ -28,7 +28,7 @@ public class AppleScriptRunConfiguration extends LocatableConfigurationBase {
   private String scriptOptions;
   private boolean myShowAppleEvents;
 
-  public AppleScriptRunConfiguration(Project project, ConfigurationFactory configurationFactory, String name) {
+  AppleScriptRunConfiguration(Project project, ConfigurationFactory configurationFactory, String name) {
     super(project, configurationFactory, name);
   }
 
@@ -46,20 +46,20 @@ public class AppleScriptRunConfiguration extends LocatableConfigurationBase {
   }
 
   @Nullable
-  public String getScriptPath() {
+  String getScriptPath() {
     return scriptPath;
   }
 
   @Nullable
-  public String getScriptParameters() {
+  String getScriptParameters() {
     return scriptParameters;
   }
 
-  public void setScriptPath(String scriptPath) {
+  void setScriptPath(String scriptPath) {
     this.scriptPath = scriptPath;
   }
 
-  public void setScriptParameters(String scriptParameters) {
+  void setScriptParameters(String scriptParameters) {
     this.scriptParameters = scriptParameters;
   }
 
@@ -97,19 +97,19 @@ public class AppleScriptRunConfiguration extends LocatableConfigurationBase {
     element.setAttribute(SCRIPT_SHOW_EVENTS, myShowAppleEvents ? "true" : "false");
   }
 
-  public String getScriptOptions() {
+  String getScriptOptions() {
     return scriptOptions;
   }
 
-  public void setScriptOptions(String scriptOptions) {
+  void setScriptOptions(String scriptOptions) {
     this.scriptOptions = scriptOptions;
   }
 
-  public boolean isShowAppleEvents() {
+  boolean isShowAppleEvents() {
     return myShowAppleEvents;
   }
 
-  public void setShowAppleEvents(boolean showAppleEvents) {
+  void setShowAppleEvents(boolean showAppleEvents) {
     myShowAppleEvents = showAppleEvents;
   }
 }

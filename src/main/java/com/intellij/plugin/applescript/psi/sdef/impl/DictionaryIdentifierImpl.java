@@ -18,8 +18,7 @@ import java.util.List;
  * todo need to check if it matters for some situations as getText() for this class could return several words and text
  * search could be broken (we can use getVarIdentifier() then)
  */
-public class DictionaryIdentifierImpl extends DictionaryComponentBase<DictionaryComponent, XmlElement>
-        implements DictionaryIdentifier {
+public class DictionaryIdentifierImpl extends DictionaryComponentBase<DictionaryComponent, XmlElement> implements DictionaryIdentifier {
 
   @NotNull private final String varIdentifierText;
   @NotNull private final List<String> varIdentifierTextList;
@@ -28,8 +27,6 @@ public class DictionaryIdentifierImpl extends DictionaryComponentBase<Dictionary
   public DictionaryIdentifierImpl(@NotNull DictionaryComponent myParent, @NotNull String varIdentifierText,
                                   @NotNull XmlElement myXmlAttributeValue) {
     super(myXmlAttributeValue, myParent);
-//    assert varIdentifierText.split(" ").length == 1; //ensure that only atomic text values are created..(or does it
-// matter??)
     this.varIdentifierText = varIdentifierText;
     varIdentifierTextList = new ArrayList<>(Arrays.asList(varIdentifierText.split(" ")));
     myVarIdentifier = new DictionaryIdentifierImpl(myParent, varIdentifierTextList.get(0), myXmlElement);

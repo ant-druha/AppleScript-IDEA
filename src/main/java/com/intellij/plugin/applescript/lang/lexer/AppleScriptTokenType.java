@@ -13,12 +13,6 @@ public class AppleScriptTokenType extends IElementType {
     super(debugName, AppleScriptLanguage.INSTANCE);
   }
 
-  @Override
-  public String toString() {
-    return super.toString();
-//    return super.toString().toLowerCase().replaceAll("_", " ");
-  }
-
   public String getMyDebugName() {
     return "AppleScriptTokenType." + super.toString();
   }

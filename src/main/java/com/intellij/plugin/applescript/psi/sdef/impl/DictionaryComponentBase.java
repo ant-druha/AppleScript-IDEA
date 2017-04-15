@@ -18,10 +18,12 @@ import org.jetbrains.annotations.Nullable;
  * Andrey 19.08.2015
  */
 public abstract class DictionaryComponentBase<P extends DictionaryComponent, D extends XmlElement>
-        extends FakePsiElement implements AppleScriptPsiElement {
+    extends FakePsiElement implements AppleScriptPsiElement {
 
-  @NotNull protected final D myXmlElement;
-  @NotNull protected final P myParent;
+  @NotNull
+  protected final D myXmlElement;
+  @NotNull
+  protected final P myParent;
 
   protected DictionaryComponentBase(@NotNull D myXmlElement, @NotNull P myParent) {
     this.myXmlElement = myXmlElement;

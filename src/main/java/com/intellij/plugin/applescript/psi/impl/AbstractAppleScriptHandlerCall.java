@@ -22,7 +22,7 @@ public abstract class AbstractAppleScriptHandlerCall extends AppleScriptPsiEleme
 
   private SelectorReference mySelectorReference;
 
-  public AbstractAppleScriptHandlerCall(ASTNode node) {
+  AbstractAppleScriptHandlerCall(ASTNode node) {
     super(node);
     mySelectorReference = new SelectorReference();
   }

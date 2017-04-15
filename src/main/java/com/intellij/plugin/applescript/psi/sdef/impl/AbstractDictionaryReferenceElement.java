@@ -18,8 +18,7 @@ import java.util.List;
 /**
  * Andrey.Dernov 8/21/2015
  */
-public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantCachingReference
-        implements DictionaryReference {
+public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantCachingReference implements DictionaryReference {
 
   @NotNull
   @Override
@@ -38,10 +37,8 @@ public abstract class AbstractDictionaryReferenceElement extends PsiPolyVariantC
   @NotNull
   @Override
   protected ResolveResult[] resolveInner(boolean incompleteCode, @NotNull PsiFile containingFile) {
-    final AppleScriptDictionaryResolveProcessor resolveProcessor =
-            new AppleScriptDictionaryResolveProcessor(getElement(), getCanonicalText());
+    final AppleScriptDictionaryResolveProcessor resolveProcessor = new AppleScriptDictionaryResolveProcessor(getElement(), getCanonicalText());
     List<PsiElement> maxScope = AppleScriptResolveUtil.getTellStatementResolveScope(getElement());
-    PsiElement maxTellScope = null;
     final List<PsiElement> res = new ArrayList<>();
     DictionaryComponent resolveResult;
     if (!maxScope.isEmpty()) {

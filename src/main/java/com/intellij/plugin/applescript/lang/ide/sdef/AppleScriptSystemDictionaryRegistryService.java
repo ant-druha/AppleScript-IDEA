@@ -38,8 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 public class AppleScriptSystemDictionaryRegistryService implements ParsableScriptHelper {
 
-  private static final Logger LOG = Logger.getInstance("#" +
-          AppleScriptSystemDictionaryRegistryService.class.getName());
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistryService.class.getName());
 
   //persisted data
   private final Map<String, DictionaryInfo> dictionaryInfoMap = new HashMap<>();
@@ -51,7 +50,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
 
   private File xCodeApplicationFile;
 
-  public static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
+  private static final String GENERATED_DICTIONARIES_SYSTEM_FOLDER = PathManager.getSystemPath() + "/sdef";
   private static final int APP_DEPTH_SEARCH = 3;
 
   private final Map<String, HashSet<String>> applicationNameToClassNameSetMap = new HashMap<>();
@@ -80,7 +79,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     notScriptableApplicationList.remove(info.getApplicationName());
   }
 
-  public Collection<DictionaryInfo> getDictionaryInfoList() {
+  Collection<DictionaryInfo> getDictionaryInfoList() {
     return dictionaryInfoMap.values();
   }
 
@@ -139,8 +138,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   }
 
   private void discoverApplicationsInDirectory(@NotNull VirtualFile appsDirVFile) {
-    VfsUtilCore.visitChildrenRecursively(appsDirVFile, new VirtualFileVisitor(VirtualFileVisitor.limit
-            (APP_DEPTH_SEARCH)) {
+    VfsUtilCore.visitChildrenRecursively(appsDirVFile, new VirtualFileVisitor(VirtualFileVisitor.limit(APP_DEPTH_SEARCH)) {
       @Override
       public boolean visitFile(@NotNull VirtualFile file) {
         if (ApplicationDictionaryImpl.extensionSupported(file.getExtension())) {
@@ -162,8 +160,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
    */
   public boolean ensureDictionaryInitialized(@NotNull String anyApplicationName) {
     return ensureKnownApplicationDictionaryInitialized(anyApplicationName)
-            || !StringUtil.isEmptyOrSpaces(anyApplicationName) && !isNotScriptable(anyApplicationName)
-            && !isInUnknownList(anyApplicationName) && getInitializedInfo(anyApplicationName) != null;
+        || !StringUtil.isEmptyOrSpaces(anyApplicationName) && !isNotScriptable(anyApplicationName)
+        && !isInUnknownList(anyApplicationName) && getInitializedInfo(anyApplicationName) != null;
   }
 
   @Override
@@ -171,7 +169,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     if (discoveredApplicationNames.contains(knownApplicationName)) {
       DictionaryInfo dInfo = dictionaryInfoMap.get(knownApplicationName);
       return dInfo != null && (dInfo.isInitialized() || initializeDictionaryFromInfo(dInfo))
-              || getInitializedInfo(knownApplicationName) != null;
+          || getInitializedInfo(knownApplicationName) != null;
     }
     return false;
   }
@@ -267,7 +265,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   public List<AppleScriptCommand> findApplicationCommands(@NotNull Project project, @NotNull String applicationName,
                                                           @NotNull String commandName) {
     AppleScriptProjectDictionaryService projectDictionaryRegistry =
-            ServiceManager.getService(project, AppleScriptProjectDictionaryService.class);
+        ServiceManager.getService(project, AppleScriptProjectDictionaryService.class);
     ApplicationDictionary dictionary = projectDictionaryRegistry.getDictionary(applicationName);
     //among dictionaries there should always be Standard Additions dictionaries checked BUT
     //if there was no command in that dictionaries found, we should initialize new dictionary here for the project
@@ -331,10 +329,10 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     for (DictionaryInfo dictionaryInfo : dictionaryInfoMap.values()) {
       if (!initializeDictionaryFromInfo(dictionaryInfo)) {
         LOG.warn("Failed to initialize dictionary for application: " + dictionaryInfo.getApplicationName() +
-                " from generated file " + dictionaryInfo.getDictionaryFile());
+            " from generated file " + dictionaryInfo.getDictionaryFile());
       } else {
         LOG.warn("Failed to initialize dictionary for application: " + dictionaryInfo.getApplicationName() +
-                "Dictionary file " + dictionaryInfo.getDictionaryFile() + " is not valid");
+            "Dictionary file " + dictionaryInfo.getDictionaryFile() + " is not valid");
       }
     }
   }
@@ -350,7 +348,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   @Nullable
   public DictionaryInfo getInitializedInfo(@NotNull final String applicationName) {
     if (StringUtil.isEmptyOrSpaces(applicationName) || isNotScriptable(applicationName) || isInUnknownList(applicationName)) return null;
-    
+
     final DictionaryInfo savedDictionaryInfo = getDictionaryInfo(applicationName);
     if (savedDictionaryInfo != null) {
       if (savedDictionaryInfo.isInitialized() || initializeDictionaryFromInfo(savedDictionaryInfo)) {
@@ -389,8 +387,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       }
     }
     LOG.warn("No file was found for application: " + applicationName + " in roots: " +
-            Arrays.toString(ApplicationDictionary.APP_BUNDLE_DIRECTORIES) + " Adding application to " +
-            "unknown applications list.");
+        Arrays.toString(ApplicationDictionary.APP_BUNDLE_DIRECTORIES) + " Adding application to unknown applications list.");
     notFoundApplicationList.add(applicationName);
     return null;
   }
@@ -399,7 +396,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
   private File findApplicationFileRecursively(@NotNull final VirtualFile appDirectory,
                                               @NotNull final String applicationName) {
     final VirtualFileVisitor<VirtualFile> fileVisitor = new VirtualFileVisitor<VirtualFile>(VirtualFileVisitor
-            .limit(APP_DEPTH_SEARCH), VirtualFileVisitor.SKIP_ROOT, VirtualFileVisitor.NO_FOLLOW_SYMLINKS) {
+        .limit(APP_DEPTH_SEARCH), VirtualFileVisitor.SKIP_ROOT, VirtualFileVisitor.NO_FOLLOW_SYMLINKS) {
       @Override
       public boolean visitFile(@NotNull VirtualFile file) {
         if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
@@ -439,8 +436,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     if (!ApplicationDictionaryImpl.extensionSupported(appExtension)) return null;
     if (!applicationIoFile.exists()) return null;
     if (getDictionaryInfo(applicationName) != null) {
-      LOG.warn("Dictionary for application " + applicationName + " was already initialized. Generating new " +
-              "dictionary file any way.");
+      LOG.warn("Dictionary for application " + applicationName + " was already initialized. Generating new dictionary file any way.");
     }
     final DictionaryInfo createdDictionaryInfo = createDictionaryInfoForApplication(applicationName, applicationIoFile);
     if (createdDictionaryInfo != null) {
@@ -552,9 +548,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       initializeDictionaryFromInfo(stdDInfo);
     } else {
       String libPathResource = stdLibName.equals(ApplicationDictionary.COCOA_STANDARD_LIBRARY) ?
-              ApplicationDictionary.COCOA_STANDARD_FILE :
-              stdLibName.equals(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY) ?
-                      ApplicationDictionary.STANDARD_ADDITIONS_FILE : null;
+          ApplicationDictionary.COCOA_STANDARD_FILE :
+          stdLibName.equals(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY) ? ApplicationDictionary.STANDARD_ADDITIONS_FILE : null;
       if (libPathResource == null) return null;
 
       InputStream isStd = getClass().getResourceAsStream(libPathResource);
@@ -652,8 +647,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     final File targetFile = new File(serializePath);
     if (!targetFile.getParentFile().exists() && !targetFile.getParentFile().mkdirs()) return null;
     try {
-      if (!SystemInfo.isMac && ("xml".equals(appExtension)
-              || "sdef".equals(appExtension))) {
+      if (!SystemInfo.isMac && ("xml".equals(appExtension) || "sdef".equals(appExtension))) {
         fileGenerated = copyDictionaryFileToCacheDir(applicationName, applicationIoFile, targetFile, true);
       } else if (SystemInfo.isMac) {
         String cmdName;
@@ -726,8 +720,8 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       ScriptEngine engine = engineManager.getEngineByName("AppleScriptEngine");
       if (engine != null) {
         final String script = "try\n" +
-                "tell application \"Finder\" to return POSIX path of (get application file id \"com.apple.dt.Xcode\" " +
-                "as alias)\n" + "on error\n" + "  return \"null\"\n" + "end try";
+            "tell application \"Finder\" to return POSIX path of (get application file id \"com.apple.dt.Xcode\" " +
+            "as alias)\n" + "on error\n" + "  return \"null\"\n" + "end try";
         final Object scriptResult = engine.eval(script);
         if (scriptResult != null) {
           xCodeApplicationFile = new File(scriptResult.toString());
@@ -755,10 +749,9 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
                                            @NotNull final String serializePath,
                                            @NotNull final String cmdName,
                                            @NotNull final String appFilePath)
-          throws NotScriptableApplicationException, DeveloperToolsNotInstalledException {
+      throws NotScriptableApplicationException, DeveloperToolsNotInstalledException {
     try {
-      final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" " +
-              "> " + serializePath};
+      final String[] shellCommand = new String[]{"/bin/bash", "-c", " " + cmdName + " \"" + appFilePath + "\" > " + serializePath};
       LOG.debug("executing command: " + Arrays.toString(shellCommand));
       boolean exitStatus;
       final long timeout = 5;
@@ -768,7 +761,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       if (!exitStatus) {
         if (isXcodeInstalled()) {
           throw new NotScriptableApplicationException(applicationName, "Waiting time elapsed for command " + Arrays.toString(shellCommand) +
-                  ". Seems that application \"" + applicationName + "\" is not scriptable.");
+              ". Seems that application \"" + applicationName + "\" is not scriptable.");
         } else throw new DeveloperToolsNotInstalledException();
       }
 
@@ -776,11 +769,11 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
       return true;
     } catch (InterruptedException e) {
       LOG.error("Failed to create dictionary file for application [" + applicationName + "] Command:" + cmdName +
-              " target path: " + appFilePath + " Reason: " + e.getCause());
+          " target path: " + appFilePath + " Reason: " + e.getCause());
       e.printStackTrace();
     } catch (IOException e) {
       LOG.error("Failed to create dictionary file for application [" + applicationName + "] Command:" + cmdName +
-              " target path: " + appFilePath + " Reason: " + e.getCause());
+          " target path: " + appFilePath + " Reason: " + e.getCause());
       e.printStackTrace();
     }
     return false;
@@ -1008,17 +1001,16 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
     }
   }
 
-  private static void parseElementsForApplication(List<Element> xmlElements, @NotNull String applicationName,
-                                                  @NotNull Map<String, HashSet<String>>
-                                                          objectTagNameToApplicationNameListMap) {
+  private static void parseElementsForApplication(List<Element> xmlElements,
+                                                  @NotNull String applicationName,
+                                                  @NotNull Map<String, HashSet<String>> objectTagNameToApplicationNameListMap) {
     for (Element applicationObjectTag : xmlElements) {
       parseSimpleElementForObject(applicationObjectTag, applicationName, objectTagNameToApplicationNameListMap);
     }
   }
 
   private static void parseHashElementsForApplication(List<Element> xmlElements, @NotNull String applicationName,
-                                                      @NotNull Map<String, HashSet<String>>
-                                                              objectTagNameToApplicationNameListMap) {
+                                                      @NotNull Map<String, HashSet<String>> objectTagNameToApplicationNameListMap) {
     for (Element applicationObjectTag : xmlElements) {
       hashSimpleElementForObject(applicationObjectTag, applicationName, objectTagNameToApplicationNameListMap);
     }
@@ -1084,8 +1076,7 @@ public class AppleScriptSystemDictionaryRegistryService implements ParsableScrip
                                                         @NotNull String applicationName,
                                                         Map<String, HashSet<String>> applicationNameSetMap) {
     HashSet<String> objectNameSetForApplication = applicationNameSetMap.get(applicationName);
-    updateSetForMappedObjectName(applicationName, applicationObjectName, applicationNameSetMap,
-            objectNameSetForApplication);
+    updateSetForMappedObjectName(applicationName, applicationObjectName, applicationNameSetMap, objectNameSetForApplication);
   }
 
   private static boolean startsWithWord(@NotNull String string, @NotNull String prefix) {

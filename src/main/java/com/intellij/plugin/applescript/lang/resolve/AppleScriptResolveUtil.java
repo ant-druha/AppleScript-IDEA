@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Andrey 15.04.2015
@@ -25,7 +26,7 @@ public class AppleScriptResolveUtil {
     if (elements == null) {
       return ResolveResult.EMPTY_ARRAY;
     }
-    elements = ContainerUtil.filter(elements, (Condition<PsiElement>) element -> element != null);
+    elements = ContainerUtil.filter(elements, (Condition<PsiElement>) Objects::nonNull);
     final ResolveResult[] result = new ResolveResult[elements.size()];
     for (int i = 0, size = elements.size(); i < size; i++) {
       result[i] = new PsiElementResolveResult(elements.get(i));
@@ -39,10 +40,8 @@ public class AppleScriptResolveUtil {
     List<AppleScriptComponent> result = new ArrayList<>();
     AppleScriptScriptBody scriptBody = script.getScriptBody();
     AppleScriptComponent[] namedComponents = PsiTreeUtil.getChildrenOfType(scriptBody, AppleScriptComponent.class);
-    AppleScriptAssignmentStatement[] varsCreations = PsiTreeUtil.getChildrenOfType(scriptBody,
-            AppleScriptAssignmentStatement.class);
-    AppleScriptVarDeclarationList[] varsDeclarations = PsiTreeUtil.getChildrenOfType(scriptBody,
-            AppleScriptVarDeclarationList.class);
+    AppleScriptAssignmentStatement[] varsCreations = PsiTreeUtil.getChildrenOfType(scriptBody, AppleScriptAssignmentStatement.class);
+    AppleScriptVarDeclarationList[] varsDeclarations = PsiTreeUtil.getChildrenOfType(scriptBody, AppleScriptVarDeclarationList.class);
 
     if (namedComponents != null) {
       result.addAll(Arrays.asList(namedComponents));
@@ -69,8 +68,7 @@ public class AppleScriptResolveUtil {
     PsiElement tellStatement = myElement;
     while (tellStatement != null) {
       tellStatement = tellStatement.getParent();
-      if (tellStatement instanceof AppleScriptTellSimpleStatement
-              || tellStatement instanceof AppleScriptTellCompoundStatement) {
+      if (tellStatement instanceof AppleScriptTellSimpleStatement || tellStatement instanceof AppleScriptTellCompoundStatement) {
         resultList.add(tellStatement);
       }
     }
@@ -82,8 +80,7 @@ public class AppleScriptResolveUtil {
     PsiElement tellStatement = myElement;
     while (tellStatement != null) {
       tellStatement = tellStatement.getParent();
-      if (tellStatement instanceof AppleScriptTellSimpleStatement
-              || tellStatement instanceof AppleScriptTellCompoundStatement) {
+      if (tellStatement instanceof AppleScriptTellSimpleStatement || tellStatement instanceof AppleScriptTellCompoundStatement) {
         return tellStatement;
       }
     }

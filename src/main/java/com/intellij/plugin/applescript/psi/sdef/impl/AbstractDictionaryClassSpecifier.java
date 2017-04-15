@@ -9,8 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Andrey 20.08.2015
  */
-public class AbstractDictionaryClassSpecifier extends DictionaryCompositeNameImpl
-        implements DictionaryCompositeElement, DictionaryCompositeName {
+public class AbstractDictionaryClassSpecifier extends DictionaryCompositeNameImpl implements DictionaryCompositeElement, DictionaryCompositeName {
 
 
   public AbstractDictionaryClassSpecifier(ASTNode node) {

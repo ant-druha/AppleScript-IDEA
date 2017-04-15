@@ -41,7 +41,7 @@ public class AppleScriptFileType extends LanguageFileType {
     return AppleScriptIcons.FILE;
   }
 
-  public String[] getExtensions() {
+  String[] getExtensions() {
     return new String[]{getDefaultExtension(), "applescript"};
   }
 }

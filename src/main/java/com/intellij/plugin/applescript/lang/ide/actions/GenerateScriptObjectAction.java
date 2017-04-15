@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 
 /**
- * Created by Andrey on 17/01/16.
+ * Andrey 17/01/16.
  */
 public class GenerateScriptObjectAction extends AnAction {
 

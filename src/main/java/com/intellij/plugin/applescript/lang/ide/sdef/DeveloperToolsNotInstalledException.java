@@ -1,10 +1,10 @@
 package com.intellij.plugin.applescript.lang.ide.sdef;
 
 /**
- * Created by Andrey on 30/01/16.
+ * Andrey 30/01/16.
  */
-public class DeveloperToolsNotInstalledException extends Throwable {
-  public DeveloperToolsNotInstalledException() {
+class DeveloperToolsNotInstalledException extends Throwable {
+  DeveloperToolsNotInstalledException() {
     super("Xcode developer tools are not installed in the system");
   }
 }

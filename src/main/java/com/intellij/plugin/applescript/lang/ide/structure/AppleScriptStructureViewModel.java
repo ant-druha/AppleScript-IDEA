@@ -16,12 +16,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Andrey 03.05.2015
  */
-public class AppleScriptStructureViewModel extends StructureViewModelBase implements StructureViewModel
-        .ElementInfoProvider {
+public class AppleScriptStructureViewModel extends StructureViewModelBase implements StructureViewModel.ElementInfoProvider {
 
-  private static final Sorter[] SORTERS = new Sorter[]{Sorter.ALPHA_SORTER};
-
-  public AppleScriptStructureViewModel(@NotNull PsiFile psiFile, @Nullable Editor editor) {
+  AppleScriptStructureViewModel(@NotNull PsiFile psiFile, @Nullable Editor editor) {
     super(psiFile, editor, new AppleScriptStructureViewElement(psiFile));
     withSorters(Sorter.ALPHA_SORTER);
     withSuitableClasses(AppleScriptScriptBody.class, AppleScriptScriptObject.class);

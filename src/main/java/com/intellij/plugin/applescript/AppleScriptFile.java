@@ -24,12 +24,12 @@ public class AppleScriptFile extends PsiFileBase implements AppleScriptPsiElemen
   }
 
   @Override
-  public boolean processDeclarations(@NotNull PsiScopeProcessor processor,
-                                     @NotNull ResolveState state,
-                                     PsiElement lastParent,
+  public boolean processDeclarations(@NotNull PsiScopeProcessor processor, 
+                                     @NotNull ResolveState state, 
+                                     PsiElement lastParent, 
                                      @NotNull PsiElement place) {
-    return AppleScriptPsiElementImpl.processDeclarationsImpl(this, processor, state, lastParent, place)
-            && super.processDeclarations(processor, state, lastParent, place);
+    return AppleScriptPsiElementImpl.processDeclarationsImpl(this, processor, state, lastParent, place) 
+        && super.processDeclarations(processor, state, lastParent, place);
   }
 
   @NotNull

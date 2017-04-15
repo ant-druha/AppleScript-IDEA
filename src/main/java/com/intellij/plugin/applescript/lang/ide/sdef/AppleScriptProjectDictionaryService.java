@@ -18,21 +18,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * class for managing and quereing dictionaries for the project
+ * class for managing and querying dictionaries for the project
  */
 public class AppleScriptProjectDictionaryService {
 
-  private static final Logger LOG = Logger.getInstance("#" +
-          AppleScriptProjectDictionaryService.class.getName());
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptProjectDictionaryService.class.getName());
 
-  @NotNull private final Project project;
-  @NotNull private final AppleScriptSystemDictionaryRegistryService dictionaryRegistryService;
+  @NotNull
+  private final Project project;
+  @NotNull
+  private final AppleScriptSystemDictionaryRegistryService dictionaryRegistryService;
   // Dictionaries, which were created for this project in current session
   private final Map<String, ApplicationDictionary> dictionaryMap = new HashMap<>();
 
   public AppleScriptProjectDictionaryService(@NotNull Project project,
-                                             @NotNull AppleScriptSystemDictionaryRegistryService
-                                                     dictionaryRegistryService) {
+                                             @NotNull AppleScriptSystemDictionaryRegistryService dictionaryRegistryService) {
     this.project = project;
     this.dictionaryRegistryService = dictionaryRegistryService;
   }
@@ -87,8 +87,7 @@ public class AppleScriptProjectDictionaryService {
   private ApplicationDictionary createDictionaryFromInfo(final @NotNull DictionaryInfo dInfo) {
     if (!dInfo.isInitialized()) {
       //dictionary terms must be ridden from the dictionary file before creating a PSI for it
-      LOG.error("Attempt to create dictionary for not initialized Dictionary Info for application" +
-              dInfo.getApplicationName());
+      LOG.error("Attempt to create dictionary for not initialized Dictionary Info for application" + dInfo.getApplicationName());
       return null;
     }
     String applicationName = dInfo.getApplicationName();
@@ -97,8 +96,7 @@ public class AppleScriptProjectDictionaryService {
       PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
       XmlFile xmlFile = (XmlFile) psiFile;
       if (xmlFile != null) {
-        ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, xmlFile, applicationName,
-                dInfo.getApplicationFile());
+        ApplicationDictionary dictionary = new ApplicationDictionaryImpl(project, xmlFile, applicationName, dInfo.getApplicationFile());
         dictionaryMap.put(applicationName, dictionary);
         return dictionary;
       }
@@ -120,8 +118,7 @@ public class AppleScriptProjectDictionaryService {
                                                                      @NotNull VirtualFile applicationFile) {
 //    if (isInIgnoreList(applicationName, applicationFile)) return null;
     final File appIoFile = new File(applicationFile.getPath());
-    final DictionaryInfo dictionaryInfo = dictionaryRegistryService.createAndInitializeInfo(appIoFile,
-            applicationName);
+    final DictionaryInfo dictionaryInfo = dictionaryRegistryService.createAndInitializeInfo(appIoFile, applicationName);
     if (dictionaryInfo != null) {
       return createDictionaryFromInfo(dictionaryInfo);
     }
@@ -141,8 +138,7 @@ public class AppleScriptProjectDictionaryService {
     }
     //do not proceed if application location was previously not found
     if (applicationFile == null && dictionaryRegistryService.isInUnknownList(applicationName)) {
-      LOG.debug("WARNING: Application " + applicationName + " was added to unknown list. Can not create dictionary " +
-              "for it.");
+      LOG.debug("WARNING: Application " + applicationName + " was added to unknown list. Can not create dictionary for it.");
       return true;
     }
     return false;

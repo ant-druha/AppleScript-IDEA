@@ -14,7 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 
 public class AddApplicationDictionaryQuickFix implements IntentionAction {
-  @NotNull String newApplicationName;
+  @NotNull
+  private String newApplicationName;
 
   public AddApplicationDictionaryQuickFix(@NotNull String appName) {
     newApplicationName = appName;

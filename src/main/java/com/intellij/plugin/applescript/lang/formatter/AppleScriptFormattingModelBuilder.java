@@ -33,10 +33,7 @@ public class AppleScriptFormattingModelBuilder implements FormattingModelBuilder
     assert astNode != null;
     CommonCodeStyleSettings appleScriptSettings = settings.getCommonSettings(AppleScriptLanguage.INSTANCE);
     final AppleScriptBlock rootBlock = new AppleScriptBlock(astNode, null, null, settings);
-    return new AppleScriptFormattingModel(containingFile, rootBlock, FormattingDocumentModelImpl.createOn
-            (containingFile));
-//        return new DocumentBasedFormattingModel(rootBlock, element.getProject(), settings, psiFile.getFileType(),
-// psiFile);
+    return new AppleScriptFormattingModel(containingFile, rootBlock, FormattingDocumentModelImpl.createOn(containingFile));
   }
 
   @Nullable

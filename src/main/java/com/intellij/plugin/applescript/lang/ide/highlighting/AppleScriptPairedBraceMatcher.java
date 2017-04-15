@@ -9,26 +9,22 @@ import com.intellij.plugin.applescript.AppleScriptLanguage;
 import com.intellij.plugin.applescript.psi.AppleScriptTypes;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
   private static final BracePair[] PAIRS = new BracePair[]{
-          new BracePair(AppleScriptTypes.ON, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.TELL, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.USING, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.TRY, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.IF, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.REPEAT, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.LCURLY, AppleScriptTypes.RCURLY, true),
-          new BracePair(AppleScriptTypes.LPAREN, AppleScriptTypes.RPAREN, true),
-          new BracePair(AppleScriptTypes.SCRIPT, AppleScriptTypes.END, true),
-          new BracePair(AppleScriptTypes.CONSIDERING, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.ON, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.TELL, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.USING, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.TRY, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.IF, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.REPEAT, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.LCURLY, AppleScriptTypes.RCURLY, true),
+      new BracePair(AppleScriptTypes.LPAREN, AppleScriptTypes.RPAREN, true),
+      new BracePair(AppleScriptTypes.SCRIPT, AppleScriptTypes.END, true),
+      new BracePair(AppleScriptTypes.CONSIDERING, AppleScriptTypes.END, true),
   };
-
-  TokenSet startOfBlockTokens = TokenSet.create(AppleScriptTypes.TELL, AppleScriptTypes.USE, AppleScriptTypes.TRY,
-          AppleScriptTypes.IF, AppleScriptTypes.REPEAT);
 
   @Override
   public boolean isRBraceToken(HighlighterIterator iterator, CharSequence fileText, FileType fileType) {
@@ -50,7 +46,6 @@ public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
     }
     while (count-- > 0) iterator.advance();
     return result;
-//    return super.isRBraceToken(iterator, fileText, fileType);
   }
 
   @Override
@@ -126,7 +121,7 @@ public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
 
         if (thenKw) {
           if (eType == AppleScriptTypes.COMMENT
-                  || eType == com.intellij.psi.TokenType.WHITE_SPACE) continue;
+              || eType == com.intellij.psi.TokenType.WHITE_SPACE) continue;
           else if (eType == AppleScriptTypes.NLS) {
             break;
           } else {
@@ -194,7 +189,7 @@ public class AppleScriptPairedBraceMatcher extends PairedBraceMatcherAdapter {
 
     @Override
     public boolean isPairedBracesAllowedBeforeType(@NotNull IElementType lbraceType, @Nullable IElementType
-            contextType) {
+        contextType) {
       return true;
     }
 

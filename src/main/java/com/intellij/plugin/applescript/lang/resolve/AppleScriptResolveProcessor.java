@@ -16,9 +16,10 @@ import org.jetbrains.annotations.Nullable;
 public class AppleScriptResolveProcessor extends AppleScriptPsiScopeProcessor {
 
   private AppleScriptComponent myResult;
-  @NotNull private final String myName;
-  @NotNull private final SortedList<AppleScriptTargetVariable> myTargets =
-          new SortedList<>((o1, o2) -> -(o1.getTextOffset() - o2.getTextOffset()));
+  @NotNull
+  private final String myName;
+  @NotNull
+  private final SortedList<AppleScriptTargetVariable> myTargets = new SortedList<>((o1, o2) -> -(o1.getTextOffset() - o2.getTextOffset()));
 
 
   public PsiElement getResult() {

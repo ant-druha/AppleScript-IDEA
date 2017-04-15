@@ -4,7 +4,7 @@ import com.intellij.codeInsight.template.impl.DefaultLiveTemplatesProvider;
 import org.jetbrains.annotations.Nullable;
 
 public class AppleScriptLiveTemplatesProvider implements DefaultLiveTemplatesProvider {
-  public static final String[] TEMPLATE_FILES = {"liveTemplates/AppleScriptLiveTemplates"};
+  private static final String[] TEMPLATE_FILES = {"liveTemplates/AppleScriptLiveTemplates"};
 
   @Override
   public String[] getDefaultLiveTemplateFiles() {

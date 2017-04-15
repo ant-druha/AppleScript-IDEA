@@ -33,39 +33,35 @@ public class ApplicationNameCompletionContributor extends CompletionContributor 
   }
 
   public ApplicationNameCompletionContributor() {
-    final PsiElementPattern.Capture<PsiElement> inAppReferenceString =
-            psiElement().withSuperParent(1, AppleScriptApplicationReference.class);
-
-    final PsiElementPattern.Capture<PsiElement> any =
-            psiElement();
+    final PsiElementPattern.Capture<PsiElement> inAppReferenceString = psiElement().withSuperParent(1, AppleScriptApplicationReference.class);
 
     extend(CompletionType.BASIC,
-            inAppReferenceString,
-            new CompletionProvider<CompletionParameters>() {
-              @Override
-              protected void addCompletions(@NotNull CompletionParameters parameters,
-                                            ProcessingContext context,
-                                            @NotNull CompletionResultSet result) {
+        inAppReferenceString,
+        new CompletionProvider<CompletionParameters>() {
+          @Override
+          protected void addCompletions(@NotNull CompletionParameters parameters,
+                                        ProcessingContext context,
+                                        @NotNull CompletionResultSet result) {
 
-                AppleScriptSystemDictionaryRegistryService systemDictionaryRegistry = ServiceManager.getService
-                        (AppleScriptSystemDictionaryRegistryService.class);
-                if (systemDictionaryRegistry != null) {
-                  List<String> appNameList = new ArrayList<>();
-                  if (SystemInfo.isMac) {
-                    appNameList.addAll(systemDictionaryRegistry.getDiscoveredApplicationNames());
-                    appNameList.removeAll(systemDictionaryRegistry.getNotScriptableApplicationList());
-                    appNameList.removeAll(systemDictionaryRegistry.getScriptingAdditions());
-                    appNameList.remove(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
-                    appNameList.remove(ApplicationDictionary.COCOA_STANDARD_LIBRARY);
-                  } else {
-                    appNameList.addAll(systemDictionaryRegistry.getCachedApplicationNames());
-                  }
-                  for (String appName : appNameList) {
-                    result.addElement(LookupElementBuilder.create(appName));
-                  }
-                }
+            AppleScriptSystemDictionaryRegistryService systemDictionaryRegistry = ServiceManager.getService
+                (AppleScriptSystemDictionaryRegistryService.class);
+            if (systemDictionaryRegistry != null) {
+              List<String> appNameList = new ArrayList<>();
+              if (SystemInfo.isMac) {
+                appNameList.addAll(systemDictionaryRegistry.getDiscoveredApplicationNames());
+                appNameList.removeAll(systemDictionaryRegistry.getNotScriptableApplicationList());
+                appNameList.removeAll(systemDictionaryRegistry.getScriptingAdditions());
+                appNameList.remove(ApplicationDictionary.SCRIPTING_ADDITIONS_LIBRARY);
+                appNameList.remove(ApplicationDictionary.COCOA_STANDARD_LIBRARY);
+              } else {
+                appNameList.addAll(systemDictionaryRegistry.getCachedApplicationNames());
               }
-            });
+              for (String appName : appNameList) {
+                result.addElement(LookupElementBuilder.create(appName));
+              }
+            }
+          }
+        });
 
   }
 }

@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class AppleScriptHandlerSelectorPartImpl extends AppleScriptNamedElementImpl implements
         AppleScriptHandlerSelectorPart {
-  public AppleScriptHandlerSelectorPartImpl(@NotNull ASTNode node) {
+  AppleScriptHandlerSelectorPartImpl(@NotNull ASTNode node) {
     super(node);
   }
 

@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
  * Andrey 12.04.2015
  */
 public class RenameParameterLabelQuickFix extends BaseIntentionAction {
-  String myNewLabelName;
-  AppleScriptHandlerParameterLabel myHandlerParameterLabel;
+  private String myNewLabelName;
+  private AppleScriptHandlerParameterLabel myHandlerParameterLabel;
 
   public RenameParameterLabelQuickFix(AppleScriptHandlerParameterLabel myHandlerParameterLabel, String myNewLabelName) {
     this.myHandlerParameterLabel = myHandlerParameterLabel;
@@ -40,8 +40,7 @@ public class RenameParameterLabelQuickFix extends BaseIntentionAction {
 
     ApplicationManager.getApplication().invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> CommandProcessor.getInstance()
             .executeCommand(project, () -> {
-      AppleScriptHandlerParameterLabel newLabel = AppleScriptPsiElementFactory.createHandlerParameterLabel
-              (project, myNewLabelName);
+      AppleScriptHandlerParameterLabel newLabel = AppleScriptPsiElementFactory.createHandlerParameterLabel(project, myNewLabelName);
       if (newLabel != null) {
         myHandlerParameterLabel.replace(newLabel);
       }

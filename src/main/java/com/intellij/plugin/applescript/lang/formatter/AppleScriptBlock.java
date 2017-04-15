@@ -6,7 +6,7 @@ import com.intellij.lang.ASTNode;
 import com.intellij.plugin.applescript.AppleScriptLanguage;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.formatter.common.AbstractBlock;
-import com.intellij.psi.tree.IElementType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,16 +25,13 @@ public class AppleScriptBlock extends AbstractBlock implements BlockWithParent {
   private Wrap myChildWrap = null;
 
 
-  protected AppleScriptBlock(ASTNode node, @Nullable Wrap wrap, @Nullable Alignment alignment, CodeStyleSettings
-          settings) {
+  AppleScriptBlock(ASTNode node, @Nullable Wrap wrap, @Nullable Alignment alignment, CodeStyleSettings settings) {
     super(node, wrap, alignment);
     mySettings = settings;
     myIndentProcessor = new AppleScriptIndentProcessor(settings.getCommonSettings(AppleScriptLanguage.INSTANCE));
     myIndent = myIndentProcessor.getChildIndent(myNode);
-    mySpacingProcessor = new AppleScriptSpacingProcessor(node, settings.getCommonSettings(AppleScriptLanguage
-            .INSTANCE));
-    myWrappingProcessor = new AppleScriptWrappingProcessor(node, settings.getCommonSettings(AppleScriptLanguage
-            .INSTANCE));
+    mySpacingProcessor = new AppleScriptSpacingProcessor(node, settings.getCommonSettings(AppleScriptLanguage.INSTANCE));
+    myWrappingProcessor = new AppleScriptWrappingProcessor(node, settings.getCommonSettings(AppleScriptLanguage.INSTANCE));
   }
 
   @Override
@@ -44,10 +41,8 @@ public class AppleScriptBlock extends AbstractBlock implements BlockWithParent {
     }
     final ArrayList<Block> tlChildren = new ArrayList<>();
     for (ASTNode childNode = getNode().getFirstChildNode(); childNode != null; childNode = childNode.getTreeNext()) {
-//          if (FormatterUtil.containsWhiteSpacesOnly(childNode)) continue; //check for whitespaces only is not enought
       if (childNode.getText().trim().isEmpty()) continue;
-      final AppleScriptBlock childBlock = new AppleScriptBlock(childNode, createChildWrap(childNode),
-              Alignment.createAlignment(), mySettings);
+      final AppleScriptBlock childBlock = new AppleScriptBlock(childNode, createChildWrap(childNode), Alignment.createAlignment(), mySettings);
       childBlock.setParent(this);
       tlChildren.add(childBlock);
     }
@@ -55,16 +50,13 @@ public class AppleScriptBlock extends AbstractBlock implements BlockWithParent {
   }
 
   private Wrap createChildWrap(ASTNode childNode) {
-    final IElementType childType = childNode.getElementType();
-    Wrap wrap = myWrappingProcessor.createChildWrap(childNode, Wrap.createWrap(WrapType.NONE, false), myChildWrap);
-
-    return wrap;
+    return myWrappingProcessor.createChildWrap(childNode, Wrap.createWrap(WrapType.NONE, false), myChildWrap);
   }
 
 
   @Nullable
   @Override
-  public Spacing getSpacing(Block child1, Block child2) {
+  public Spacing getSpacing(@Nullable Block child1, @NotNull Block child2) {
     return mySpacingProcessor.getSpacing((AppleScriptBlock) child1, (AppleScriptBlock) child2);
   }
 

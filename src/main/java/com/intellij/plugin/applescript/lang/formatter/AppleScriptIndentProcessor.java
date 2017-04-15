@@ -11,23 +11,15 @@ import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
 /**
  * Andrey 08.04.2015
  */
-public class AppleScriptIndentProcessor {
+class AppleScriptIndentProcessor {
   private final CommonCodeStyleSettings settings;
 
-  public AppleScriptIndentProcessor(CommonCodeStyleSettings settings) {
+  AppleScriptIndentProcessor(CommonCodeStyleSettings settings) {
     this.settings = settings;
   }
 
-  public Indent getChildIndent(final ASTNode node) {
+  Indent getChildIndent(final ASTNode node) {
     final IElementType elementType = node.getElementType();
-//        final ASTNode prevSibling = UsefulPsiTreeUtil.getPrevSiblingSkipWhiteSpacesAndComments(node);
-//        final IElementType prevSiblingType = prevSibling == null ? null : prevSibling.getElementType();
-    final ASTNode parent = node.getTreeParent();
-    final IElementType parentType = parent != null ? parent.getElementType() : null;
-    final ASTNode superParent = parent == null ? null : parent.getTreeParent();
-    final IElementType superParentType = superParent == null ? null : superParent.getElementType();
-
-    final PsiElement psi = node.getPsi();
 
     if (elementType == BLOCK_BODY || elementType == TOP_BLOCK_BODY || elementType == SCRIPT_BODY) {
       return Indent.getNormalIndent();

@@ -22,7 +22,7 @@ import java.util.List;
  * Andrey 16.05.2015
  */
 public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScriptComponent implements
-        AppleScriptHandler, NavigatablePsiElement, PsiNameIdentifierOwner, PomNamedTarget {
+    AppleScriptHandler, NavigatablePsiElement, PsiNameIdentifierOwner, PomNamedTarget {
   public AppleScriptHandlerInterleavedParameters(@NotNull ASTNode node) {
     super(node);
   }
@@ -35,17 +35,15 @@ public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScript
     if (selectorNames.length == selectors) {
       for (int index = 0; index < selectors; index++) {
         AppleScriptIdentifier myId = getParameters().get(index).getSelectorNameIdentifier();
-        final AppleScriptIdentifier idNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
-                selectorNames[index]);
-        if (idNew != null && myId != null) {
+        final AppleScriptIdentifier idNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(), selectorNames[index]);
+        if (idNew != null) {
           myId.replace(idNew);
         }
       }
     } else {
       AppleScriptIdentifier myIdentifier = getParameters().get(0).getSelectorNameIdentifier();
-      final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
-              newElementName);
-      if (identifierNew != null && myIdentifier != null) {
+      final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(), newElementName);
+      if (identifierNew != null) {
         myIdentifier.replace(identifierNew);
       }
     }
@@ -66,16 +64,14 @@ public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScript
   @Override
   public PsiElement getNameIdentifier() {
     findChildByClass(AppleScriptIdentifier.class); //use this instead?
-    final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes
-            .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
+    final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes.HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
     return selector != null ? selector.getSelectorNameIdentifier() : null;
   }
 
   @NotNull
   @Override
   public AppleScriptIdentifier getIdentifier() {
-    final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes
-            .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
+    final AppleScriptHandlerSelectorPart selector = findChildByType(AppleScriptTypes.HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
     return selector != null ? selector.getSelectorNameIdentifier() : getSelectors().get(0);
   }
 
@@ -97,8 +93,7 @@ public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScript
 
   @Override
   public int getTextOffset() {
-    final List<AppleScriptHandlerSelectorPart> selectors = findChildrenByType(AppleScriptTypes
-            .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
+    final List<AppleScriptHandlerSelectorPart> selectors = findChildrenByType(AppleScriptTypes.HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
     if (selectors.isEmpty()) {
       return super.getTextOffset();
     }
@@ -109,8 +104,7 @@ public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScript
   @Override
   public String getSelector() {
     StringBuilder buf = new StringBuilder();
-    final List<AppleScriptHandlerSelectorPart> selectors = findChildrenByType(AppleScriptTypes
-            .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
+    final List<AppleScriptHandlerSelectorPart> selectors = findChildrenByType(AppleScriptTypes.HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
     for (AppleScriptHandlerSelectorPart selector : selectors) {
       buf.append(selector.getSelectorPart());
     }
@@ -122,15 +116,13 @@ public class AppleScriptHandlerInterleavedParameters extends AbstractAppleScript
   public List<AppleScriptIdentifier> getSelectors() {
     List<AppleScriptIdentifier> selectors = new ArrayList<>();
     for (AppleScriptHandlerSelectorPart part : getParameters()) {
-      if (part.getSelectorNameIdentifier() != null)
-        selectors.add(part.getSelectorNameIdentifier());
+      selectors.add(part.getSelectorNameIdentifier());
     }
     return selectors;
   }
 
   @NotNull
   public List<AppleScriptHandlerSelectorPart> getParameters() {
-    return findChildrenByType(AppleScriptTypes
-            .HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
+    return findChildrenByType(AppleScriptTypes.HANDLER_INTERLEAVED_PARAMETERS_SELECTOR_PART);
   }
 }

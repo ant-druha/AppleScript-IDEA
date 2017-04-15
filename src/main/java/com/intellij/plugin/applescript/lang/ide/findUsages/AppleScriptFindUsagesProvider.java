@@ -19,11 +19,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
 
-  private static final DefaultWordsScanner WORDS_SCANNER = new DefaultWordsScanner(new AppleScriptLexerAdapter(),
-          TokenSet.create(AppleScriptTypes.IDENTIFIER),
-          TokenSet.create(AppleScriptTypes.COMMENT),
-          TokenSet.create(AppleScriptTypes.STRING_LITERAL));
-
   @Nullable
   @Override
   public WordsScanner getWordsScanner() {
@@ -31,7 +26,6 @@ public class AppleScriptFindUsagesProvider implements FindUsagesProvider {
             TokenSet.create(AppleScriptTypes.IDENTIFIER),
             TokenSet.create(AppleScriptTypes.COMMENT),
             TokenSet.create(AppleScriptTypes.STRING_LITERAL));
-//    return WORDS_SCANNER;
   }
 
   @Override

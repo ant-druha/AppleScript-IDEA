@@ -15,8 +15,7 @@ public class AppleScriptConfigurationProducer extends RunConfigurationProducer<A
   }
 
   @Override
-  protected boolean setupConfigurationFromContext(AppleScriptRunConfiguration configuration, ConfigurationContext
-          context, Ref<PsiElement> sourceElement) {
+  protected boolean setupConfigurationFromContext(AppleScriptRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
     PsiElement elem = context.getPsiLocation();
     PsiFile file = elem != null ? elem.getContainingFile() : null;
     if (file == null) return false;

@@ -123,7 +123,8 @@ public class SDEF_Parser {
     PsiFile origPsiFile = origXmlElement != null ? origXmlElement.getContainingFile() : null;
     if (origPsiFile instanceof XmlFile) {
       xmlFile = (XmlFile) origPsiFile;
-      AppleScriptSystemDictionaryRegistryService dictionaryService = ServiceManager.getService(AppleScriptSystemDictionaryRegistryService.class);
+      AppleScriptSystemDictionaryRegistryService dictionaryService = ServiceManager.getService(AppleScriptSystemDictionaryRegistryService
+          .class);
       VirtualFile vFile = origPsiFile.getVirtualFile();
       DictionaryInfo dInfo = dictionaryService.getDictionaryInfoByApplicationPath(vFile.getPath());
       if (dInfo != null) {
@@ -156,7 +157,7 @@ public class SDEF_Parser {
         //as there is assertion error (java.lang.AssertionError: File accessed outside allowed roots),
         // we are trying to find if the dictionary file for this included dictionary was already generated
         AppleScriptSystemDictionaryRegistryService dictionarySystemRegistry = ServiceManager
-                .getService(AppleScriptSystemDictionaryRegistryService.class);
+            .getService(AppleScriptSystemDictionaryRegistryService.class);
         VirtualFile vFile;
         File ioFile = null;
         DictionaryInfo dInfo = dictionarySystemRegistry.getDictionaryInfoByApplicationPath(includedFile.getPath());
@@ -172,7 +173,7 @@ public class SDEF_Parser {
         if (ioFile.exists()) {
           vFile = LocalFileSystem.getInstance().findFileByIoFile(ioFile);
           if (vFile == null || !vFile.isValid()) continue;
-          
+
           PsiFile psiFile = PsiManager.getInstance(parsedDictionary.getProject()).findFile(vFile);
           XmlFile xmlFile = (XmlFile) psiFile;
           if (xmlFile != null) {
@@ -213,7 +214,7 @@ public class SDEF_Parser {
     List<String> respondingCommands = initClassRespondingMessages(classExtensionTag);
 
     final AppleScriptClass classExtension = new DictionaryClass(suite, parentClassName, parentClassCode,
-            classExtensionTag, null, elementNames, respondingCommands, pluralName);
+        classExtensionTag, null, elementNames, respondingCommands, pluralName);
     String description = classExtensionTag.getAttributeValue("description");
     classExtension.setDescription(description);
 
@@ -259,7 +260,7 @@ public class SDEF_Parser {
     final List<DictionaryEnumerator> enumConstants = new ArrayList<>();
     XmlTag[] enumTags = enumerationTag.findSubTags("enumerator");
     final DictionaryEnumeration enumeration = new DictionaryEnumerationImpl(suite, name, code, description,
-            enumerationTag);
+        enumerationTag);
     for (XmlTag enumTag : enumTags) {
       DictionaryEnumerator enumConst;
       String eName = enumTag.getAttributeValue("name");
@@ -300,7 +301,7 @@ public class SDEF_Parser {
 
 
     final AppleScriptClass aClass = new DictionaryClass(suite, name, code, classTag, parentClassName, elementNames,
-            respondingCommands, pluralName);
+        respondingCommands, pluralName);
     String description = classTag.getAttributeValue("description");
     aClass.setDescription(description);
     XmlTag[] propertyTags = classTag.findSubTags("property");
@@ -318,7 +319,7 @@ public class SDEF_Parser {
       AccessType accessType = "r".equals(pAccessType) ? AccessType.R : AccessType.RW;
       if (pName != null && pCode != null && pType != null) {
         final AppleScriptPropertyDefinition property = new DictionaryPropertyImpl(aClass, pName, pCode, pType,
-                pDescription, propTag, accessType);
+            pDescription, propTag, accessType);
         properties.add(property);
       }
     }

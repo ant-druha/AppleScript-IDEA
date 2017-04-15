@@ -17,23 +17,22 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Andrey 03.05.2015
  */
-public class AppleScriptStructureViewElement extends PsiTreeElementBase<NavigatablePsiElement>
-        implements ItemPresentation, StructureViewTreeElement {
+public class AppleScriptStructureViewElement extends PsiTreeElementBase<NavigatablePsiElement> implements ItemPresentation,
+    StructureViewTreeElement {
 
   private boolean isRoot = false;
 
-  protected AppleScriptStructureViewElement(@NotNull final NavigatablePsiElement element) {
+  AppleScriptStructureViewElement(@NotNull final NavigatablePsiElement element) {
     super(element);
     isRoot = false;
   }
 
-  public AppleScriptStructureViewElement(NavigatablePsiElement element, boolean isRootElement) {
+  private AppleScriptStructureViewElement(NavigatablePsiElement element, boolean isRootElement) {
     super(element);
     this.isRoot = isRootElement;
   }
@@ -49,12 +48,10 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
         result.add(new AppleScriptStructureViewElement(element, true));
         return result;
       }
-      AppleScriptPsiElementImpl.processDeclarationsImpl(element,
-              new AppleScriptComponentScopeProcessor(myComponents),
-              ResolveState.initial(), null, null);
+      AppleScriptPsiElementImpl
+          .processDeclarationsImpl(element, new AppleScriptComponentScopeProcessor(myComponents), ResolveState.initial(), null, null);
     } else if (element instanceof AppleScriptScriptObject) {
-      List<AppleScriptComponent> myScriptComponents = AppleScriptResolveUtil.
-              getNamedSubComponentsFor((AppleScriptScriptObject) element);
+      List<AppleScriptComponent> myScriptComponents = AppleScriptResolveUtil.getNamedSubComponentsFor((AppleScriptScriptObject) element);
       myComponents.addAll(myScriptComponents);
     }
 
@@ -63,24 +60,22 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
         result.add(new AppleScriptStructureViewElement(component));
       } else if (component instanceof AppleScriptScriptPropertyDeclaration) {
         result.add(new AppleScriptStructureViewElement(component));
-      } else if (component instanceof AppleScriptVarAccessDeclaration || component instanceof
-              AppleScriptVarDeclarationListPart) {
+      } else if (component instanceof AppleScriptVarAccessDeclaration || component instanceof AppleScriptVarDeclarationListPart) {
         result.add(new AppleScriptStructureViewElement(component));
       } else if (component instanceof AppleScriptScriptObject && component != element) {
         result.add(new AppleScriptStructureViewElement(component, true));
       } else if (component instanceof AppleScriptHandler) {
         result.add(new AppleScriptStructureViewElement(component));
       } else if (component.getName() != null
-              && !(component instanceof AppleScriptHandlerInterleavedParametersSelectorPart)//todo remove
-              && component != element) {
+          && !(component instanceof AppleScriptHandlerInterleavedParametersSelectorPart)//todo remove
+          && component != element) {
         result.add(new AppleScriptStructureViewElement(component));
       }
     }
 
-    Collections.sort(result, (o1, o2) -> {
+    result.sort((o1, o2) -> {
       PsiElement element1, element2;
-      if (o1 instanceof AppleScriptStructureViewElement
-              && o2 instanceof AppleScriptStructureViewElement) {
+      if (o1 instanceof AppleScriptStructureViewElement && o2 instanceof AppleScriptStructureViewElement) {
         element1 = ((AppleScriptStructureViewElement) o1).getElement();
         element2 = ((AppleScriptStructureViewElement) o2).getElement();
         if (element1 != null && element2 != null) {

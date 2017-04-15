@@ -45,7 +45,6 @@ public enum AppleScriptComponentType {
   }
 
   public Icon getIcon(@NotNull AppleScriptComponent component) {
-    // should be overridden in appropriate subclasses if needed
     return getIcon();
   }
 
@@ -65,7 +64,6 @@ public enum AppleScriptComponentType {
       } else if (component.isScriptProperty() || component.isObjectProperty()) {
         return PROPERTY;
       } else if (component instanceof AppleScriptScriptObject) {
-        //todo how better to define this?
         return SCRIPT;
       } else if (element instanceof AppleScriptClass) {
         return DICTIONARY_CLASS;

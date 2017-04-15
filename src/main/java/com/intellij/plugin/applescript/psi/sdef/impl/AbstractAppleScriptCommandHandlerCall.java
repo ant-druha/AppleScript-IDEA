@@ -14,8 +14,7 @@ import java.util.List;
 /**
  * Andrey 16.08.2015
  */
-public class AbstractAppleScriptCommandHandlerCall extends AppleScriptExpressionImpl//AppleScriptPsiElementImpl
-        implements AppleScriptCommandHandlerCall {
+public class AbstractAppleScriptCommandHandlerCall extends AppleScriptExpressionImpl implements AppleScriptCommandHandlerCall {
 
   public AbstractAppleScriptCommandHandlerCall(ASTNode node) {
     super(node);

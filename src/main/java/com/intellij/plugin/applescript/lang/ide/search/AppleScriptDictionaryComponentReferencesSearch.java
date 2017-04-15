@@ -34,8 +34,6 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
 
   private Boolean doExecute(ReferencesSearch.SearchParameters queryParameters, final Processor<PsiReference> consumer) {
     final PsiElement element = queryParameters.getElementToSearch(); //was selector_identifier->redefined in
-    // pomDeclarationSearcher to
-    // the dictionaryComponent declaration
     DictionaryComponent dictionaryComponent = null;
     if (element instanceof DictionaryComponent) {
       dictionaryComponent = (DictionaryComponent) element;
@@ -49,14 +47,9 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
     final String componentName = dictionaryComponent.getName(); //or just getName()...
     final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(element.getProject());
 
-//    String searchWord = dictionaryComponent instanceof AppleScriptClass ?
-//            ((AppleScriptClass) dictionaryComponent).getPluralClassName() : parts.get(0);
     String searchWord = parts.get(0);
-    // queryParameters.getScopeDeterminedByUser() scope here matters as the components are defined outside of project
-    // and libraries for them are not under index (todo: to investigate this )
-    return searchWord.isEmpty() || helper.processElementsWithWord(new MyOccurrenceProcessor(dictionaryComponent,
-            componentName,
-            consumer), queryParameters.getScopeDeterminedByUser(), searchWord, UsageSearchContext.IN_CODE, true);
+    return searchWord.isEmpty() || helper.processElementsWithWord(new MyOccurrenceProcessor(dictionaryComponent, componentName, consumer), 
+        queryParameters.getScopeDeterminedByUser(), searchWord, UsageSearchContext.IN_CODE, true);
 
   }
 
@@ -86,12 +79,6 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
       if (selector != null) {
         boolean selectorMatches;
         selectorMatches = myComponentName.equals(selector);
-//        if (!selectorMatches) {
-//          if (myDictionaryComponent instanceof AppleScriptClass) {
-//            AppleScriptClass dictionaryClass = (AppleScriptClass) myDictionaryComponent;
-//            selectorMatches = dictionaryClass.getPluralClassName().equals(selector);
-//          }
-//        }
         if (selectorMatches) {
           for (PsiReference ref : element.getReferences()) {
             if (ref.isReferenceTo(myDictionaryComponent)) {

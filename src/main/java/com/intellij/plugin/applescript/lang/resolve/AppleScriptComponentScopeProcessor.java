@@ -35,7 +35,6 @@ public class AppleScriptComponentScopeProcessor extends AppleScriptPsiScopeProce
         myResult.add(targetVar);
       } else if (targetVar.getContainingFile() != myCollectedTargets.get(targetVar.getName()).getContainingFile()) {
         myResult.add(targetVar);//should not happen if the file is the same
-        AppleScriptTargetVariable addedVar = myCollectedTargets.get(targetVar.getName());
         // if there already variable with the same name defined it should be located in the same local context
         // (file, handler etc)
         throw new AssertionError("Elements are defined in different files:");

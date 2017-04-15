@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.charset.Charset;
 
 public class AppleScriptProcessHandler extends KillableColoredProcessHandler {
-  public AppleScriptProcessHandler(@NotNull GeneralCommandLine commandLine) throws ExecutionException {
+  AppleScriptProcessHandler(@NotNull GeneralCommandLine commandLine) throws ExecutionException {
     super(commandLine);
   }
 

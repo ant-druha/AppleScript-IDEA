@@ -28,7 +28,7 @@ import java.util.List;
  * Andrey 13.04.2015
  */
 public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl implements
-        AppleScriptReferenceElement, PsiPolyVariantReference {
+    AppleScriptReferenceElement, PsiPolyVariantReference {
 
 
   public AppleScriptReferenceElementImpl(ASTNode node) {
@@ -39,14 +39,12 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   @NotNull
   @Override
   public ResolveResult[] multiResolve(boolean incompleteCode) {
-    ResolveResult[] results = multiResolveInner(incompleteCode);
-    return results;//.length > 1 ? new ResolveResult[]{results[0]} : results;
+    return multiResolveInner(incompleteCode);
   }
 
   protected ResolveResult[] multiResolveInner(boolean incompleteCode) {
     final List<? extends PsiElement> elements =
-            ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptResolver.INSTANCE,
-                    true, incompleteCode);
+        ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptResolver.INSTANCE, true, incompleteCode);
     return AppleScriptResolveUtil.toCandidateInfoArray(elements);
   }
 
@@ -64,13 +62,12 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   public TextRange getRangeInElement() {
     final TextRange textRange = getTextRange();
 
-    AppleScriptReferenceElement[] appleScriptReferences = PsiTreeUtil.getChildrenOfType(this,
-            AppleScriptReferenceElement.class);
+    AppleScriptReferenceElement[] appleScriptReferences = PsiTreeUtil.getChildrenOfType(this, AppleScriptReferenceElement.class);
     if (appleScriptReferences != null && appleScriptReferences.length > 0) {
       TextRange lastReferenceRange = appleScriptReferences[appleScriptReferences.length - 1].getTextRange();
       return new UnfairTextRange(
-              lastReferenceRange.getStartOffset() - textRange.getStartOffset(),
-              lastReferenceRange.getEndOffset() - textRange.getEndOffset()
+          lastReferenceRange.getStartOffset() - textRange.getStartOffset(),
+          lastReferenceRange.getEndOffset() - textRange.getEndOffset()
       );
     }
     return new UnfairTextRange(0, textRange.getEndOffset() - textRange.getStartOffset());
@@ -82,7 +79,7 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
     final ResolveResult[] resolveResults = multiResolve(true);
 
     return resolveResults.length == 0 || resolveResults.length > 0 &&
-            !resolveResults[0].isValidResult() ? null : resolveResults[0].getElement();
+        !resolveResults[0].isValidResult() ? null : resolveResults[0].getElement();
   }
 
   @NotNull
@@ -95,8 +92,7 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
     PsiElement element = this;
     final AppleScriptIdentifier identifier = PsiTreeUtil.getChildOfType(element, AppleScriptIdentifier.class);
-    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(),
-            newElementName);
+    final AppleScriptIdentifier identifierNew = AppleScriptPsiElementFactory.createIdentifierFromText(getProject(), newElementName);
     if (identifierNew != null && identifier != null) {
       element.getNode().replaceChild(identifier.getNode(), identifierNew.getNode());
     }
@@ -126,21 +122,19 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   }
 
   private boolean resolvesToSameLocal(PsiElement element, String name, PsiElement ourScopeOwner, PsiElement
-          theirScopeOwner) {
+      theirScopeOwner) {
     return ourScopeOwner == theirScopeOwner;
   }
 
   @NotNull
   @Override
   public Object[] getVariants() {
-    List<? extends PsiElement> elements =
-            ResolveCache.getInstance(getProject()).resolveWithCaching(this, AppleScriptComponentScopeResolver
-                    .INSTANCE, true, true);
+    List<? extends PsiElement> elements = ResolveCache.getInstance(getProject())
+        .resolveWithCaching(this, AppleScriptComponentScopeResolver .INSTANCE, true, true);
 
     final AppleScriptDictionaryResolveProcessor resolveProcessor =
-            new AppleScriptDictionaryResolveProcessor(getProject(), getCanonicalText());
-    ResolveState myCollectAllState = ResolveState.initial()
-            .put(AppleScriptDictionaryResolveProcessor.COLLECT_ALL_DECLARATIONS, true);
+        new AppleScriptDictionaryResolveProcessor(getProject(), getCanonicalText());
+    ResolveState myCollectAllState = ResolveState.initial().put(AppleScriptDictionaryResolveProcessor.COLLECT_ALL_DECLARATIONS, true);
     PsiTreeUtil.treeWalkUp(resolveProcessor, getElement(), null, myCollectAllState);
     List<DictionaryComponent> dictionaryComponents = resolveProcessor.getFilteredResult();
 
@@ -159,12 +153,10 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
   }
 
   private void addAppleScriptCommandsSuite(@NotNull List<LookupElement> lookupElements) {
-    lookupElements.add(LookupElementBuilder
-            .create(AppleScriptTypes.LAUNCH.toString().toLowerCase()).bold()
-            .withTypeText("command", true).withIcon(AppleScriptComponentType.HANDLER.getIcon()));
-    lookupElements.add(LookupElementBuilder
-            .create(AppleScriptTypes.ACTIVATE.toString().toLowerCase()).bold()
-            .withTypeText("command", true).withIcon(AppleScriptComponentType.HANDLER.getIcon()));
+    lookupElements.add(LookupElementBuilder.create(AppleScriptTypes.LAUNCH.toString().toLowerCase()).bold()
+        .withTypeText("command", true).withIcon(AppleScriptComponentType.HANDLER.getIcon()));
+    lookupElements.add(LookupElementBuilder.create(AppleScriptTypes.ACTIVATE.toString().toLowerCase()).bold()
+        .withTypeText("command", true).withIcon(AppleScriptComponentType.HANDLER.getIcon()));
   }
 
   private void addLookupElement(List<LookupElement> lookupElements, PsiElement el) {
@@ -177,10 +169,9 @@ public class AppleScriptReferenceElementImpl extends AppleScriptExpressionImpl i
     } else if (el instanceof AppleScriptComponent) {
       builder = LookupElementBuilder.createWithIcon((AppleScriptComponent) el);
       if (el instanceof AppleScriptHandlerPositionalParametersDefinition) {
-        AppleScriptHandlerPositionalParametersDefinition handlerCall =
-                (AppleScriptHandlerPositionalParametersDefinition) el;
+        AppleScriptHandlerPositionalParametersDefinition handlerCall = (AppleScriptHandlerPositionalParametersDefinition) el;
         builder = builder.withInsertHandler(handlerCall.getFormalParameterList() != null ?
-                ParenthesesInsertHandler.WITH_PARAMETERS : ParenthesesInsertHandler.NO_PARAMETERS);
+            ParenthesesInsertHandler.WITH_PARAMETERS : ParenthesesInsertHandler.NO_PARAMETERS);
       }
     } else {
       builder = LookupElementBuilder.create(el);

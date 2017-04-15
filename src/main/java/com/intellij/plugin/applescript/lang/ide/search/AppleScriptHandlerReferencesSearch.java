@@ -20,8 +20,7 @@ import java.util.List;
 /**
  * Andrey 07.06.2015
  */
-public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiReference, ReferencesSearch
-        .SearchParameters> {
+public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiReference, ReferencesSearch.SearchParameters> {
   @Override
   public boolean execute(@NotNull final ReferencesSearch.SearchParameters queryParameters, @NotNull final
   Processor<PsiReference> consumer) {
@@ -44,7 +43,6 @@ public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiRefe
     // pomDeclarationSearcher to
     // the handler declaration
     AppleScriptHandler handler = null;
-    PsiElement contextElement;
     if (element instanceof AppleScriptHandler) {
       handler = (AppleScriptHandler) element;
     }
@@ -80,8 +78,8 @@ public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiRefe
     private AppleScriptHandler myHandler;
     private String myHandlerSelector;
 
-    public MyOccurrenceProcessor(AppleScriptHandler handler, String handlerSelector,
-                                 Processor<PsiReference> consumer) {
+    MyOccurrenceProcessor(AppleScriptHandler handler, String handlerSelector,
+                          Processor<PsiReference> consumer) {
       myHandler = handler;
       myHandlerSelector = handlerSelector;
       myConsumer = consumer;

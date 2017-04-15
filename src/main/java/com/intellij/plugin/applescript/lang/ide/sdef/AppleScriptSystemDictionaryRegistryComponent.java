@@ -18,14 +18,11 @@ import java.util.*;
  * This {@link ApplicationComponent} stores information about generated dictionary files for applications
  */
 @State(name = AppleScriptSystemDictionaryRegistryComponent.COMPONENT_NAME,
-        storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml",
-                roamingType = RoamingType.PER_OS)})
-public class AppleScriptSystemDictionaryRegistryComponent implements ApplicationComponent,
-        PersistentStateComponent<AppleScriptSystemDictionaryRegistryComponent.State> {
+    storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml", roamingType = RoamingType.PER_OS)})
+public class AppleScriptSystemDictionaryRegistryComponent implements ApplicationComponent, PersistentStateComponent<AppleScriptSystemDictionaryRegistryComponent.State> {
 
-  private static final Logger LOG = Logger.getInstance("#" +
-          AppleScriptSystemDictionaryRegistryComponent.class.getName());
-  public static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistryComponent";
+  private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistryComponent.class.getName());
+  static final String COMPONENT_NAME = "AppleScriptSystemDictionaryRegistryComponent";
   // information about dictionaries for the application which is saved in settings
   private final List<DictionaryInfo.State> dictionariesPersistedInfo = new ArrayList<>();
   // application names which do not support AppleScript commands
@@ -34,15 +31,15 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
   private AppleScriptSystemDictionaryRegistryService dictionaryService;
 
 
-  public static class State {
+  static class State {
     @Tag("applicationsInfo")
     @AbstractCollection(surroundWithTag = false)
-    public DictionaryInfo.State[] dictionariesInfo = new DictionaryInfo.State[0];
+    DictionaryInfo.State[] dictionariesInfo = new DictionaryInfo.State[0];
     @CollectionBean
-    public final List<String> notScriptableApplications = new SmartList<>();
+    final List<String> notScriptableApplications = new SmartList<>();
   }
 
-  public void setDictionaryService(@NotNull AppleScriptSystemDictionaryRegistryService dictionaryService) {
+  void setDictionaryService(@NotNull AppleScriptSystemDictionaryRegistryService dictionaryService) {
     this.dictionaryService = dictionaryService;
   }
 
@@ -64,12 +61,12 @@ public class AppleScriptSystemDictionaryRegistryComponent implements Application
   }
 
   @NotNull
-  public List<DictionaryInfo.State> getDictionariesPersistedInfo() {
+  List<DictionaryInfo.State> getDictionariesPersistedInfo() {
     return dictionariesPersistedInfo;
   }
 
   @NotNull
-  public List<String> getNotScriptableApplications() {
+  List<String> getNotScriptableApplications() {
     return notScriptableApplications;
   }
 

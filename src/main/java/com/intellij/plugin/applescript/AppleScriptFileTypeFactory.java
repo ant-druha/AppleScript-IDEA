@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class AppleScriptFileTypeFactory extends FileTypeFactory {
   @Override
   public void createFileTypes(@NotNull FileTypeConsumer fileTypeConsumer) {
-    fileTypeConsumer.consume(AppleScriptFileType.INSTANCE,
-            StringUtil.join(AppleScriptFileType.INSTANCE.getExtensions(), FileTypeConsumer.EXTENSION_DELIMITER));
+    fileTypeConsumer.consume(AppleScriptFileType.INSTANCE, 
+        StringUtil.join(AppleScriptFileType.INSTANCE.getExtensions(), FileTypeConsumer.EXTENSION_DELIMITER));
   }
 }

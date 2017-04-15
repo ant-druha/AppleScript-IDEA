@@ -9,11 +9,11 @@ import java.util.List;
 
 public class DictionaryEnumerationImpl extends AbstractDictionaryComponent<Suite> implements DictionaryEnumeration {
 
-  List<DictionaryEnumerator> enumerators = new ArrayList<>();
+  private List<DictionaryEnumerator> enumerators = new ArrayList<>();
 
-  public DictionaryEnumerationImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
-                                   List<DictionaryEnumerator> enumerators, @Nullable String description,
-                                   @NotNull XmlTag XmlTagEnumeration) {
+  private DictionaryEnumerationImpl(@NotNull Suite suite, @NotNull String name, @NotNull String code,
+                                    List<DictionaryEnumerator> enumerators, @Nullable String description,
+                                    @NotNull XmlTag XmlTagEnumeration) {
     super(suite, name, code, XmlTagEnumeration, description);
     this.enumerators = enumerators;
   }

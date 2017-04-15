@@ -8,6 +8,7 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.intellij.psi.impl.source.SourceTreeToPsiMap;
 import com.intellij.psi.impl.source.tree.CompositeElement;
 import com.intellij.psi.tree.IElementType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.plugin.applescript.psi.AppleScriptTokenTypesSets.KEYWORDS;
@@ -21,7 +22,6 @@ public class AppleScriptSpacingProcessor {
   private final ASTNode myNode;
   private final CommonCodeStyleSettings mySettings;
 
-  private Spacing myResult;
   private ASTNode myChild1;
   private ASTNode myChild2;
   private IElementType myType1;
@@ -34,7 +34,7 @@ public class AppleScriptSpacingProcessor {
     mySettings = commonSettings;
   }
 
-  static boolean isWhiteSpace(final ASTNode node) {
+  private static boolean isWhiteSpace(final ASTNode node) {
     return node != null && (AppleScriptPsiImplUtil.isWhiteSpaceOrNls(node) || node.getTextLength() == 0);
   }
 
@@ -59,22 +59,16 @@ public class AppleScriptSpacingProcessor {
     }
   }
 
-  public Spacing getSpacing(AppleScriptBlock child1, AppleScriptBlock child2) {
-    if (child2 == null || child1 == null) {
+  Spacing getSpacing(@Nullable AppleScriptBlock child1, @NotNull AppleScriptBlock child2) {
+    if (child1 == null) {
       return null;
     }
     final ASTNode node = child2.getNode();
     _init(node);
 
-    final IElementType elementType = myNode.getElementType();
-    final IElementType parentType = myNode.getTreeParent() == null ? null : myNode.getTreeParent().getElementType();
     final ASTNode node1 = child1.getNode();
-//        final ASTNode node1 = myChild1;
-//        final IElementType type1 = myType1;
     final IElementType type1 = node1.getElementType();
     final ASTNode node2 = child2.getNode();
-//        final ASTNode node2 = myChild2;
-//        final IElementType type2 = myType2;
     final IElementType parent2 = node2.getTreeParent().getElementType();
     final IElementType type2 = node2.getElementType();
 
@@ -94,19 +88,7 @@ public class AppleScriptSpacingProcessor {
 
     if (LPAREN == type1 || RPAREN == type2) return Spacing.createSpacing(0, 0, 0, true, 0);
 
-    //need to make better tree
-//        if (type1 == LPAREN && node1.getTreeNext().getElementType() == COMPARE_EXPRESSION
-//                || type2 == RPAREN && node2.getTreePrev().getElementType() == COMPARE_EXPRESSION) {
-//            return addSingleSpaceIf(mySettings.SPACE_WITHIN_IF_PARENTHESES, false);
-//        }
-
     if (COMMA == type2) return Spacing.createSpacing(0, 0, 0, true, 0);
-
-//        if (/*type1 == APPLICATION_OBJECT_REFERENCE &&*/ elementType == TELL_COMPOUND_STATEMENT
-//                && node2.getTreePrev().getElementType() != NLS && type2 != NLS) {
-//            return addLineBreak();
-//        }
-
 
     if (type1 == IDENTIFIER && type2 == HANDLER_PARAMETER_LABEL) {
       return Spacing.createSpacing(1, 1, 0, true, 0);
@@ -121,12 +103,7 @@ public class AppleScriptSpacingProcessor {
       return Spacing.createSpacing(1, 1, 0, true, 0);
     }
 
-//        if (OPERATORS.contains(type1) || OPERATORS.contains(type2)) {
-//            return Spacing.createSpacing(0, 0, 0, true, 0);
-//        }
-
-    return Spacing.createSpacing(0, Integer.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, mySettings
-            .KEEP_BLANK_LINES_IN_CODE);
+    return Spacing.createSpacing(0, Integer.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE);
   }
 
   private Spacing addLineBreak() {
@@ -136,7 +113,6 @@ public class AppleScriptSpacingProcessor {
   private Spacing addSingleSpaceIf(boolean condition, boolean linesFeed) {
     final int spaces = condition ? 1 : 0;
     final int lines = linesFeed ? 1 : 0;
-    return Spacing.createSpacing(spaces, spaces, lines, mySettings.KEEP_LINE_BREAKS, mySettings
-            .KEEP_BLANK_LINES_IN_CODE);
+    return Spacing.createSpacing(spaces, spaces, lines, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE);
   }
 }

@@ -17,8 +17,36 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class LoadDictionaryAction extends AnAction {
-  public void actionPerformed(final AnActionEvent e) {
+  public static void openLoadDirectoryDialog(@NotNull final Project project, @Nullable VirtualFile directoryFile, @Nullable final String appName) {
+    final boolean chooseMultiple = StringUtil.isEmpty(appName);
+    FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, chooseMultiple);
+    FileChooser.chooseFiles(descriptor, project, directoryFile, files -> {
+      AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager.getService(project, AppleScriptProjectDictionaryService
+          .class);
+      if (projectDictionaryRegistry == null) return;
 
+      for (VirtualFile file : files) {
+        if (!ApplicationDictionaryImpl.extensionSupported(file.getExtension())) continue;
+
+        if (chooseMultiple) {
+          String applicationName;
+          if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
+            applicationName = file.getNameWithoutExtension();
+          } else {
+            applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
+                + file.getName(), "Enter Application Name", null, file.getNameWithoutExtension(), null);
+          }
+          if (StringUtil.isEmpty(applicationName)) continue;
+          projectDictionaryRegistry.createDictionaryFromFile(applicationName, file);
+        } else {
+          projectDictionaryRegistry.createDictionaryFromFile(appName, file);
+          return;
+        }
+      }
+    });
+  }
+
+  public void actionPerformed(final AnActionEvent e) {
     DataContext dataContext = e.getDataContext();
     final IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
     if (view == null) return;
@@ -30,38 +58,5 @@ public class LoadDictionaryAction extends AnAction {
 
     VirtualFile directoryFile = currentDirectory != null ? currentDirectory.getVirtualFile() : project.getBaseDir();
     openLoadDirectoryDialog(project, directoryFile, null);
-
-
-  }
-
-  public static void openLoadDirectoryDialog(@NotNull final Project project,
-                                             @Nullable VirtualFile directoryFile,
-                                             @Nullable final String appName) {
-    final boolean chooseMultiply = StringUtil.isEmpty(appName);
-    FileChooserDescriptor descriptor = new FileChooserDescriptor(true, true, false, false, false, chooseMultiply);
-    FileChooser.chooseFiles(descriptor, project, directoryFile, files -> {
-      AppleScriptProjectDictionaryService projectDictionaryRegistry = ServiceManager
-              .getService(project, AppleScriptProjectDictionaryService.class);
-      if (projectDictionaryRegistry == null) return;
-
-      for (VirtualFile file : files) {
-        if (!ApplicationDictionaryImpl.extensionSupported(file.getExtension())) continue;
-
-        if (chooseMultiply) {
-          String applicationName;
-          if (ApplicationDictionary.SUPPORTED_APPLICATION_EXTENSIONS.contains(file.getExtension())) {
-            applicationName = file.getNameWithoutExtension();
-          } else {
-            applicationName = Messages.showInputDialog(project, "Please specify application name for dictionary "
-                    + file.getName(), "Enter Application Name", null, file.getNameWithoutExtension(), null);
-          }
-          if (StringUtil.isEmpty(applicationName)) continue;
-          projectDictionaryRegistry.createDictionaryFromFile(applicationName, file);
-        } else {
-          projectDictionaryRegistry.createDictionaryFromFile(appName, file);
-          return;
-        }
-      }
-    });
   }
 }

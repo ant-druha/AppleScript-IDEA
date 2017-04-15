@@ -7,7 +7,7 @@ import com.intellij.plugin.applescript.lang.sdef.CommandParameter;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Created by Andrey on 28/01/16.
+ * Andrey 28/01/16.
  */
 public class AppleScriptCompletionWeigher extends CompletionWeigher {
   @Override

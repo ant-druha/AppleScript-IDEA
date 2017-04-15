@@ -7,8 +7,7 @@ import com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParamet
 /**
  * Andrey 16.08.2015
  */
-public class AbstractAppleScriptCommandParameter extends AppleScriptPsiElementImpl
-        implements AppleScriptCommandHandlerParameter {
+public class AbstractAppleScriptCommandParameter extends AppleScriptPsiElementImpl implements AppleScriptCommandHandlerParameter {
   public AbstractAppleScriptCommandParameter(ASTNode node) {
     super(node);
   }

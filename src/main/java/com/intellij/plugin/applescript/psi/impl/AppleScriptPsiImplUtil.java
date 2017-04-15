@@ -22,56 +22,42 @@ import java.util.List;
  */
 public class AppleScriptPsiImplUtil {
 
-
   @NotNull
   public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptTargetListLiteral
                                                                    targetList) {
     final List<AppleScriptTargetVariable> components = new ArrayList<>();
-    for (AppleScriptTargetVariable targetComponent : targetList.getTargetVariableList()) {
-      components.add(targetComponent);
-    }
+    components.addAll(targetList.getTargetVariableList());
     return components;
   }
 
   @NotNull
-  public static List<AppleScriptSimpleFormalParameter> getParameters(@NotNull AppleScriptListFormalParameter
-                                                                             listFormalParameter) {
+  public static List<AppleScriptSimpleFormalParameter> getParameters(@NotNull AppleScriptListFormalParameter listFormalParameter) {
     final List<AppleScriptSimpleFormalParameter> params = new ArrayList<>();
-    for (AppleScriptSimpleFormalParameter param : listFormalParameter.getSimpleFormalParameterList()) {
-      params.add(param);
-    }
+    params.addAll(listFormalParameter.getSimpleFormalParameterList());
     return params;
   }
 
   //todo refactor to use one generic methods for list and record
   @NotNull
-  public static List<AppleScriptComponent> getFormalParameters(@NotNull
-                                                               AppleScriptFormalParameterList
-                                                                       parameterList) {
+  public static List<AppleScriptComponent> getFormalParameters(@NotNull AppleScriptFormalParameterList parameterList) {
     final List<AppleScriptComponent> parameters = new ArrayList<>();
     List<AppleScriptSimpleFormalParameter> singleParams = parameterList.getSimpleFormalParameterList();
     List<AppleScriptListFormalParameter> listsOfParams = parameterList.getListFormalParameterList();
     List<AppleScriptRecordFormalParameter> recordsOfParams = parameterList.getRecordFormalParameterList();
 
-    for (AppleScriptSimpleFormalParameter simpleParam : singleParams) {
-      parameters.add(simpleParam);
-    }
+    parameters.addAll(singleParams);
 
     for (AppleScriptListFormalParameter listOfParams : listsOfParams) {
-      for (AppleScriptSimpleFormalParameter simpleParam : listOfParams.getParameters()) {
-        parameters.add(simpleParam);
-      }
+      parameters.addAll(listOfParams.getParameters());
     }
     for (AppleScriptRecordFormalParameter recordOfParams : recordsOfParams) {
-      for (AppleScriptSimpleFormalParameter simpleParam : recordOfParams.getParameters()) {
-        parameters.add(simpleParam);
-      }
+      parameters.addAll(recordOfParams.getParameters());
     }
     return parameters;
   }
 
-  private static void addRecordTargetVariablesRecursive(@NotNull AppleScriptTargetRecordLiteral targetRecord, @NotNull
-  List<AppleScriptTargetVariable> targetVariables) {
+  private static void addRecordTargetVariablesRecursive(@NotNull AppleScriptTargetRecordLiteral targetRecord, 
+                                                        @NotNull List<AppleScriptTargetVariable> targetVariables) {
 
     for (AppleScriptObjectTargetPropertyDeclaration property : targetRecord.getObjectTargetPropertyDeclarationList()) {
       AppleScriptTargetVariable innerVariable = property.getTargetVariable();
@@ -81,9 +67,7 @@ public class AppleScriptPsiImplUtil {
         targetVariables.add(innerVariable);
       }
       if (innerList != null) {
-        for (AppleScriptTargetVariable listVar : innerList.getTargetVariableList()) {
-          targetVariables.add(listVar);
-        }
+        targetVariables.addAll(innerList.getTargetVariableList());
       }
       if (innerRecord != null) {
         addRecordTargetVariablesRecursive(innerRecord, targetVariables);
@@ -101,9 +85,7 @@ public class AppleScriptPsiImplUtil {
         parameters.add(innerVariable);
       }
       if (innerList != null) {
-        for (AppleScriptSimpleFormalParameter listVar : innerList.getSimpleFormalParameterList()) {
-          parameters.add(listVar);
-        }
+        parameters.addAll(innerList.getSimpleFormalParameterList());
       }
       if (innerRecord != null) {
         addRecordFormalParameterRecursive(innerRecord, parameters);
@@ -111,9 +93,7 @@ public class AppleScriptPsiImplUtil {
     }
   }
 
-  public static List<AppleScriptComponent> getParameterComponentList(@NotNull
-                                                                     AppleScriptHandlerLabeledParametersDefinition
-                                                                             handler) {
+  public static List<AppleScriptComponent> getParameterComponentList(@NotNull AppleScriptHandlerLabeledParametersDefinition handler) {
     final List<AppleScriptComponent> result = new ArrayList<>();
     AppleScriptLabeledParameterDeclarationList parameterList = handler.getLabeledParameterDeclarationList();
     List<AppleScriptObjectTargetPropertyDeclaration> givenProperties = handler.getObjectTargetPropertyDeclarationList();
@@ -135,18 +115,12 @@ public class AppleScriptPsiImplUtil {
     if (targetRecord != null) {
       result.addAll(targetRecord.getTargets());
     }
-    for (AppleScriptLabeledParameterDeclarationPart labeledParameter : labeledParameters) {
-      result.add(labeledParameter);
-    }
-    for (AppleScriptObjectTargetPropertyDeclaration property : givenProperties) {
-      result.add(property);
-    }
+    result.addAll(labeledParameters);
+    result.addAll(givenProperties);
     return result;
   }
 
-  public static List<AppleScriptComponent> getComponentList(@NotNull
-                                                            AppleScriptLabeledParameterDeclarationList
-                                                                    parametersDeclaration) {
+  public static List<AppleScriptComponent> getComponentList(@NotNull AppleScriptLabeledParameterDeclarationList parametersDeclaration) {
     final List<AppleScriptComponent> result = new ArrayList<>();
     AppleScriptDirectParameterDeclaration directParameter = parametersDeclaration.getDirectParameterDeclaration();
     List<AppleScriptLabeledParameterDeclarationPart> labeledParameters = parametersDeclaration
@@ -169,25 +143,19 @@ public class AppleScriptPsiImplUtil {
     if (directParameter != null) {
       result.add(directParameter);
     }
-    for (AppleScriptLabeledParameterDeclarationPart labeledParameter : labeledParameters) {
-      result.add(labeledParameter);
-    }
+    result.addAll(labeledParameters);
     return result;
   }
 
   @NotNull
-  public static List<AppleScriptTargetVariable> getTargets(@NotNull
-                                                           AppleScriptTargetRecordLiteral
-                                                                   targetRecord) {
+  public static List<AppleScriptTargetVariable> getTargets(@NotNull AppleScriptTargetRecordLiteral targetRecord) {
     final List<AppleScriptTargetVariable> targetVariables = new ArrayList<>();
     addRecordTargetVariablesRecursive(targetRecord, targetVariables);
     return targetVariables;
   }
 
   @NotNull
-  public static List<AppleScriptSimpleFormalParameter> getParameters(@NotNull
-                                                                     AppleScriptRecordFormalParameter
-                                                                             recordParameter) {
+  public static List<AppleScriptSimpleFormalParameter> getParameters(@NotNull AppleScriptRecordFormalParameter recordParameter) {
     final List<AppleScriptSimpleFormalParameter> parameters = new ArrayList<>();
     addRecordFormalParameterRecursive(recordParameter, parameters);
     return parameters;
@@ -202,11 +170,8 @@ public class AppleScriptPsiImplUtil {
   }
 
   @NotNull
-  public static List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping(@NotNull
-                                                                                                   AppleScriptAssignmentStatement assignmentStatement) {
-    final List<Pair<AppleScriptPsiElement, AppleScriptExpression>> result = new SmartList<>();
-
-    return result;
+  public static List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping(@NotNull AppleScriptAssignmentStatement assignmentStatement) {
+    return new SmartList<>();
   }
 
   @NotNull
@@ -220,16 +185,12 @@ public class AppleScriptPsiImplUtil {
     }
     AppleScriptTargetListLiteral targetListLiteral = assignmentStatement.getTargetListLiteral();
     if (targetListLiteral != null) {
-      for (AppleScriptTargetVariable targetVariable : targetListLiteral.getTargets()) {
-        result.add(targetVariable);
-      }
+      result.addAll(targetListLiteral.getTargets());
       return result;
     }
     AppleScriptTargetRecordLiteral targetRecordLiteral = assignmentStatement.getTargetRecordLiteral();
     if (targetRecordLiteral != null) {
-      for (AppleScriptTargetVariable targetVariable : targetRecordLiteral.getTargets()) {
-        result.add(targetVariable);
-      }
+      result.addAll(targetRecordLiteral.getTargets());
       return result;
     }
     return result;

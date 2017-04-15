@@ -18,7 +18,7 @@ import java.util.List;
 public abstract class AbstractAppleScriptScriptObject extends AbstractAppleScriptComponent implements
         AppleScriptScriptObject {
 
-  public AbstractAppleScriptScriptObject(@NotNull ASTNode node) {
+  AbstractAppleScriptScriptObject(@NotNull ASTNode node) {
     super(node);
   }
 

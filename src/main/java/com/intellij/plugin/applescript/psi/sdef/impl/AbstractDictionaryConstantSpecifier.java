@@ -15,8 +15,7 @@ import java.util.List;
 /**
  * Andrey 22.08.2015
  */
-public class AbstractDictionaryConstantSpecifier extends AppleScriptPsiElementImpl
-        implements DictionaryCompositeElement, DictionaryCompositeName {
+public class AbstractDictionaryConstantSpecifier extends AppleScriptPsiElementImpl implements DictionaryCompositeElement, DictionaryCompositeName {
 
 
   public AbstractDictionaryConstantSpecifier(ASTNode node) {

@@ -14,9 +14,7 @@ public class CreateAppleScriptFileAction extends CreateFileFromTemplateAction im
 
   @Override
   protected void buildDialog(Project project, PsiDirectory directory, CreateFileFromTemplateDialog.Builder builder) {
-    builder
-            .setTitle("New AppleScript file")
-            .addKind("AppleScript file", AppleScriptIcons.FILE, "AppleScript File.scpt");
+    builder.setTitle("New AppleScript file").addKind("AppleScript file", AppleScriptIcons.FILE, "AppleScript File.scpt");
   }
 
   @Override

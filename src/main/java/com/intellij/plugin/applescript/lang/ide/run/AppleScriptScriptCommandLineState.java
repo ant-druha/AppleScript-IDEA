@@ -51,9 +51,7 @@ public class AppleScriptScriptCommandLineState extends CommandLineState implemen
           try {
             String p = matcher.group(i);
             if (!StringUtil.isEmpty(p)) matchedParams.add(p);
-          } catch (IllegalStateException e) {
-            LOG.warn("Error parsing script parameters: " + e.getMessage());
-          } catch (IndexOutOfBoundsException e) {
+          } catch (IllegalStateException | IndexOutOfBoundsException e) {
             LOG.warn("Error parsing script parameters: " + e.getMessage());
           }
         }

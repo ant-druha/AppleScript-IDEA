@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class AppleScriptUsageTypeProvider implements UsageTypeProvider {
 
-  // todo why does not this loaded?
   @Nullable
   @Override
   public UsageType getUsageType(PsiElement element) {
