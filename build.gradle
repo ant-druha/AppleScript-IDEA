@@ -25,6 +25,7 @@ intellij {
     type 'IC'
     version '2017.1' // https://www.jetbrains.com/intellij-repository/releases
     pluginName 'AppleScript Support'
+    updateSinceUntilBuild = false
 }
 
 sourceSets {
@@ -36,7 +37,7 @@ sourceSets {
 }
 
 group 'com.intellij.plugin'
-version '115'
+version '0.115'
 
 repositories {
     flatDir {
