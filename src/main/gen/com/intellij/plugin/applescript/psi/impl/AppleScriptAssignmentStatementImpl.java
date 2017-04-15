@@ -2,8 +2,6 @@
 package com.intellij.plugin.applescript.psi.impl;
 
 import java.util.List;
-
-import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.*;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -11,6 +9,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
 import com.intellij.plugin.applescript.psi.*;
+import com.intellij.openapi.util.Pair;
 
 public class AppleScriptAssignmentStatementImpl extends AppleScriptPsiElementImpl implements AppleScriptAssignmentStatement {
 
@@ -188,7 +187,7 @@ public class AppleScriptAssignmentStatementImpl extends AppleScriptPsiElementImp
   }
 
   @NotNull
-  public List<Pair<AppleScriptPsiElement,AppleScriptExpression>> getTargetsToValuesMapping() {
+  public List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping() {
     return AppleScriptPsiImplUtil.getTargetsToValuesMapping(this);
   }
 

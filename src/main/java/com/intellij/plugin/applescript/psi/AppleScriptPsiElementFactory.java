@@ -4,8 +4,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.plugin.applescript.AppleScriptFile;
 import com.intellij.plugin.applescript.AppleScriptFileType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.plugin.applescript.psi.AppleScriptTypes.HANDLER_PARAMETER_LABEL;
@@ -45,13 +47,18 @@ public class AppleScriptPsiElementFactory {
     final PsiFileFactory factory = PsiFileFactory.getInstance(project);
     return (AppleScriptFile) factory.createFileFromText(name, AppleScriptFileType.INSTANCE, text, stamp, false);
   }
+  
+  @NotNull
+  public static AppleScriptStringLiteralExpression createStringLiteral(Project project, String text) {
+    PsiFile file = createFile(project, "\"" + text + "\"");
+    AppleScriptStringLiteralExpression string = PsiTreeUtil.findChildOfType(file, AppleScriptStringLiteralExpression.class);
+    assert string != null : "text=" + text;
+    return string;
+  }
 
   @Nullable
   public static AppleScriptIdentifier createIdentifierFromText(Project project, String name) {
     AppleScriptFile file = createFile(project, name);
-    AppleScriptIdentifier identifier = PsiTreeUtil.findChildOfAnyType(file, AppleScriptIdentifier.class);
-//        AppleScriptIdentifier identifier = PsiTreeUtil.getChildOfType(file, AppleScriptIdentifier.class);
-
-    return identifier;
+    return PsiTreeUtil.findChildOfAnyType(file, AppleScriptIdentifier.class);
   }
 }

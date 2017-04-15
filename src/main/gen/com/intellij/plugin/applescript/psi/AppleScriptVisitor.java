@@ -7,6 +7,7 @@ import com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement;
 import com.intellij.plugin.applescript.psi.sdef.ApplicationDictionaryDeclarator;
 import com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerParameter;
 import com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeName;
+import com.intellij.psi.PsiLanguageInjectionHost;
 import com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
 
 public class AppleScriptVisitor extends PsiElementVisitor {
@@ -439,6 +440,7 @@ public class AppleScriptVisitor extends PsiElementVisitor {
 
   public void visitStringLiteralExpression(@NotNull AppleScriptStringLiteralExpression o) {
     visitExpression(o);
+    // visitPsiLanguageInjectionHost(o);
   }
 
   public void visitTargetListLiteral(@NotNull AppleScriptTargetListLiteral o) {

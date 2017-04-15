@@ -63,6 +63,12 @@
 
         <lang.parserDefinition language="AppleScript"
                                implementationClass="com.intellij.plugin.applescript.lang.parser.AppleScriptParserDefinition"/>
+
+        <multiHostInjector implementation="com.intellij.plugin.applescript.lang.AppleScriptJSInjector" id="applescript"/>
+
+        <lang.elementManipulator forClass="com.intellij.plugin.applescript.psi.AppleScriptStringLiteralExpression"
+                                 implementationClass="com.intellij.plugin.applescript.psi.manipulators.AppleScriptStringManipulator"/>
+        
         <lang.syntaxHighlighterFactory key="AppleScript"
                                        implementationClass="com.intellij.plugin.applescript.lang.ide.highlighting.AppleScriptSyntaxHighlighterFactory"/>
         <colorSettingsPage

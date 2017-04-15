@@ -8,9 +8,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.intellij.plugin.applescript.psi.AppleScriptTypes.*;
+import com.intellij.plugin.applescript.psi.AppleScriptStringLiteralExpressionBase;
 import com.intellij.plugin.applescript.psi.*;
 
-public class AppleScriptStringLiteralExpressionImpl extends AppleScriptExpressionImpl implements AppleScriptStringLiteralExpression {
+public class AppleScriptStringLiteralExpressionImpl extends AppleScriptStringLiteralExpressionBase implements AppleScriptStringLiteralExpression {
 
   public AppleScriptStringLiteralExpressionImpl(ASTNode node) {
     super(node);

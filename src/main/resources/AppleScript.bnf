@@ -450,7 +450,8 @@ targetRecordLiteral ::= LCURLY[objectTargetPropertyDeclaration] (COMMA objectTar
 
 //>>String class<<
 stringLiteralExpression ::= STRING_LITERAL
-
+{implements="com.intellij.psi.PsiLanguageInjectionHost"
+mixin="com.intellij.plugin.applescript.psi.AppleScriptStringLiteralExpressionBase"}
 //>>List class<<
 listLiteralExpression ::= LCURLY [expression] (COMMA expression)* RCURLY
 

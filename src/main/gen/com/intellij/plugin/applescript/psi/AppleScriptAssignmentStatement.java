@@ -2,10 +2,9 @@
 package com.intellij.plugin.applescript.psi;
 
 import java.util.List;
-
-import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.openapi.util.Pair;
 
 public interface AppleScriptAssignmentStatement extends AppleScriptPsiElement {
 
@@ -91,6 +90,6 @@ public interface AppleScriptAssignmentStatement extends AppleScriptPsiElement {
   List<AppleScriptTargetVariable> getTargets();
 
   @NotNull
-  List<Pair<AppleScriptPsiElement,AppleScriptExpression>> getTargetsToValuesMapping();
+  List<Pair<AppleScriptPsiElement, AppleScriptExpression>> getTargetsToValuesMapping();
 
 }
