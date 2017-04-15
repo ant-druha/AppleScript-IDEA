@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript Support</name>
-    <version>0.114</version>
+    <version>0.115</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -11,7 +11,7 @@
             <a href="https://developer.apple.com/library/mac/documentation/AppleScript/Conceptual/AppleScriptLangGuide/introduction/ASLR_intro.html">AppleScript</a>.<br>
             For applications with legacy dictionary formats <b>requires installed Xcode</b> for dictionary file
             generation.<br><br></p>
-        <b>Wiki:</b> <a href="https://github.com/human87/AppleScript-IDEA">How to AppleScript</a>
+        <b>Wiki:</b> <a href="https://github.com/ant-druha/AppleScript-IDEA">How to AppleScript</a>
         <br>
         <b>Plugin page:</b> <a href="https://plugins.jetbrains.com/plugin/8149">https://plugins.jetbrains.com/plugin/8149</a>
         ]]></description>
@@ -19,6 +19,9 @@
     <change-notes><![CDATA[
         <html>
         <dl>
+            <dt>0.115</dt>
+            <dd>&#183; Language Injection support for strings.</dd>
+            
             <dt>0.114</dt>
             <dd>&#183; Better error annotation and performance.</dd>
 
