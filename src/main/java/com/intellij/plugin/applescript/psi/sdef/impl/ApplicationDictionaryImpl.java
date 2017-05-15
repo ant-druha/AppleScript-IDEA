@@ -1,6 +1,6 @@
 package com.intellij.plugin.applescript.psi.sdef.impl;
 
-import com.btr.proxy.util.PListParser;
+import com.github.markusbernhardt.proxy.util.PListParser;
 import com.intellij.lang.Language;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.diagnostic.Logger;
