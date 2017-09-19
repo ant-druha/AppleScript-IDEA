@@ -59,7 +59,7 @@ public class AppleScriptDocHelper {
 
     int dicNameIdxEnt = link.indexOf(TYPE_SEPARATOR) > 0 ? link.indexOf(TYPE_SEPARATOR) : link.length();
     final String dictionaryName = link.substring("dictionary".length() + 1, dicNameIdxEnt);
-    AppleScriptProjectDictionaryService dictionaryRegistry =  
+    AppleScriptProjectDictionaryService dictionaryRegistry =
         ServiceManager.getService(context.getProject(), AppleScriptProjectDictionaryService.class);
     ApplicationDictionary dictionary = null;
     if (dictionaryRegistry != null) {
