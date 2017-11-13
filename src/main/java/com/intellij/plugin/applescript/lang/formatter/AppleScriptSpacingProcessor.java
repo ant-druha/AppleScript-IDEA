@@ -103,7 +103,7 @@ public class AppleScriptSpacingProcessor {
       return Spacing.createSpacing(1, 1, 0, true, 0);
     }
 
-    return Spacing.createSpacing(0, Integer.MAX_VALUE, 0, mySettings.KEEP_LINE_BREAKS, mySettings.KEEP_BLANK_LINES_IN_CODE);
+    return null;
   }
 
   private Spacing addLineBreak() {
