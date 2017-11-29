@@ -46,7 +46,6 @@ public class AppleScriptStructureViewElement extends PsiTreeElementBase<Navigata
     if (element != null && element instanceof AppleScriptFile) {
       if (!isRoot) {
         result.add(new AppleScriptStructureViewElement(element, true));
-        return result;
       }
       AppleScriptPsiElementImpl
           .processDeclarationsImpl(element, new AppleScriptComponentScopeProcessor(myComponents), ResolveState.initial(), null, null);
