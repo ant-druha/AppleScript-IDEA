@@ -25,7 +25,7 @@ public class AppleScriptStructureViewFactory implements PsiStructureViewFactory 
 
       @Override
       public boolean isRootNodeShown() {
-        return false;
+        return true;
       }
     };
   }
