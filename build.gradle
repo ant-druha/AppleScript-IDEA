@@ -33,6 +33,10 @@ sourceSets {
         java {
             srcDirs 'src/main/gen'
         }
+        resources{
+            exclude '**.bnf'
+            exclude '**.flex'
+        }
     }
 }
 

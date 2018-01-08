@@ -2,6 +2,7 @@ package com.intellij.plugin.applescript.lang.ide;
 
 import com.intellij.lang.documentation.AbstractDocumentationProvider;
 import com.intellij.plugin.applescript.lang.sdef.DictionaryComponent;
+import com.intellij.plugin.applescript.psi.AppleScriptPsiElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,7 @@ public class AppleScriptDocumentationProvider extends AbstractDocumentationProvi
 
   @Override
   public PsiElement getDocumentationElementForLink(PsiManager psiManager, String link, PsiElement context) {
+    if (!(context instanceof AppleScriptPsiElement)) return null;
     return AppleScriptDocHelper.getDocumentationElementForLink(psiManager, link, context);
   }
 }
