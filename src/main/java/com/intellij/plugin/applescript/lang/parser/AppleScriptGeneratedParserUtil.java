@@ -4,6 +4,7 @@ import com.intellij.lang.LighterASTNode;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.plugin.applescript.AppleScriptNames;
 import com.intellij.plugin.applescript.lang.sdef.AppleScriptCommand;
@@ -13,7 +14,6 @@ import com.intellij.plugin.applescript.lang.sdef.CommandParameter;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.omg.CORBA.StringHolder;
 
 import java.util.*;
 
@@ -74,13 +74,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    * @return true if rule matches, false otherwise
    */
   private static boolean parseDictionaryCommandNameInner(PsiBuilder b, int l,
-                                                         @NotNull StringHolder parsedName,
+                                                         @NotNull Ref<String> parsedName,
                                                          @NotNull String toldApplicationName,
                                                          boolean areThereUseStatements,
                                                          @Nullable Set<String> applicationsToImportFrom) {
     if (!recursion_guard_(b, l, "parseDictionaryCommandNameInner")) return false;
     boolean r;
-    parsedName.value = "";
+    parsedName.set("");
     // TODO: 12/1/2015 could be command with name which does not exist in this target app but in stanradr additions or
     // CocoaStandard dictionary or in use application dictionary. search all here?? to find the longest dictionary term
 
@@ -122,7 +122,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     final String s = b.getTokenText();
 
     if (s == null || s.length() == 0 || !AppleScriptNames.isIdentifierStart(s.charAt(0))) return false;
-    StringHolder parsedCommandName = new StringHolder();
+    Ref<String> parsedCommandName = new Ref<>();
     //get current application name to which messages will be sent in the current block
     String toldApplicationName = getTargetApplicationName(b);
     //if there are <use statements> present in the script
@@ -140,7 +140,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
     if (!r) return false;
     // TODO: 06/12/15 may be try to avoid creating PSI here!..
-    List<AppleScriptCommand> allCommandsWithName = getAllCommandsWithName(b, parsedCommandName.value, toldApplicationName, areThereUseStatements,
+    List<AppleScriptCommand> allCommandsWithName = getAllCommandsWithName(b, parsedCommandName.get(), toldApplicationName, areThereUseStatements,
             applicationsToImport);
 
     for (AppleScriptCommand command : allCommandsWithName) {
@@ -160,7 +160,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     //application handled definition in script only makes sense inside <using terms of> statement
     if (b.getUserData(IS_PARSING_USING_TERMS_FROM_STATEMENT) != Boolean.TRUE || b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) return false;
 
-    StringHolder parsedCommandName = new StringHolder();
+    Ref<String> parsedCommandName = new Ref<>();
     String toldApplicationName = getTargetApplicationName(b);
     PsiBuilder.Marker m2 = enter_section_(b, l, _COLLAPSE_, "<parse Application Handler Definition");
     r = parseDictionaryCommandNameInner(b, l + 1, parsedCommandName, toldApplicationName, true, null);
@@ -168,7 +168,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
     if (!r) return false;
     // TODO: 06/12/15 may be try to avoid creating PSI here!..
-    List<AppleScriptCommand> allCommandsWithName = getAllCommandsWithName(b, parsedCommandName.value, toldApplicationName, false, null);
+    List<AppleScriptCommand> allCommandsWithName = getAllCommandsWithName(b, parsedCommandName.get(), toldApplicationName, false, null);
 
     for (AppleScriptCommand command : allCommandsWithName) {
       r = parseParametersForCommand(b, l + 1, command);//custom parsing here
@@ -243,18 +243,18 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    * @return true if command name was parsed
    */
   private static boolean parseCommandNameForApplication(PsiBuilder b, int l,
-                                                        StringHolder parsedName,
+                                                        @NotNull Ref<String> parsedName,
                                                         @NotNull String applicationName,
                                                         boolean checkStdLib) {
     if (!recursion_guard_(b, l, "parseCommandNameForApplication")) return false;
     boolean r = false;
-    parsedName.value = "";
+    parsedName.set("");
     PsiBuilder.Marker m = enter_section_(b);
-    parsedName.value = b.getTokenText() == null ? "" : b.getTokenText();
+    parsedName.set(b.getTokenText() == null ? "" : b.getTokenText());
 
     boolean commandWithPrefixExists = ParsableScriptSuiteRegistryHelper.isCommandWithPrefixExist(applicationName,
-            parsedName.value);
-    String nextTokenText = parsedName.value;
+            parsedName.get());
+    String nextTokenText = parsedName.get();
     while (b.getTokenText() != null && commandWithPrefixExists) {
       b.advanceLexer(); //advance lexer to the next token
       nextTokenText += " " + b.getTokenText();
@@ -262,8 +262,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
               .isCommandWithPrefixExist(applicationName, nextTokenText);
       if (commandWithPrefixExists) {
         //if command with prefix exists, append token text
-        parsedName.value = nextTokenText;
-      } else if (ParsableScriptSuiteRegistryHelper.isApplicationCommand(applicationName, parsedName.value)) {
+        parsedName.set(nextTokenText);
+      } else if (ParsableScriptSuiteRegistryHelper.isApplicationCommand(applicationName, parsedName.get())) {
         //if there is std command with longer prefix exists do not parse it here
         r = !checkStdLib || !ParsableScriptSuiteRegistryHelper.isStdCommandWithPrefixExist(nextTokenText);
         // if there is class name with longer prefix exists !! AND !! next is NLS token => do not this as command name
@@ -450,7 +450,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 //    //if we are in tell statement - check application terms first
 //    String toldAppName = peekTargetApplicationName(b);
 //    if (!StringUtil.isEmpty(toldAppName)) {
-//      StringHolder parsedName = new StringHolder();
+//      Ref<String> parsedName = new Ref<String>();
 //      PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Repeat Statement>");
 //      r = parseCommandNameForApplication(b, l + 1, parsedName, toldAppName, true);
 //      exit_section_(b, l, mComName, null, r, false, null);
@@ -472,7 +472,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (b.getUserData(PARSING_TELL_COMPOUND_STATEMENT) == Boolean.TRUE) {
       String toldAppName = peekTargetApplicationName(b);
       if (!StringUtil.isEmpty(toldAppName)) {
-        StringHolder parsedName = new StringHolder();
+        Ref<String> parsedName = new Ref();
         PsiBuilder.Marker mComName = enter_section_(b, l, _AND_, "<parse Expression>");
         r = parseCommandNameForApplication(b, l + 1, parsedName, toldAppName, true);
         exit_section_(b, l, mComName, null, r, false, null);
@@ -639,8 +639,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   private static boolean parseCommandParameters(PsiBuilder b, int l, AppleScriptCommand commandDefinition) {
     if (!recursion_guard_(b, l, "parseCommandParameters")) return false;
     boolean r = true;
-    StringHolder parsedParameterSelector = new StringHolder();
-    parsedParameterSelector.value = "";//todo check if it is needed
+    Ref<String> parsedParameterSelector = new Ref<>();
+    parsedParameterSelector.set("");//todo check if it is needed
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Parameters>");
     /**
      * Command handler definitions need not include all of the possible parameters of the commands they respond to.
@@ -655,14 +655,14 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       boolean givenForm = consumeToken(b, GIVEN);
       for (int i = 0; i < commandDefinition.getParameters().size() && !nextTokenIs(b, "", COMMENT, NLS) && r; i++) {
         r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector, givenForm, i == 0);
-        mandatoryParams.remove(commandDefinition.getParameterByName(parsedParameterSelector.value));
-        parsedParameterSelector.value = "";
+        mandatoryParams.remove(commandDefinition.getParameterByName(parsedParameterSelector.get()));
+        parsedParameterSelector.set("");
       }
     } else {
       boolean givenForm = consumeToken(b, GIVEN);
       for (int i = 0; i < commandDefinition.getParameters().size() && !nextTokenIs(b, "", COMMENT, NLS) && r; i++) {
         r = parseParameterForCommand(b, l + 1, commandDefinition, parsedParameterSelector, givenForm, i == 0);
-        parsedParameterSelector.value = "";
+        parsedParameterSelector.set("");
       }
     }
     r = mandatoryParams.isEmpty();//we only need to ensure that all mandatory params were specified
@@ -675,7 +675,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   // (given? commandParameterSelector parameterValue)
   // | ( (with|without) commandParameterSelector )
   private static boolean parseParameterForCommand(PsiBuilder b, int l, AppleScriptCommand command,
-                                                  StringHolder parsedParameterSelector, boolean givenForm, boolean
+                                                  Ref<String> parsedParameterSelector, boolean givenForm, boolean
                                                           first) {
     if (!recursion_guard_(b, l, "parseParameterForCommand")) return false;
     boolean r;
@@ -689,7 +689,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   }
 
   //(with|without) parameterSelector
-  private static boolean parseBooleanParameter(PsiBuilder b, int l, AppleScriptCommand command, StringHolder
+  private static boolean parseBooleanParameter(PsiBuilder b, int l, AppleScriptCommand command, Ref<String>
           parsedParameterSelector) {
     if (!recursion_guard_(b, l, "parseBooleanParameter")) return false;
     boolean r;
@@ -709,13 +709,13 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   // (paramSelector paramValue)
   //given? commandParameterSelector parameterValue
   private static boolean parseGivenParameter(PsiBuilder b, int l, AppleScriptCommand command,
-                                             StringHolder parsedParameterSelector, boolean givenForm, boolean first) {
+                                             Ref<String> parsedParameterSelector, boolean givenForm, boolean first) {
     if (!recursion_guard_(b, l, "parseGivenParameter")) return false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Given Parameter>");
     boolean r = !givenForm || first || consumeToken(b, COMMA);//if it is a given form and not the first parameter ->
     // should be comma
     r = r && parseCommandParameterSelector(b, l + 1, command, parsedParameterSelector);
-    final CommandParameter parameterDefinition = command.getParameterByName(parsedParameterSelector.value);
+    final CommandParameter parameterDefinition = command.getParameterByName(parsedParameterSelector.get());
     //todo: parameter value expression could be incorrectly parsed and needed to be rolled backed (__AND__ modifier?)
     //as in example: mount volume "" in AppleTalk zone ""  (in - parsed as range ref form)
     if (givenForm) r = consumeToken(b, COLON);
@@ -743,38 +743,38 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
   //we need to parse tokens here and get text of the parameter selector and compare with one of possible parameter
   // names
   private static boolean parseCommandParameterSelector(PsiBuilder b, int l, AppleScriptCommand command,
-                                                       StringHolder parsedParameterSelector) {
+                                                       Ref<String> parsedParameterSelector) {
     if (!recursion_guard_(b, l, "parseCommandParameterSelector")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b, l, _NONE_, "<parse Command Parameter Selector>");//todo check this _AND_
-    parsedParameterSelector.value = b.getTokenText() == null ? "" : b.getTokenText();
+    parsedParameterSelector.set(b.getTokenText() == null ? "" : b.getTokenText());
     while (!b.eof() && b.getTokenType() != NLS && b.getTokenType() != COMMENT) {
       b.advanceLexer();
-      if (command.getParameterByName(parsedParameterSelector.value) != null) {
+      if (command.getParameterByName(parsedParameterSelector.get()) != null) {
         r = true;
         break;
       }
-      parsedParameterSelector.value += " " + b.getTokenText();
+      parsedParameterSelector.set(parsedParameterSelector.get() + " " + b.getTokenText());
     }
     exit_section_(b, l, m, COMMAND_PARAMETER_SELECTOR, r, false, null);
     return r;
   }
 
-  private static boolean parseStdLibCommandName(PsiBuilder b, int l, StringHolder parsedName) {
+  private static boolean parseStdLibCommandName(PsiBuilder b, int l, Ref<String> parsedName) {
     if (!recursion_guard_(b, l, "parseStdLibCommandName")) return false;
     boolean r = false;
-    parsedName.value = "";
-    parsedName.value = b.getTokenText() == null ? "" : b.getTokenText();
+    parsedName.set("");
+    parsedName.set(b.getTokenText() == null ? "" : b.getTokenText());
     PsiBuilder.Marker m = enter_section_(b);
-    boolean commandWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdCommandWithPrefixExist(parsedName.value);
-    String nextTokenText = parsedName.value;
+    boolean commandWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdCommandWithPrefixExist(parsedName.get());
+    String nextTokenText = parsedName.get();
     while (b.getTokenText() != null && commandWithPrefixExists) {
       b.advanceLexer(); //advance lexer in any case
       nextTokenText += " " + b.getTokenText();
       commandWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdCommandWithPrefixExist(nextTokenText);
       if (commandWithPrefixExists) {
-        parsedName.value = nextTokenText;
-      } else if (ParsableScriptSuiteRegistryHelper.isStdCommand(parsedName.value)) {
+        parsedName.set(nextTokenText);
+      } else if (ParsableScriptSuiteRegistryHelper.isStdCommand(parsedName.get())) {
         r = true;
         break;
       }
@@ -857,7 +857,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (nextTokenIs(b, NLS)) {
       return false;
     }
-    StringHolder parsedCommandName = new StringHolder();
+    Ref<String> parsedCommandName = new Ref<String>();
     String toldApplicationName = getTargetApplicationName(b);
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImport = null;
@@ -922,8 +922,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (areThereUseStatements) {
       applicationsToImportFrom = b.getUserData(USED_APPLICATION_NAMES);
     }
-    final StringHolder currentTokenText = new StringHolder();
-    currentTokenText.value = s;
+    final Ref<String> currentTokenText = new Ref<String>();
+    currentTokenText.set(s);
     r = parseDictionaryClassName(b, l + 1, currentTokenText, isPluralForm, toldApplicationName, areThereUseStatements, applicationsToImportFrom);
     return r;
   }
@@ -941,18 +941,17 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "tryToParseStdProperty")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b);
-    StringHolder currentTokenText = new StringHolder();
-    currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
+      Ref<String> currentTokenText = new Ref<>();currentTokenText.set(b.getTokenText() == null ? "" : b.getTokenText());
     boolean propertyWithPrefixExists = ParsableScriptSuiteRegistryHelper
-            .isStdPropertyWithPrefixExist(currentTokenText.value);
-    String nextTokenText = currentTokenText.value;
+            .isStdPropertyWithPrefixExist(currentTokenText.get());
+    String nextTokenText = currentTokenText.get();
     while (b.getTokenText() != null && propertyWithPrefixExists) {
       b.advanceLexer(); //advance lexer in any case
       nextTokenText += " " + b.getTokenText();
       propertyWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdPropertyWithPrefixExist(nextTokenText);
       if (propertyWithPrefixExists) {
-        currentTokenText.value = nextTokenText;
-      } else if (ParsableScriptSuiteRegistryHelper.isStdProperty(currentTokenText.value)) {
+        currentTokenText.set(nextTokenText);
+      } else if (ParsableScriptSuiteRegistryHelper.isStdProperty(currentTokenText.get())) {
         r = true;
         break;
       }
@@ -971,20 +970,20 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
     if (!recursion_guard_(b, l, "tryToParseApplicationProperty")) return false;
     boolean r = false;
     PsiBuilder.Marker m = enter_section_(b);
-    StringHolder currentTokenText = new StringHolder();
-    currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
+    Ref<String> currentTokenText = new Ref<>();
+    currentTokenText.set(b.getTokenText() == null ? "" : b.getTokenText());
     boolean propertyWithPrefixExist = ParsableScriptSuiteRegistryHelper.isPropertyWithPrefixExist(applicationName,
-            currentTokenText.value);
+            currentTokenText.get());
     //find the longest lexeme
-    String nextTokenText = currentTokenText.value;
+    String nextTokenText = currentTokenText.get();
     while (b.getTokenText() != null && propertyWithPrefixExist) {
       b.advanceLexer(); //advance lexer in any case
       nextTokenText += " " + b.getTokenText();
       propertyWithPrefixExist = ParsableScriptSuiteRegistryHelper.isPropertyWithPrefixExist(applicationName,
               nextTokenText);
       if (propertyWithPrefixExist) {
-        currentTokenText.value = nextTokenText;
-      } else if (ParsableScriptSuiteRegistryHelper.isApplicationProperty(applicationName, currentTokenText.value)) {
+        currentTokenText.set(nextTokenText);
+      } else if (ParsableScriptSuiteRegistryHelper.isApplicationProperty(applicationName, currentTokenText.get())) {
         r = true;
         break;
       }
@@ -1005,7 +1004,7 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    * @param applicationsToImportFrom Set list of the applications (if specified) attached to script from use statements
    * @return true if class name parsed
    */
-  private static boolean parseDictionaryClassName(PsiBuilder b, int l, StringHolder currentTokenText,
+  private static boolean parseDictionaryClassName(PsiBuilder b, int l, Ref<String> currentTokenText,
                                                   final boolean isPluralForm,
                                                   @NotNull String toldApplicationName,
                                                   final boolean areThereUseStatements,
@@ -1017,9 +1016,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
       // className or propertyName tokens. Here we check and return false if the property with the longer name exists,
       // as it will be parsed later
-      currentTokenText.value += " " + b.getTokenText();
+      currentTokenText.set(currentTokenText.get() + " " + b.getTokenText());
       propertyExists = ParsableScriptSuiteRegistryHelper
-              .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.value);
+              .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.get());
     }
     exit_section_(b, m, null, r && !propertyExists);
     if (propertyExists) return false;
@@ -1033,9 +1032,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
           r = parseApplicationClassName(b, l + 1, currentTokenText, isPluralForm, appName);
           if (r) {
             // check here as well for the property with longer name
-            currentTokenText.value += " " + b.getTokenText();
+            currentTokenText.set(currentTokenText.get() + " " + b.getTokenText());
             propertyExists = ParsableScriptSuiteRegistryHelper
-                    .isPropertyWithPrefixExist(appName, currentTokenText.value);
+                    .isPropertyWithPrefixExist(appName, currentTokenText.get());
           }
           exit_section_(b, m, null, r && !propertyExists);
           if (propertyExists) return false;
@@ -1057,9 +1056,9 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
       // className or propertyName tokens. Here we check and return false if the property with the longer name exists,
       // as it will be parsed later
-      currentTokenText.value += " " + b.getTokenText();
+      currentTokenText.set(currentTokenText.get() + " " + b.getTokenText());
       propertyExists = ParsableScriptSuiteRegistryHelper
-              .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.value);
+              .isPropertyWithPrefixExist(toldApplicationName, currentTokenText.get());
     }
     exit_section_(b, m, null, r && !propertyExists);
     return !propertyExists && r;
@@ -1072,70 +1071,70 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
    * @param isPluralForm     Whether we are parsing class name in plural form
    * @return true if class name parsed
    */
-  private static boolean parseStdClassName(PsiBuilder b, int l, StringHolder currentTokenText, boolean isPluralForm) {
-    currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
+  private static boolean parseStdClassName(PsiBuilder b, int l, Ref<String> currentTokenText, boolean isPluralForm) {
+    currentTokenText.set(b.getTokenText() == null ? "" : b.getTokenText());
     if (isPluralForm) {
       boolean classWithPrefixExists = ParsableScriptSuiteRegistryHelper
-              .isStdClassPluralWithPrefixExist(currentTokenText.value);
-      String nextTokenText = currentTokenText.value;
+              .isStdClassPluralWithPrefixExist(currentTokenText.get());
+      String nextTokenText = currentTokenText.get();
       while (b.getTokenText() != null && classWithPrefixExists) {
         b.advanceLexer(); //advance lexer in any case
         nextTokenText += " " + b.getTokenText();
         classWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdClassPluralWithPrefixExist(nextTokenText);
         if (classWithPrefixExists) {
-          currentTokenText.value = nextTokenText;
-        } else if (ParsableScriptSuiteRegistryHelper.isStdLibClassPluralName(currentTokenText.value)) return true;
+          currentTokenText.set(nextTokenText);
+        } else if (ParsableScriptSuiteRegistryHelper.isStdLibClassPluralName(currentTokenText.get())) return true;
       }
       return false;
     } else {
       boolean classWithPrefixExists = ParsableScriptSuiteRegistryHelper
-              .isStdClassWithPrefixExist(currentTokenText.value);
-      String nextTokenText = currentTokenText.value;
+              .isStdClassWithPrefixExist(currentTokenText.get());
+      String nextTokenText = currentTokenText.get();
       while (b.getTokenText() != null && classWithPrefixExists) {
         b.advanceLexer(); //advance lexer in any case
         nextTokenText += " " + b.getTokenText();
         classWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdClassWithPrefixExist(nextTokenText);
         if (classWithPrefixExists) {
-          currentTokenText.value = nextTokenText;
-        } else if (ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.value)) return true;
+          currentTokenText.set(nextTokenText);
+        } else if (ParsableScriptSuiteRegistryHelper.isStdLibClass(currentTokenText.get())) return true;
       }
       return false;
     }
   }
 
-  private static boolean parseApplicationClassName(PsiBuilder b, int l, StringHolder currentTokenText, final boolean isPluralForm,
+  private static boolean parseApplicationClassName(PsiBuilder b, int l, Ref<String> currentTokenText, final boolean isPluralForm,
                                                    @NotNull String applicationName) {
-    currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
+    currentTokenText.set(b.getTokenText() == null ? "" : b.getTokenText());
     if (isPluralForm) {
       boolean classWithPrefixExists = ParsableScriptSuiteRegistryHelper
-              .isClassPluralWithPrefixExist(applicationName, currentTokenText.value);
-      String nextTokenText = currentTokenText.value;
+              .isClassPluralWithPrefixExist(applicationName, currentTokenText.get());
+      String nextTokenText = currentTokenText.get();
       while (b.getTokenText() != null && classWithPrefixExists) {
         b.advanceLexer(); //advance lexer in any case
         nextTokenText += " " + b.getTokenText();
         classWithPrefixExists = ParsableScriptSuiteRegistryHelper
                 .isClassPluralWithPrefixExist(applicationName, nextTokenText);
         if (classWithPrefixExists) {
-          currentTokenText.value = nextTokenText;
+          currentTokenText.set(nextTokenText);
         } else if (ParsableScriptSuiteRegistryHelper
-                .isApplicationClassPluralName(applicationName, currentTokenText.value)) {
+                .isApplicationClassPluralName(applicationName, currentTokenText.get())) {
           return true;
         }
       }
       return false;
     } else {
       boolean classWithPrefixExists = ParsableScriptSuiteRegistryHelper
-              .isClassWithPrefixExist(applicationName, currentTokenText.value);
-      String nextTokenText = currentTokenText.value;
+              .isClassWithPrefixExist(applicationName, currentTokenText.get());
+      String nextTokenText = currentTokenText.get();
       while (b.getTokenText() != null && classWithPrefixExists) {
         b.advanceLexer(); //advance lexer in any case
         nextTokenText += " " + b.getTokenText();
         classWithPrefixExists = ParsableScriptSuiteRegistryHelper
                 .isClassWithPrefixExist(applicationName, nextTokenText);
         if (classWithPrefixExists) {
-          currentTokenText.value = nextTokenText;
+          currentTokenText.set(nextTokenText);
         } else if (ParsableScriptSuiteRegistryHelper
-                .isApplicationClass(applicationName, currentTokenText.value)) return true;
+                .isApplicationClass(applicationName, currentTokenText.get())) return true;
       }
       return false;
     }
@@ -1165,8 +1164,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       // tell statements?
       return false;
 
-    final StringHolder currentTokenText = new StringHolder();
-    currentTokenText.value = "";
+    final Ref<String> currentTokenText = new Ref<String>();
+    currentTokenText.set("");
     boolean areThereUseStatements = b.getUserData(WAS_USE_STATEMENT_USED) == Boolean.TRUE;
     Set<String> applicationsToImportFrom = null;
     if (areThereUseStatements) {
@@ -1192,19 +1191,18 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   private static boolean tryToParseStdConstant(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "tryToParseStdConstant")) return false;
-    StringHolder currentTokenText = new StringHolder();
-    currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
+      Ref<String> currentTokenText = new Ref<String>();currentTokenText.set(b.getTokenText() == null ? "" : b.getTokenText());
     boolean r = false, propertyOrClassExists = false, constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
-            .isStdConstantWithPrefixExist(currentTokenText.value);
-    String nextTokenText = currentTokenText.value;
+            .isStdConstantWithPrefixExist(currentTokenText.get());
+    String nextTokenText = currentTokenText.get();
     PsiBuilder.Marker m = enter_section_(b);
     while (b.getTokenText() != null && constantWithPrefixExists) {
       b.advanceLexer();
       nextTokenText += " " + b.getTokenText();
       constantWithPrefixExists = ParsableScriptSuiteRegistryHelper.isStdConstantWithPrefixExist(nextTokenText);
       if (constantWithPrefixExists) {
-        currentTokenText.value = nextTokenText;
-      } else if (ParsableScriptSuiteRegistryHelper.isStdConstant(currentTokenText.value)) {
+        currentTokenText.set(nextTokenText);
+      } else if (ParsableScriptSuiteRegistryHelper.isStdConstant(currentTokenText.get())) {
         r = true;
         break;
       }
@@ -1213,11 +1211,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       // grammar allows className and propertyName as primaryExpression, so we should match the longest token between
       // className or propertyName tokens. We check and return false if the property or class with the longer name
       // exists, as it will be parsed later
-      currentTokenText.value += " " + b.getTokenText();
+      currentTokenText.set(currentTokenText.get() + " " + b.getTokenText());
       propertyOrClassExists = ParsableScriptSuiteRegistryHelper
-              .isStdPropertyWithPrefixExist(currentTokenText.value) ||
+              .isStdPropertyWithPrefixExist(currentTokenText.get()) ||
               ParsableScriptSuiteRegistryHelper
-                      .isStdClassWithPrefixExist(currentTokenText.value);
+                      .isStdClassWithPrefixExist(currentTokenText.get());
     }
     r = r && !propertyOrClassExists;
     exit_section_(b, m, null, r);
@@ -1226,11 +1224,11 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
 
   private static boolean tryToParseApplicationConstant(PsiBuilder b, int l, @NotNull String applicationName) {
     if (!recursion_guard_(b, l, "tryToParseApplicationConstant")) return false;
-    StringHolder currentTokenText = new StringHolder();
-    currentTokenText.value = b.getTokenText() == null ? "" : b.getTokenText();
+    Ref<String> currentTokenText = new Ref<String>();
+    currentTokenText.set(b.getTokenText() == null ? "" : b.getTokenText());
     boolean r = false, propertyOrClassExists = false, constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
-            .isConstantWithPrefixExist(applicationName, currentTokenText.value);
-    String nextTokenText = currentTokenText.value;
+            .isConstantWithPrefixExist(applicationName, currentTokenText.get());
+    String nextTokenText = currentTokenText.get();
     PsiBuilder.Marker m = enter_section_(b);
     while (b.getTokenText() != null && constantWithPrefixExists) {
       b.advanceLexer();
@@ -1238,8 +1236,8 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       constantWithPrefixExists = ParsableScriptSuiteRegistryHelper
               .isConstantWithPrefixExist(applicationName, nextTokenText);
       if (constantWithPrefixExists) {
-        currentTokenText.value = nextTokenText;
-      } else if (ParsableScriptSuiteRegistryHelper.isApplicationConstant(applicationName, currentTokenText.value)) {
+        currentTokenText.set(nextTokenText);
+      } else if (ParsableScriptSuiteRegistryHelper.isApplicationConstant(applicationName, currentTokenText.get())) {
         r = true;
         break;
       }
@@ -1249,15 +1247,15 @@ public class AppleScriptGeneratedParserUtil extends GeneratedParserUtilBase {
       // className or propertyName tokens. We check and return false if the property or class with the longer name
       // exists, as it will be parsed later
       propertyOrClassExists = ParsableScriptSuiteRegistryHelper
-              .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||
+              .isPropertyWithPrefixExist(applicationName, currentTokenText.get()) ||
               ParsableScriptSuiteRegistryHelper
-                      .isClassWithPrefixExist(applicationName, currentTokenText.value);
+                      .isClassWithPrefixExist(applicationName, currentTokenText.get());
       if (propertyOrClassExists) {
-        currentTokenText.value += " " + b.getTokenText();
+        currentTokenText.set(currentTokenText.get() + " " + b.getTokenText());
         propertyOrClassExists = ParsableScriptSuiteRegistryHelper
-                .isPropertyWithPrefixExist(applicationName, currentTokenText.value) ||
+                .isPropertyWithPrefixExist(applicationName, currentTokenText.get()) ||
                 ParsableScriptSuiteRegistryHelper
-                        .isClassWithPrefixExist(applicationName, currentTokenText.value);
+                        .isClassWithPrefixExist(applicationName, currentTokenText.get());
       }
     }
     r = r && !propertyOrClassExists;
