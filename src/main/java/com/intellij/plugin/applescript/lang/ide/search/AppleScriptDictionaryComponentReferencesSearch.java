@@ -1,7 +1,6 @@
 package com.intellij.plugin.applescript.lang.ide.search;
 
 import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.application.Result;
 import com.intellij.plugin.applescript.lang.sdef.DictionaryComponent;
 import com.intellij.plugin.applescript.psi.sdef.AppleScriptCommandHandlerCall;
 import com.intellij.plugin.applescript.psi.sdef.DictionaryCompositeElement;
@@ -23,16 +22,11 @@ import java.util.List;
 public class AppleScriptDictionaryComponentReferencesSearch implements QueryExecutor<PsiReference, ReferencesSearch
         .SearchParameters> {
   @Override
-  public boolean execute(@NotNull final ReferencesSearch.SearchParameters queryParameters, @NotNull final
-  Processor<PsiReference> consumer) {
-    return new ReadAction<Boolean>() {
-      protected void run(@NotNull final Result<Boolean> result) {
-        result.setResult(doExecute(queryParameters, consumer));
-      }
-    }.execute().getResultObject();
+  public boolean execute(ReferencesSearch.@NotNull SearchParameters queryParameters, @NotNull Processor<? super PsiReference> consumer) {
+    return ReadAction.compute(() -> doExecute(queryParameters, consumer));
   }
 
-  private Boolean doExecute(ReferencesSearch.SearchParameters queryParameters, final Processor<PsiReference> consumer) {
+  private Boolean doExecute(ReferencesSearch.SearchParameters queryParameters, final Processor<? super PsiReference> consumer) {
     final PsiElement element = queryParameters.getElementToSearch(); //was selector_identifier->redefined in
     DictionaryComponent dictionaryComponent = null;
     if (element instanceof DictionaryComponent) {
@@ -54,12 +48,12 @@ public class AppleScriptDictionaryComponentReferencesSearch implements QueryExec
   }
 
   private static class MyOccurrenceProcessor implements TextOccurenceProcessor {
-    private final Processor<PsiReference> myConsumer;
+    private final Processor<? super PsiReference> myConsumer;
     private final DictionaryComponent myDictionaryComponent;
     private final String myComponentName;
 
     public MyOccurrenceProcessor(DictionaryComponent dictionaryComponent, String componentName,
-                                 Processor<PsiReference> consumer) {
+                                 Processor<? super PsiReference> consumer) {
       myDictionaryComponent = dictionaryComponent;
       myComponentName = componentName;
       myConsumer = consumer;

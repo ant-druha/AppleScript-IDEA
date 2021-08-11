@@ -18,7 +18,7 @@ public class AppleScriptLineMarkerProvider extends RelatedItemLineMarkerProvider
 
   @Override
   protected void collectNavigationMarkers(@NotNull PsiElement element,
-                                          @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
+                                          @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
     if (element instanceof AppleScriptApplicationReference) {
       PsiElement leafNode = PsiTreeUtil.firstChild(element);
       if (leafNode == null) return;

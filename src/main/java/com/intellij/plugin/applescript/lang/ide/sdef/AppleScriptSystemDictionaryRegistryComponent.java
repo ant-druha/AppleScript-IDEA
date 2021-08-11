@@ -18,7 +18,7 @@ import java.util.*;
  * This {@link ApplicationComponent} stores information about generated dictionary files for applications
  */
 @State(name = AppleScriptSystemDictionaryRegistryComponent.COMPONENT_NAME,
-    storages = {@Storage(file = StoragePathMacros.APP_CONFIG + "/appleScriptCachedDictionariesInfo.xml", roamingType = RoamingType.PER_OS)})
+    storages = {@Storage(value = "appleScriptCachedDictionariesInfo.xml", roamingType = RoamingType.PER_OS)})
 public class AppleScriptSystemDictionaryRegistryComponent implements ApplicationComponent, PersistentStateComponent<AppleScriptSystemDictionaryRegistryComponent.State> {
 
   private static final Logger LOG = Logger.getInstance("#" + AppleScriptSystemDictionaryRegistryComponent.class.getName());

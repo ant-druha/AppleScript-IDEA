@@ -178,9 +178,7 @@
     <application-components>
         <!-- Add your application components here -->
         <component>
-            <implementation-class>
-                com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryComponent
-            </implementation-class>
+            <implementation-class>com.intellij.plugin.applescript.lang.ide.sdef.AppleScriptSystemDictionaryRegistryComponent</implementation-class>
         </component>
     </application-components>
 

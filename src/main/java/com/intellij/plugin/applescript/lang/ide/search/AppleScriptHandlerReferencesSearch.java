@@ -1,7 +1,6 @@
 package com.intellij.plugin.applescript.lang.ide.search;
 
 import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.application.Result;
 import com.intellij.plugin.applescript.psi.AppleScriptHandler;
 import com.intellij.plugin.applescript.psi.AppleScriptHandlerCall;
 import com.intellij.plugin.applescript.psi.AppleScriptHandlerSelectorPart;
@@ -22,16 +21,11 @@ import java.util.List;
  */
 public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiReference, ReferencesSearch.SearchParameters> {
   @Override
-  public boolean execute(@NotNull final ReferencesSearch.SearchParameters queryParameters, @NotNull final
-  Processor<PsiReference> consumer) {
-    return new ReadAction<Boolean>() {
-      protected void run(@NotNull final Result<Boolean> result) {
-        result.setResult(doExecute(queryParameters, consumer));
-      }
-    }.execute().getResultObject();
+  public boolean execute(ReferencesSearch.@NotNull SearchParameters queryParameters, @NotNull Processor<? super PsiReference> consumer) {
+    return ReadAction.compute(() -> doExecute(queryParameters, consumer));
   }
 
-  private Boolean doExecute(ReferencesSearch.SearchParameters queryParameters, final Processor<PsiReference> consumer) {
+  private Boolean doExecute(ReferencesSearch.SearchParameters queryParameters, final Processor<? super PsiReference> consumer) {
     // the element which is gets returned is first immediate PsiNamedElement in the hierarchy of the element under the
     // caret (as with the find usages)
     // extension posts to redefine this (so that declarationPart resolved the whole method) are:
@@ -74,12 +68,12 @@ public class AppleScriptHandlerReferencesSearch implements QueryExecutor<PsiRefe
   }
 
   private static class MyOccurrenceProcessor implements TextOccurenceProcessor {
-    private final Processor<PsiReference> myConsumer;
+    private final Processor<? super PsiReference> myConsumer;
     private AppleScriptHandler myHandler;
     private String myHandlerSelector;
 
     MyOccurrenceProcessor(AppleScriptHandler handler, String handlerSelector,
-                          Processor<PsiReference> consumer) {
+                          Processor<? super PsiReference> consumer) {
       myHandler = handler;
       myHandlerSelector = handlerSelector;
       myConsumer = consumer;
