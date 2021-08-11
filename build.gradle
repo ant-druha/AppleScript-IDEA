@@ -5,16 +5,16 @@ buildscript {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
         maven {
-            url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
+            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
         }
     }
     dependencies {
-        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.0-SNAPSHOT"
+        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:1.1.4"
     }
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.1.10"
+    id "org.jetbrains.intellij" version "1.1.4"
 }
 
 apply plugin: 'idea'
@@ -22,10 +22,19 @@ apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'java'
 
 intellij {
-    type 'IC'
-    version '173.3531.6' // https://www.jetbrains.com/intellij-repository/[releases|snapshots]
-    pluginName 'AppleScript Support'
+    type = 'IC'
+    version = '2021.2' // https://www.jetbrains.com/intellij-repository/[releases|snapshots]
+    pluginName = 'AppleScript Support'
     updateSinceUntilBuild = false
+    plugins = [
+            'java',
+            'PsiViewer:212-SNAPSHOT'
+    ]
+}
+
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
 }
 
 sourceSets {
@@ -41,14 +50,11 @@ sourceSets {
 }
 
 group 'com.intellij.plugin'
-version '0.119'
+version '0.120'
 
 repositories {
     flatDir {
         dirs 'lib'
     }
-}
-
-dependencies {
-    testCompile name: 'PsiViewer'
+    mavenCentral()
 }

@@ -6,7 +6,6 @@ import com.intellij.testFramework.ParsingTestCase;
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +23,11 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
   }
 
   @Override
+  protected String getTestDataPath() {
+    return new File(getMyTestDataDir()).getAbsolutePath();
+  }
+
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     File myTargetDir = new File(myTargetTestDataDir);
@@ -35,25 +39,15 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
     }
   }
 
-  @Override
-  protected void runTest() throws Throwable {
-    super.runTest();
-  }
-
   protected void doParseAllInPackageTest() {
     LOG.info("Parsing files in the package: " + getMyTargetDirectoryPath());
     System.out.println("Parsing files in the package: " + getMyTargetDirectoryPath());
     for (PsiFile psiFile : myPsiFiles) {
       LOG.info("File: " + psiFile.getName());
       System.out.print("File: " + psiFile.getName());
-      try {
-        ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(),
-                psiFile.getVirtualFile().getNameWithoutExtension(), skipSpaces(), printRanges());
-        System.out.println(": Ok");
-      } catch (IOException e) {
-        System.out.println(": Parsing failed" + psiFile.getName());
-        e.printStackTrace();
-      }
+      ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(),
+              psiFile.getVirtualFile().getNameWithoutExtension(), skipSpaces(), printRanges());
+      System.out.println(": Ok");
     }
   }
 
@@ -61,13 +55,8 @@ public abstract class AbstractParsingFixtureTestCase extends LightPlatformCodeIn
     for (PsiFile psiFile : myPsiFiles) {
       String dataName = psiFile.getVirtualFile().getNameWithoutExtension();
       if (dataName.equals(fileNameWithoutExtension)) {
-        try {
-          ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(), dataName, skipSpaces(),
-                  printRanges());
-        } catch (IOException e) {
-          System.out.println(": Parsing failed" + psiFile.getName());
-          e.printStackTrace();
-        }
+        ParsingTestCase.doCheckResult(myTargetTestDataDir, psiFile, checkAllPsiRoots(), dataName, skipSpaces(),
+                printRanges());
       }
     }
   }
