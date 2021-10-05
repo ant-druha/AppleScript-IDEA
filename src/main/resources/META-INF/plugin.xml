@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.intellij.plugin.applescript</id>
     <name>AppleScript Support</name>
-    <version>0.119</version>
+    <version>0.121</version>
     <vendor email="andrey.dernov@gmail.com"
             url="https://twitter.com/ant_druha">Andrey
     </vendor>
@@ -19,6 +19,9 @@
     <change-notes><![CDATA[
         <html>
         <dl>
+            <dt>0.121</dt>
+            <dd>&#183; 2021.3 IntelliJ platform compatibility fixes</dd>
+
             <dt>0.119</dt>
             <dd>&#183; JDK 11 compatibility</dd>
 
