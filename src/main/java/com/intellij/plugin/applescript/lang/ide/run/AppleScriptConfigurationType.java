@@ -5,6 +5,7 @@ import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.intellij.plugin.applescript.AppleScriptIcons;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 public class AppleScriptConfigurationType extends ConfigurationTypeBase {
@@ -12,7 +13,12 @@ public class AppleScriptConfigurationType extends ConfigurationTypeBase {
     super("AppleScriptRunType", "Run AppleScript", "Run Configuration for AppleScript", AppleScriptIcons.FILE);
 
     addFactory(new ConfigurationFactory(this) {
-      @Override
+        @Override
+        public @NotNull @NonNls String getId() {
+            return "AppleScript";
+        }
+
+        @Override
       public boolean isConfigurationSingletonByDefault() {
         return true;
       }
