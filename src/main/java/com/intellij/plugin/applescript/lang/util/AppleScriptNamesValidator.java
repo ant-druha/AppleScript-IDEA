@@ -3,6 +3,7 @@ package com.intellij.plugin.applescript.lang.util;
 import com.intellij.ide.DataManager;
 import com.intellij.lang.refactoring.NamesValidator;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -46,7 +47,7 @@ public class AppleScriptNamesValidator implements NamesValidator {
   private boolean isRenamingHandlerWithValidName(@NotNull String name, Project project) {
     PsiElement elementToRename;
     String oldName;
-    Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+    Editor editor = ApplicationManager.getApplication().isDispatchThread() ? FileEditorManager.getInstance(project).getSelectedTextEditor() : null;
     if (editor != null) {
       DataContext dataContext = DataManager.getInstance().getDataContext(editor.getComponent());
       elementToRename = PsiElementRenameHandler.getElement(dataContext);
